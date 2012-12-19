@@ -7,6 +7,10 @@ import java.util.Map;
 /**
  * An RPC serving demon.  We'll start by it not being very remote.
  * but only procedure call serving, and then we'll take it from there.
+ *
+ * This is basically a stub to flesh out the external API.  It is
+ * not in any way doing anything remotely, and it's not a demon,
+ * so don't get your hope up just yet .-)
  */
 public final class Rpcd {
 
