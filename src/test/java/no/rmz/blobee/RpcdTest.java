@@ -12,10 +12,7 @@ public final class RpcdTest {
      * now this is just a placeholder.
      */
     private static final String RPC_KEY = "foo.bar.baz";
-    /**
-     * We need some place to stash the result of an invocation, and this is it.
-     */
-    private RpcResult rpcResult;
+
     /**
      * An RPC demon we use for testing.
      */
@@ -27,7 +24,6 @@ public final class RpcdTest {
 
     @Before
     public void setUp() {
-        rpcResult = null;
         invocationHappened = false;
         rpcd = new Rpcd();
 
@@ -103,11 +99,11 @@ public final class RpcdTest {
                 new RpcResultHandler() {
                     public void receiveResult(final RpcResult result) {
                         invocationHappened = true;
-                        rpcResult = result;
+                        assertEquals(RpcStatusCode.NO_HANDLER, result);
                     }
                 });
         assertTrue(invocationHappened);
-        assertEquals(RpcStatusCode.NO_HANDLER, rpcResult);
+
     }
 
     public void testNullReturningHandler() throws RpcdException {
@@ -125,7 +121,7 @@ public final class RpcdTest {
                 new RpcResultHandler() {
                     public void receiveResult(final RpcResult result) {
                         invocationHappened = true;
-                        rpcResult = result;
+                        assertEquals(RpcStatusCode.HANDLER_FAILURE, result);
                     }
                 });
         assertTrue(invocationHappened);
@@ -147,10 +143,9 @@ public final class RpcdTest {
                 new RpcResultHandler() {
                     public void receiveResult(final RpcResult result) {
                         invocationHappened = true;
-                        rpcResult = result;
+                        assertEquals(RpcStatusCode.HANDLER_FAILURE, result);
                     }
                 });
         assertTrue(invocationHappened);
-        assertEquals(RpcStatusCode.HANDLER_FAILURE, rpcResult);
     }
 }

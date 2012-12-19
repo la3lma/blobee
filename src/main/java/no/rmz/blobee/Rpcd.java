@@ -25,8 +25,10 @@ public final class Rpcd {
      */
     public void register(final String key, final RpcHandler rpcHandler)
             throws RpcdException {
+
         checkNotNull(rpcHandler);
         checkNotNull(key);
+
         synchronized (handlers) {
 
             if (handlers.containsKey(key)) {
@@ -49,7 +51,11 @@ public final class Rpcd {
         }
     }
 
-    void invoke(final String key, final RpcParam param, final RpcResultHandler rpcResultHandler) {
+    void invoke(
+            final String key,
+            final RpcParam param,
+            final RpcResultHandler rpcResultHandler) {
+
         checkNotNull(key);
         checkNotNull(param);
         checkNotNull(rpcResultHandler);
