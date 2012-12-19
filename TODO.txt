@@ -1,0 +1,7 @@
+
+o Set up java project.
+o Make some tests tht drives the design.
+o Add protobuffers
+o Figure out how to make protbuffers work
+  as a carrier for RPC.
+  
