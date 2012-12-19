@@ -125,7 +125,6 @@ public final class RpcdTest {
                     }
                 });
         assertTrue(invocationHappened);
-        assertEquals(RpcStatusCode.HANDLER_FAILURE, rpcResult);
     }
 
     public void testContentProducingHandler() throws RpcdException {
