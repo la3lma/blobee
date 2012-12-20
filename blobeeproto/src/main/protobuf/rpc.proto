@@ -1,0 +1,16 @@
+package no.rmz.blobeeproto.api.proto;
+option optimize_for = SPEED;
+
+message RpcParam {
+}
+
+message RpcResult {
+  required StatusCode Stat = 1;
+
+
+  enum StatusCode {
+        NO_HANDLER = 1;
+        HANDLER_FAILURE = 2;
+        OK = 3;
+  }
+}
