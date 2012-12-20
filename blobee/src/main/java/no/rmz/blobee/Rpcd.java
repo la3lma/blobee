@@ -69,12 +69,12 @@ public final class Rpcd {
             final RpcHandler handler = handlers.get(key);
             if (handler == null) {
                 rpcResultHandler.receiveResult(
-                        Rpc.RpcResult.newBuilder().setStat(Rpc.RpcResult.StatusCode.NO_HANDLER).build());
+                        Rpc.RpcResult.newBuilder().setStat(Rpc.StatusCode.NO_HANDLER).build());
             } else {
                 final Rpc.RpcResult result = handler.invoke(param);
                 if (result == null) {
                     rpcResultHandler.receiveResult(
-                            Rpc.RpcResult.newBuilder().setStat(Rpc.RpcResult.StatusCode.HANDLER_FAILURE).build());
+                            Rpc.RpcResult.newBuilder().setStat(Rpc.StatusCode.HANDLER_FAILURE).build());
                 } else {
                     rpcResultHandler.receiveResult(result);
                 }

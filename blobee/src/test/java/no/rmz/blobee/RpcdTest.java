@@ -32,20 +32,20 @@ public final class RpcdTest {
     //
     // Convenience methods for generating return values
     //
-    private Rpc.RpcResult newResult(final Rpc.RpcResult.StatusCode code) {
+    private Rpc.RpcResult newResult(final Rpc.StatusCode code) {
         return Rpc.RpcResult.newBuilder().setStat(code).build();
     }
 
     private Rpc.RpcResult newNoHandler() {
-        return newResult(Rpc.RpcResult.StatusCode.NO_HANDLER);
+        return newResult(Rpc.StatusCode.NO_HANDLER);
     }
 
     private Rpc.RpcResult newOk() {
-        return newResult(Rpc.RpcResult.StatusCode.OK);
+        return newResult(Rpc.StatusCode.OK);
     }
 
     private Rpc.RpcResult newFailure() {
-        return newResult(Rpc.RpcResult.StatusCode.HANDLER_FAILURE);
+        return newResult(Rpc.StatusCode.HANDLER_FAILURE);
     }
 
 
