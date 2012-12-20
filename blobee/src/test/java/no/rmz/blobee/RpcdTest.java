@@ -29,6 +29,26 @@ public final class RpcdTest {
 
     }
 
+    //
+    // Convenience methods for generating return values
+    //
+    private Rpc.RpcResult newResult(final Rpc.RpcResult.StatusCode code) {
+        return Rpc.RpcResult.newBuilder().setStat(code).build();
+    }
+
+    private Rpc.RpcResult newNoHandler() {
+        return newResult(Rpc.RpcResult.StatusCode.NO_HANDLER);
+    }
+
+    private Rpc.RpcResult newOk() {
+        return newResult(Rpc.RpcResult.StatusCode.OK);
+    }
+
+    private Rpc.RpcResult newFailure() {
+        return newResult(Rpc.RpcResult.StatusCode.HANDLER_FAILURE);
+    }
+
+
     @Test
     public void testAddingAHandler() throws RpcdException {
         assertFalse(rpcd.hasHandlerForKey(RPC_KEY));
@@ -99,7 +119,7 @@ public final class RpcdTest {
                 new RpcResultHandler() {
                     public void receiveResult(final Rpc.RpcResult result) {
                         invocationHappened = true;
-                        assertEquals(Rpc.RpcResult.newBuilder().setStat(Rpc.RpcResult.StatusCode.NO_HANDLER).build(),
+                        assertEquals(newNoHandler(),
                                 result);
                     }
                 });
@@ -123,19 +143,21 @@ public final class RpcdTest {
                     public void receiveResult(final Rpc.RpcResult result) {
                         invocationHappened = true;
                         assertEquals(
-                                Rpc.RpcResult.newBuilder().setStat(Rpc.RpcResult.StatusCode.HANDLER_FAILURE).build(), result);
+                               newFailure(), result);
                     }
                 });
         assertTrue(invocationHappened);
     }
 
+
+
+
     @Test
     public void testContentProducingHandler() throws RpcdException {
 
-
         rpcd.register(RPC_KEY, new RpcHandler() {
             public  Rpc.RpcResult  invoke(final Rpc.RpcParam param) {
-                return Rpc.RpcResult.newBuilder().setStat(Rpc.RpcResult.StatusCode.OK).build();
+                return newOk();
             }
         });
 
@@ -144,7 +166,7 @@ public final class RpcdTest {
                 new RpcResultHandler() {
                     public void receiveResult(final Rpc.RpcResult result) {
                         invocationHappened = true;
-                        assertEquals(Rpc.RpcResult.newBuilder().setStat(Rpc.RpcResult.StatusCode.OK).build(), result);
+                        assertEquals(newOk(), result);
                     }
                 });
         assertTrue(invocationHappened);
