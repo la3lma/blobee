@@ -1,6 +1,7 @@
 package no.rmz.blobee;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import no.rmz.blobeeproto.api.proto.Rpc;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -57,7 +58,7 @@ public final class Rpcd {
 
     void invoke(
             final String key,
-            final RpcParam param,
+            final Rpc.RpcParam param,
             final RpcResultHandler rpcResultHandler) {
 
         checkNotNull(key);
@@ -67,11 +68,13 @@ public final class Rpcd {
         synchronized (handlers) {
             final RpcHandler handler = handlers.get(key);
             if (handler == null) {
-                rpcResultHandler.receiveResult(RpcResult.NO_HANDLER);
+                rpcResultHandler.receiveResult(
+                        Rpc.RpcResult.newBuilder().setStat(Rpc.RpcResult.StatusCode.NO_HANDLER).build());
             } else {
-                final RpcResult result = handler.invoke(param);
+                final Rpc.RpcResult result = handler.invoke(param);
                 if (result == null) {
-                    rpcResultHandler.receiveResult(RpcResult.HANDLER_FAILURE);
+                    rpcResultHandler.receiveResult(
+                            Rpc.RpcResult.newBuilder().setStat(Rpc.RpcResult.StatusCode.HANDLER_FAILURE).build());
                 } else {
                     rpcResultHandler.receiveResult(result);
                 }

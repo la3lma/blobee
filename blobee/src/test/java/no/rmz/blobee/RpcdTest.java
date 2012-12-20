@@ -1,5 +1,6 @@
 package no.rmz.blobee;
 
+import no.rmz.blobeeproto.api.proto.Rpc;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,7 +13,6 @@ public final class RpcdTest {
      * now this is just a placeholder.
      */
     private static final String RPC_KEY = "foo.bar.baz";
-
     /**
      * An RPC demon we use for testing.
      */
@@ -33,7 +33,7 @@ public final class RpcdTest {
     public void testAddingAHandler() throws RpcdException {
         assertFalse(rpcd.hasHandlerForKey(RPC_KEY));
         rpcd.register(RPC_KEY, new RpcHandler() {
-            public RpcResult invoke(final RpcParam param) {
+            public Rpc.RpcResult invoke(final Rpc.RpcParam param) {
                 return null;
             }
         });
@@ -46,24 +46,25 @@ public final class RpcdTest {
 
         // We expect this first invocation to succeed.
         rpcd.register(RPC_KEY, new RpcHandler() {
-            public RpcResult invoke(final RpcParam param) {
+            public  Rpc.RpcResult  invoke(final Rpc.RpcParam param) {
                 return null;
             }
         });
 
         // We expect this second invocation to fail.
         rpcd.register(RPC_KEY, new RpcHandler() {
-            public RpcResult invoke(final RpcParam param) {
+            public  Rpc.RpcResult  invoke(final Rpc.RpcParam param) {
                 return null;
             }
         });
     }
 
+    @Test
     public void testThatInvocationHappens() throws RpcdException {
 
         assertFalse(rpcd.hasHandlerForKey(RPC_KEY));
         rpcd.register(RPC_KEY, new RpcHandler() {
-            public RpcResult invoke(final RpcParam param) {
+            public  Rpc.RpcResult  invoke(final Rpc.RpcParam param) {
                 return null;
             }
         });
@@ -75,10 +76,9 @@ public final class RpcdTest {
         //     passes some minimal functional test, that's what we
         //     should do.
         rpcd.invoke(RPC_KEY,
-                new RpcParam() {
-                },
+                Rpc.RpcParam.newBuilder().build(),
                 new RpcResultHandler() {
-                    public void receiveResult(final RpcResult result) {
+                    public void receiveResult(final Rpc.RpcResult result) {
                         invocationHappened = true;
                     }
                 });
@@ -86,6 +86,7 @@ public final class RpcdTest {
         assertTrue(invocationHappened);
     }
 
+    @Test
     public void testInvokingWithMissingHandler() throws RpcdException {
 
 
@@ -94,55 +95,56 @@ public final class RpcdTest {
         //     passes some minimal functional test, that's what we
         //     should do.
         rpcd.invoke(RPC_KEY,
-                new RpcParam() {
-                },
+                Rpc.RpcParam.newBuilder().build(),
                 new RpcResultHandler() {
-                    public void receiveResult(final RpcResult result) {
+                    public void receiveResult(final Rpc.RpcResult result) {
                         invocationHappened = true;
-                        assertEquals(RpcStatusCode.NO_HANDLER, result);
+                        assertEquals(Rpc.RpcResult.newBuilder().setStat(Rpc.RpcResult.StatusCode.NO_HANDLER).build(),
+                                result);
                     }
                 });
         assertTrue(invocationHappened);
 
     }
 
+    @Test
     public void testNullReturningHandler() throws RpcdException {
 
 
         rpcd.register(RPC_KEY, new RpcHandler() {
-            public RpcResult invoke(final RpcParam param) {
+            public  Rpc.RpcResult  invoke(final Rpc.RpcParam param) {
                 return null;
             }
         });
 
         rpcd.invoke(RPC_KEY,
-                new RpcParam() {
-                },
+                Rpc.RpcParam.newBuilder().build(),
                 new RpcResultHandler() {
-                    public void receiveResult(final RpcResult result) {
+                    public void receiveResult(final Rpc.RpcResult result) {
                         invocationHappened = true;
-                        assertEquals(RpcStatusCode.HANDLER_FAILURE, result);
+                        assertEquals(
+                                Rpc.RpcResult.newBuilder().setStat(Rpc.RpcResult.StatusCode.HANDLER_FAILURE).build(), result);
                     }
                 });
         assertTrue(invocationHappened);
     }
 
+    @Test
     public void testContentProducingHandler() throws RpcdException {
 
 
         rpcd.register(RPC_KEY, new RpcHandler() {
-            public RpcResult invoke(final RpcParam param) {
-                return new RpcResult(RpcStatusCode.OK);
+            public  Rpc.RpcResult  invoke(final Rpc.RpcParam param) {
+                return Rpc.RpcResult.newBuilder().setStat(Rpc.RpcResult.StatusCode.OK).build();
             }
         });
 
         rpcd.invoke(RPC_KEY,
-                new RpcParam() {
-                },
+                Rpc.RpcParam.newBuilder().build(),
                 new RpcResultHandler() {
-                    public void receiveResult(final RpcResult result) {
+                    public void receiveResult(final Rpc.RpcResult result) {
                         invocationHappened = true;
-                        assertEquals(RpcStatusCode.HANDLER_FAILURE, result);
+                        assertEquals(Rpc.RpcResult.newBuilder().setStat(Rpc.RpcResult.StatusCode.OK).build(), result);
                     }
                 });
         assertTrue(invocationHappened);
