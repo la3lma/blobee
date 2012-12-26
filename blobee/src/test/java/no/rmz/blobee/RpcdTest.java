@@ -1,12 +1,25 @@
 package no.rmz.blobee;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import com.google.protobuf.Descriptors.MethodDescriptor;
+import com.google.protobuf.Descriptors.ServiceDescriptor;
+import com.google.protobuf.Message;
+import com.google.protobuf.RpcCallback;
+import com.google.protobuf.RpcChannel;
+import com.google.protobuf.RpcController;
+import com.google.protobuf.Service;
+import java.util.logging.Logger;
 import no.rmz.blobeeproto.api.proto.Rpc;
+import no.rmz.blobeeproto.api.proto.Rpc.RpcParam;
+import no.rmz.blobeeproto.api.proto.Rpc.RpcResult;
+import no.rmz.blobeeproto.api.proto.Rpc.RpcService.Interface;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
 public final class RpcdTest {
 
+    private final static Logger log = Logger.getLogger(RpcdTest.class.getName());
     /**
      * We need a dummy key so this is it. However, it does allude to the fact
      * that we also do need some kind of namespace to identify handlers, but for
@@ -48,7 +61,6 @@ public final class RpcdTest {
         return newResult(Rpc.StatusCode.HANDLER_FAILURE);
     }
 
-
     @Test
     public void testAddingAHandler() throws RpcdException {
         assertFalse(rpcd.hasHandlerForKey(RPC_KEY));
@@ -66,14 +78,14 @@ public final class RpcdTest {
 
         // We expect this first invocation to succeed.
         rpcd.register(RPC_KEY, new RpcHandler() {
-            public  Rpc.RpcResult  invoke(final Rpc.RpcParam param) {
+            public Rpc.RpcResult invoke(final Rpc.RpcParam param) {
                 return null;
             }
         });
 
         // We expect this second invocation to fail.
         rpcd.register(RPC_KEY, new RpcHandler() {
-            public  Rpc.RpcResult  invoke(final Rpc.RpcParam param) {
+            public Rpc.RpcResult invoke(final Rpc.RpcParam param) {
                 return null;
             }
         });
@@ -84,7 +96,7 @@ public final class RpcdTest {
 
         assertFalse(rpcd.hasHandlerForKey(RPC_KEY));
         rpcd.register(RPC_KEY, new RpcHandler() {
-            public  Rpc.RpcResult  invoke(final Rpc.RpcParam param) {
+            public Rpc.RpcResult invoke(final Rpc.RpcParam param) {
                 return null;
             }
         });
@@ -132,7 +144,7 @@ public final class RpcdTest {
 
 
         rpcd.register(RPC_KEY, new RpcHandler() {
-            public  Rpc.RpcResult  invoke(final Rpc.RpcParam param) {
+            public Rpc.RpcResult invoke(final Rpc.RpcParam param) {
                 return null;
             }
         });
@@ -143,20 +155,17 @@ public final class RpcdTest {
                     public void receiveResult(final Rpc.RpcResult result) {
                         invocationHappened = true;
                         assertEquals(
-                               newFailure(), result);
+                                newFailure(), result);
                     }
                 });
         assertTrue(invocationHappened);
     }
 
-
-
-
     @Test
     public void testContentProducingHandler() throws RpcdException {
 
         rpcd.register(RPC_KEY, new RpcHandler() {
-            public  Rpc.RpcResult  invoke(final Rpc.RpcParam param) {
+            public Rpc.RpcResult invoke(final Rpc.RpcParam param) {
                 return newOk();
             }
         });
