@@ -30,6 +30,8 @@ public final class SimpleInvocationLab {
     public void setUp() {
          rchannel = new RChannel();
 
+         final SampleServerImpl ssi = new SampleServerImpl();
+
          // XXX This cruft could be done using annotations
         final MethodDescriptor methodDesc = Rpc.RpcService.getDescriptor().findMethodByName("Invoke");
         rchannel.add(methodDesc, new Function<Message, Message>() {
@@ -39,7 +41,7 @@ public final class SimpleInvocationLab {
                 //     probably a mistake.   However, that can quite easily
                 //     be amended by clever setup using annotations.  Yeeha, this is
                 //     doable and may in fact be quite nice to use ;)
-                return RpcResult.newBuilder().setStat(Rpc.StatusCode.HANDLER_FAILURE).build();
+                return ssi.invoke((Rpc.RpcParam) input);
             }
         });
     }
