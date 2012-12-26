@@ -1,15 +1,10 @@
+o Ok, so the method invocation stuff in Protobuffers isn't half
+  bad, but it's a bit complex to use, so perhaps wrapping it in
+  some suger-coating annotation syntax would be nice?   Take
+  a look at that.
 
-o Add protobuffers.  The thing to do would probably be to
-  add a payload field to the RpcParam/RpcResult interfaces
-  and let that field be a protobuffer-defined something. 
-  The next step would be to let RpcParam and RpcResult
-  themselves be protobuffer defined.
+o Also push stuff through the wire. Use netty.
 
-o The question I want to answer first is: Is it easy to 
-  nest independent protobuffer definitions?
+o Then we need to really start get to work on the API,
+  connecting the clients through netty etc.
 
-o When that thing works, we can start setting up
-  some netty based service and see how fast we can
-  send things through it.
-
-o Then we need to really start get to work on the API.

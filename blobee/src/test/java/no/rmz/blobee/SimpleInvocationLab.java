@@ -1,17 +1,17 @@
 package no.rmz.blobee;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import com.google.common.base.Function;
 import com.google.protobuf.Descriptors.MethodDescriptor;
 import com.google.protobuf.Descriptors.ServiceDescriptor;
 import com.google.protobuf.Message;
 import com.google.protobuf.RpcCallback;
-import com.google.protobuf.RpcChannel;
 import com.google.protobuf.RpcController;
 import java.util.logging.Logger;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import no.rmz.blobeeproto.api.proto.Rpc.RpcParam;
 import no.rmz.blobeeproto.api.proto.Rpc.RpcResult;
 import no.rmz.blobeeproto.api.proto.Rpc.RpcService;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -24,73 +24,40 @@ public final class SimpleInvocationLab {
 
     private final static Logger log = Logger.getLogger(SimpleInvocationLab.class.getName());
 
-    // Take a long hard look at http://code.google.com/p/netty-protobuf-rpc/wiki/Usage
+    private RChannel rchannel;
+
+    @Before
+    public void setUp() {
+         rchannel = new RChannel();
+
+         // XXX This cruft could be done using annotations
+        final MethodDescriptor methodDesc = Rpc.RpcService.getDescriptor().findMethodByName("Invoke");
+        rchannel.add(methodDesc, new Function<Message, Message>() {
+
+            public Message apply(final Message input) {
+                // XXX This input isn't being cast to the proper type, that's
+                //     probably a mistake.   However, that can quite easily
+                //     be amended by clever setup using annotations.  Yeeha, this is
+                //     doable and may in fact be quite nice to use ;)
+                return RpcResult.newBuilder().setStat(Rpc.StatusCode.HANDLER_FAILURE).build();
+            }
+        });
+    }
 
     @Test
     public void testRpcStuff() {
         final ServiceDescriptor descriptor = Rpc.RpcService.getDescriptor();
-        log.info("Descriptor.fullname = " + descriptor.getFullName());
 
 
-        final RpcChannel rchannel = new RpcChannel() {
-            public void callMethod(
-                    final MethodDescriptor method,
-                    final RpcController controller,
-                    final Message request,
-                    final Message responsePrototype,
-                    final RpcCallback<Message> callback) {
-                checkNotNull(method);
-                checkNotNull(controller);
-                checkNotNull(request);
-                checkNotNull(responsePrototype);
-                checkNotNull(callback);
-                final Message message =
-                        RpcResult.newBuilder().setStat(Rpc.StatusCode.HANDLER_FAILURE).build();
+        final RpcController controller = rchannel.newController();
 
-                callback.run(message);
-            }
-        };
-
-
-        final RpcController controller = new RpcController() {
-            public void reset() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            public boolean failed() {
-                return false;
-            }
-
-            public String errorText() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            public void startCancel() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            public void setFailed(String reason) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            public boolean isCanceled() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            public void notifyOnCancel(RpcCallback<Object> callback) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-        };
-
-
-        RpcCallback<RpcResult> rpcCallback = new RpcCallback<RpcResult>() {
+        final RpcCallback<RpcResult> rpcCallback = new RpcCallback<RpcResult>() {
             public void run(final RpcResult response) {
                 if (response != null) {
                     log.info("The answer is: " + response);
                 } else {
-                    log.info(
-                            "Oops, there was an error: "
-                            + controller.errorText());
+                    log.info("Oops, there was an error: "
+                             + controller.errorText());
                 }
             }
         };
@@ -98,7 +65,7 @@ public final class SimpleInvocationLab {
         // There is an example in
         // From http://code.google.com/p/protobuf-socket-rpc/wiki/JavaUsage
 
-        // Call service asynchronously.
+
         final RpcService myService = RpcService.newStub(rchannel);
         final RpcParam request =
                 Rpc.RpcParam.newBuilder().build();
