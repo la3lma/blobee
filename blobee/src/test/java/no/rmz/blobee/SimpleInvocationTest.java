@@ -10,7 +10,6 @@ import no.rmz.blobeeproto.api.proto.Rpc;
 import no.rmz.blobeeproto.api.proto.Rpc.RpcParam;
 import no.rmz.blobeeproto.api.proto.Rpc.RpcResult;
 import no.rmz.blobeeproto.api.proto.Rpc.RpcService;
-import no.rmz.blobeeproto.api.proto.Rpc.RpcService.BlockingInterface;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

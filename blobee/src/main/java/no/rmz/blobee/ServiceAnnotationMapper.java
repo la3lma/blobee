@@ -9,6 +9,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import no.rmz.blobee.ProtobufRpcImplementation;
+import no.rmz.blobee.RChannel;
 
 public final class ServiceAnnotationMapper {
     private static final Logger log = Logger.getLogger(ServiceAnnotationMapper.class.getName());
