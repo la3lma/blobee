@@ -29,11 +29,11 @@ package no.rmz.blobee.netty.echo;
  /**
   * Echoes back any received data from a client.
   */
- public class EchoServer {
+ public class EchoServer  {
 
      private final int port;
 
-     public EchoServer(int port) {
+     public EchoServer(final int port) {
          this.port = port;
      }
 
@@ -53,15 +53,5 @@ package no.rmz.blobee.netty.echo;
 
          // Bind and start to accept incoming connections.
          bootstrap.bind(new InetSocketAddress(port));
-     }
-
-     public static void main(String[] args) throws Exception {
-         int port;
-         if (args.length > 0) {
-             port = Integer.parseInt(args[0]);
-         } else {
-             port = 8080;
-         }
-         new EchoServer(port).run();
      }
  }

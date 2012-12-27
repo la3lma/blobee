@@ -36,7 +36,7 @@ package no.rmz.blobee.netty.echo;
   */
  public class EchoClientHandler extends SimpleChannelUpstreamHandler {
 
-     private static final Logger logger = Logger.getLogger(
+     private static final Logger log = Logger.getLogger(
              EchoClientHandler.class.getName());
 
      private final ChannelBuffer firstMessage;
@@ -72,6 +72,7 @@ package no.rmz.blobee.netty.echo;
      public void messageReceived(
              ChannelHandlerContext ctx, MessageEvent e) {
          // Send back the received message to the remote peer.
+         log.info("Received message " + e.getMessage());
          transferredBytes.addAndGet(((ChannelBuffer) e.getMessage()).readableBytes());
          e.getChannel().write(e.getMessage());
      }
@@ -80,7 +81,7 @@ package no.rmz.blobee.netty.echo;
      public void exceptionCaught(
              ChannelHandlerContext ctx, ExceptionEvent e) {
          // Close the connection when an exception is raised.
-         logger.log(
+         log.log(
                  Level.WARNING,
                  "Unexpected exception from downstream.",
                  e.getCause());
