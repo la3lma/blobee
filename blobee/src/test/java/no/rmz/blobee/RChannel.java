@@ -2,11 +2,13 @@ package no.rmz.blobee;
 
 import com.google.common.base.Function;
 import static com.google.common.base.Preconditions.checkNotNull;
+import com.google.protobuf.BlockingRpcChannel;
 import com.google.protobuf.Descriptors.MethodDescriptor;
 import com.google.protobuf.Message;
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcChannel;
 import com.google.protobuf.RpcController;
+import com.google.protobuf.ServiceException;
 import java.util.HashMap;
 
 /**
@@ -63,7 +65,7 @@ public final class RChannel implements RpcChannel {
             }
 
             public String errorText() {
-                throw new UnsupportedOperationException("Not supported yet.");
+                return "";
             }
 
             public void startCancel() {
@@ -80,6 +82,25 @@ public final class RChannel implements RpcChannel {
 
             public void notifyOnCancel(RpcCallback<Object> callback) {
                 throw new UnsupportedOperationException("Not supported yet.");
+            }
+        };
+    }
+
+    // XXX This is a rather bogus api, refactor asap!!
+
+    public BlockingRpcChannel newBlockingRchannel() {
+        return new BlockingRpcChannel() {
+            public Message callBlockingMethod(
+                    final MethodDescriptor method,
+                    final RpcController controller,
+                    final Message request,
+                    final Message responsePrototype) throws ServiceException {
+
+                final Function<Message, Message> meth;
+                meth = methods.get(method);
+                final Message result = meth.apply(request);
+
+                return result;
             }
         };
     }

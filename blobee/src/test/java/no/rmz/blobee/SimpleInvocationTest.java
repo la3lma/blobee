@@ -1,21 +1,17 @@
 package no.rmz.blobee;
 
-import com.google.common.base.Function;
-import com.google.protobuf.Descriptors.Descriptor;
-import com.google.protobuf.Descriptors.MethodDescriptor;
 import com.google.protobuf.Descriptors.ServiceDescriptor;
-import com.google.protobuf.Message;
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcController;
+import com.google.protobuf.ServiceException;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import no.rmz.blobeeproto.api.proto.Rpc.RpcParam;
-// import static com.google.common.base.Preconditions.checkNotNull;
 import no.rmz.blobeeproto.api.proto.Rpc.RpcResult;
 import no.rmz.blobeeproto.api.proto.Rpc.RpcService;
+import no.rmz.blobeeproto.api.proto.Rpc.RpcService.BlockingInterface;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -23,33 +19,54 @@ import org.junit.Test;
  * The objective of the tests in this class is to get a grip on the mechanisms
  * for RPC management that are provided by the open source Protobuffer library
  * from Google. It's a purely experimental exercise and is not ye connected to
- * any library code for doing RPC.
+ * any library code for doing RPC. This is a strong inspiration:
+ * http://code.google.com/p/protobuf-socket-rpc/wiki/JavaUsage
  */
 public final class SimpleInvocationTest {
 
     private final static Logger log = Logger.getLogger(SimpleInvocationTest.class.getName());
     private RChannel rchannel;
+    private RpcParam request;
+    private boolean callbackWasCalled;
+    private RpcController controller;
+    private RpcResult failureResult =
+            RpcResult.newBuilder().setStat(Rpc.StatusCode.HANDLER_FAILURE).build();
 
     @Before
-    public void setUp() throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    public void setUp() throws
+            NoSuchMethodException,
+            IllegalAccessException,
+            IllegalArgumentException,
+            InvocationTargetException {
         rchannel = new RChannel();
 
         final SampleServerImpl implementation = new SampleServerImpl();
         ServiceAnnotationMapper.bindServices(implementation, rchannel);
+        callbackWasCalled = false;
+        request =
+                Rpc.RpcParam.newBuilder().build();
+        controller = rchannel.newController();
+    }
+
+    @After
+    public void postConditions() {
+        org.junit.Assert.assertFalse(
+                String.format("Rpc failed %s ", controller.errorText()),
+                controller.failed());
     }
 
     @Test
-    public void testRpcStuff() {
+    public void testBasicNonblockingRpc() {
         final ServiceDescriptor descriptor = Rpc.RpcService.getDescriptor();
-
 
         final RpcController controller = rchannel.newController();
 
-        final RpcCallback<RpcResult> rpcCallback = new RpcCallback<RpcResult>() {
+        final RpcCallback<RpcResult> callback = new RpcCallback<RpcResult>() {
             public void run(final RpcResult response) {
+                callbackWasCalled = true;
                 if (response != null) {
                     log.info("The answer is: " + response);
-                    org.junit.Assert.assertEquals(Rpc.StatusCode.HANDLER_FAILURE, response);
+                    org.junit.Assert.assertEquals(failureResult, response);
                 } else {
                     log.info("Oops, there was an error: "
                             + controller.errorText());
@@ -58,29 +75,18 @@ public final class SimpleInvocationTest {
             }
         };
 
-        // There is an example in
-        // From http://code.google.com/p/protobuf-socket-rpc/wiki/JavaUsage
-
-
         final RpcService myService = RpcService.newStub(rchannel);
-        final RpcParam request =
-                Rpc.RpcParam.newBuilder().build();
 
-
-        final RpcCallback<Rpc.RpcResult> callback =
-                new RpcCallback<Rpc.RpcResult>() {
-                    public void run(Rpc.RpcResult myResponse) {
-                        log.info("Received Response: " + myResponse);
-                    }
-                };
-
-        // Do the actual invocation
         myService.invoke(controller, request, callback);
+        org.junit.Assert.assertTrue(callbackWasCalled);
+    }
 
-        // Measure the fallout
-        if (controller.failed()) {
-            log.info(String.format("Rpc failed %s ",
-                    controller.errorText()));
-        }
+    @Test
+    public void testBasicBlockingRpc() throws ServiceException {
+        final Rpc.RpcService.BlockingInterface service;
+        service = Rpc.RpcService.newBlockingStub(rchannel.newBlockingRchannel());
+
+        final RpcResult response = service.invoke(controller, request);
+        org.junit.Assert.assertEquals(failureResult, response);
     }
 }

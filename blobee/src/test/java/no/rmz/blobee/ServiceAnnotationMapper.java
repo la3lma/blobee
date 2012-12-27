@@ -17,7 +17,9 @@ public final class ServiceAnnotationMapper {
     }
 
     // XXX This is obviously just a stub.
-    
+    //     A lot more checking should be done here, including
+    //     typechecking that is done at startup (semi-static ;-)
+
     public static void bindServices(final Object implementation, final RChannel rchannel) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         checkNotNull(implementation);
         for (final Method method : implementation.getClass().getMethods()) {
@@ -49,9 +51,12 @@ public final class ServiceAnnotationMapper {
                         throw new RuntimeException("This is bad");
                     }
                 };
+
+                // XXX Duplicates, locking and all the rest are
+                //     ignored here.
+                // Finally add the new implementation
                 rchannel.add(methodDesc, wrapper);
             }
         }
     }
-
 }
