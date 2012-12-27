@@ -1,10 +1,10 @@
-o Ok, so the method invocation stuff in Protobuffers isn't half
-  bad, but it's a bit complex to use, so perhaps wrapping it in
-  some suger-coating annotation syntax would be nice?   Take
-  a look at that.
+o ServingRpcChannel sets up a local serving channel, but
+  that's not enough.  We now need:
+ 
+    o A NettyIncomingRpcAdapter that can be connected
+      to a  ServingRpcChannel and serve incoming requests.
 
-o Also push stuff through the wire. Use netty.
+    o A NettyClientRpcChannel that can connect to a
+      NettyIncomingRpcAdapter through Netty
 
-o Then we need to really start get to work on the API,
-  connecting the clients through netty etc.
 
