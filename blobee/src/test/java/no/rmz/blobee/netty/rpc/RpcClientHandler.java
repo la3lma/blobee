@@ -46,11 +46,12 @@ import no.rmz.blobee.netty.echo.*;
      /**
       * Creates a client-side handler.
       */
-     public RpcClientHandler(int firstMessageSize) {
+     public RpcClientHandler(final int firstMessageSize) {
          if (firstMessageSize <= 0) {
              throw new IllegalArgumentException(
                      "firstMessageSize: " + firstMessageSize);
          }
+
          firstMessage = ChannelBuffers.buffer(firstMessageSize);
          for (int i = 0; i < firstMessage.capacity(); i ++) {
              firstMessage.writeByte((byte) i);
@@ -63,7 +64,7 @@ import no.rmz.blobee.netty.echo.*;
 
      @Override
      public void channelConnected(
-             ChannelHandlerContext ctx, ChannelStateEvent e) {
+             final ChannelHandlerContext ctx, final ChannelStateEvent e) {
          // Send the first message.  Server will not send anything here
          // because the firstMessage's capacity is 0.
          e.getChannel().write(firstMessage);
@@ -71,7 +72,7 @@ import no.rmz.blobee.netty.echo.*;
 
      @Override
      public void messageReceived(
-             ChannelHandlerContext ctx, MessageEvent e) {
+             final ChannelHandlerContext ctx, final MessageEvent e) {
          // Send back the received message to the remote peer.
          log.info("Received message " + e.getMessage());
          transferredBytes.addAndGet(((ChannelBuffer) e.getMessage()).readableBytes());
@@ -80,7 +81,7 @@ import no.rmz.blobee.netty.echo.*;
 
      @Override
      public void exceptionCaught(
-             ChannelHandlerContext ctx, ExceptionEvent e) {
+            final  ChannelHandlerContext ctx, final ExceptionEvent e) {
          // Close the connection when an exception is raised.
          log.log(
                  Level.WARNING,

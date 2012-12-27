@@ -28,7 +28,7 @@ import no.rmz.blobee.netty.echo.*;
  import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 
  /**
-  * Handler implementation for the echo server.
+  * Handler implementation for the prototype RPC  server.
   */
  public class RpcServerHandler extends SimpleChannelUpstreamHandler {
 
@@ -47,7 +47,8 @@ import no.rmz.blobee.netty.echo.*;
          // Send back the received message to the remote peer.
          log.info("Received message " + e.getMessage());
          transferredBytes.addAndGet(((ChannelBuffer) e.getMessage()).readableBytes());
-         e.getChannel().write(e.getMessage());
+         // e.getChannel().write(e.getMessage());
+         e.getChannel().close(); // We're done, terminate
      }
 
      @Override
