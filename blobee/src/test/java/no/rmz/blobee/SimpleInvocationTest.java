@@ -65,12 +65,9 @@ public final class SimpleInvocationTest {
             public void run(final RpcResult response) {
                 callbackWasCalled = true;
                 if (response != null) {
-                    log.info("The answer is: " + response);
                     org.junit.Assert.assertEquals(failureResult, response);
                 } else {
-                    log.info("Oops, there was an error: "
-                            + controller.errorText());
-                    org.junit.Assert.fail("There shouldn't be any errors");
+                    org.junit.Assert.fail("Badness: " + controller.errorText());
                 }
             }
         };
