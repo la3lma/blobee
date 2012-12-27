@@ -24,7 +24,7 @@ import org.junit.Test;
 public final class SimpleInvocationTest {
 
     private final static Logger log = Logger.getLogger(SimpleInvocationTest.class.getName());
-    private RChannel rchannel;
+    private ServingRpcChannel rchannel;
     private RpcParam request;
     private boolean callbackWasCalled;
     private RpcController controller;
@@ -37,7 +37,7 @@ public final class SimpleInvocationTest {
             IllegalAccessException,
             IllegalArgumentException,
             InvocationTargetException {
-        rchannel = new RChannel();
+        rchannel = new ServingRpcChannel();
 
         final SampleServerImpl implementation = new SampleServerImpl();
         ServiceAnnotationMapper.bindServices(implementation, rchannel);

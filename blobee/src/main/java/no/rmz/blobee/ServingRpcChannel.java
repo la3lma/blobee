@@ -16,7 +16,7 @@ import java.util.HashMap;
  * to wrap my mind about the various details involved in making an RPC
  * library.
  */
-public final class RChannel implements RpcChannel {
+public final class ServingRpcChannel implements RpcChannel {
 
     // XXX Much-too-generic mappers of input params to
     //     output params.
@@ -46,7 +46,9 @@ public final class RChannel implements RpcChannel {
         callback.run(result);
     }
 
-    public void add(final MethodDescriptor key, final Function<Message, Message> function) {
+    public void add(
+            final MethodDescriptor key,
+            final Function<Message, Message> function) {
         // XXX No synchronization or anything here.
         checkNotNull(key);
         checkNotNull(function);
@@ -104,5 +106,4 @@ public final class RChannel implements RpcChannel {
             }
         };
     }
-
 }
