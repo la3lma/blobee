@@ -15,6 +15,11 @@
  */
 package org.jboss.netty.handler.codec.protobuf;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import com.google.protobuf.Message;
+import com.google.protobuf.MessageLite;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBufferInputStream;
 import org.jboss.netty.channel.Channel;
@@ -26,10 +31,6 @@ import org.jboss.netty.handler.codec.frame.FrameDecoder;
 import org.jboss.netty.handler.codec.frame.LengthFieldBasedFrameDecoder;
 import org.jboss.netty.handler.codec.frame.LengthFieldPrepender;
 import org.jboss.netty.handler.codec.oneone.OneToOneDecoder;
-
-import com.google.protobuf.ExtensionRegistry;
-import com.google.protobuf.Message;
-import com.google.protobuf.MessageLite;
 
 /**
  * Decodes a received {@link ChannelBuffer} into a
@@ -65,51 +66,61 @@ import com.google.protobuf.MessageLite;
  * @apiviz.landmark
  */
 @Sharable
-public class DynamicProtobufDecoder extends OneToOneDecoder {
+public final class DynamicProtobufDecoder extends OneToOneDecoder {
 
-    private final MessageLite prototype;
-    private final ExtensionRegistry extensionRegistry;
-
-    /**
-     * Creates a new instance.
-     */
-    public DynamicProtobufDecoder(MessageLite prototype) {
-        this(prototype, null);
+    public DynamicProtobufDecoder() {
     }
 
-    public DynamicProtobufDecoder(MessageLite prototype, ExtensionRegistry extensionRegistry) {
-        if (prototype == null) {
-            throw new NullPointerException("prototype");
-        }
+
+
+
+    /*
+     * private final MessageLite prototype;
+    // XXX Introduce a prototypeSource that is a sequence
+    //     (BlockingQueue, e.g. an ArrayBlockingQueue of size 1?)
+    //     of MessageLite instances.
+    public DynamicProtobufDecoder(
+            final MessageLite prototype) {
+        checkNotNull(prototype, "prototype");
         this.prototype = prototype.getDefaultInstanceForType();
-        this.extensionRegistry = extensionRegistry;
+    }
+    */
+
+
+    private final BlockingQueue<MessageLite> queue =
+            new ArrayBlockingQueue<MessageLite>(1);
+
+
+    // XXX Refactor this to use the sequence of
+    //     prototypes.
+    private MessageLite getNextPrototype() throws InterruptedException {
+        return queue.take();
+        // return prototype;
+    }
+
+    public void putNextPrototype(final MessageLite msg) {
+        queue.add(msg);
     }
 
     @Override
     protected Object decode(
-            ChannelHandlerContext ctx, Channel channel, Object msg) throws Exception {
-        if (!(msg instanceof ChannelBuffer)) {
+            final ChannelHandlerContext ctx,
+            final Channel channel,
+            final Object msg) throws Exception {
+
+        if (!( msg instanceof ChannelBuffer )) {
             return msg;
         }
 
-        ChannelBuffer buf = (ChannelBuffer) msg;
+        final ChannelBuffer buf = (ChannelBuffer) msg;
+        final MessageLite proto = getNextPrototype();
         if (buf.hasArray()) {
             final int offset = buf.readerIndex();
-            if (extensionRegistry == null) {
-                return prototype.newBuilderForType().mergeFrom(
-                        buf.array(), buf.arrayOffset() + offset, buf.readableBytes()).build();
-            } else {
-                return prototype.newBuilderForType().mergeFrom(
-                        buf.array(), buf.arrayOffset() + offset, buf.readableBytes(), extensionRegistry).build();
-            }
+            return proto.newBuilderForType().mergeFrom(
+                    buf.array(), buf.arrayOffset() + offset, buf.readableBytes()).build();
         } else {
-            if (extensionRegistry == null) {
-                return prototype.newBuilderForType().mergeFrom(
-                        new ChannelBufferInputStream((ChannelBuffer) msg)).build();
-            } else {
-                return prototype.newBuilderForType().mergeFrom(
-                        new ChannelBufferInputStream((ChannelBuffer) msg), extensionRegistry).build();
-            }
+            return proto.newBuilderForType().mergeFrom(
+                    new ChannelBufferInputStream((ChannelBuffer) msg)).build();
         }
     }
 }

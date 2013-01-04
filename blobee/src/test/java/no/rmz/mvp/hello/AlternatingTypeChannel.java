@@ -1,5 +1,6 @@
 package no.rmz.mvp.hello;
 
+import com.google.protobuf.MessageLite;
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
@@ -22,7 +23,7 @@ import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
-import org.jboss.netty.handler.codec.protobuf.ProtobufDecoder;
+import org.jboss.netty.handler.codec.protobuf.DynamicProtobufDecoder;
 import org.jboss.netty.handler.codec.protobuf.ProtobufEncoder;
 import org.jboss.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import org.jboss.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
@@ -70,18 +71,18 @@ public final class AlternatingTypeChannel {
 
         serverChannelPipelineFactory = new AdaptiveDecoder("server",
                 new SimpleChannelUpstreamHandlerFactory() {
-            public SimpleChannelUpstreamHandler newHandler() {
-                return new RpcServerHandler();
-            }
-        });
+                    public SimpleChannelUpstreamHandler newHandler() {
+                        return new RpcServerHandler();
+                    }
+                });
 
 
         clientPipelineFactory = new AdaptiveDecoder("client",
                 new SimpleChannelUpstreamHandlerFactory() {
-            public SimpleChannelUpstreamHandler newHandler() {
-                return new RpcClientHandler();
-            }
-        });
+                    public SimpleChannelUpstreamHandler newHandler() {
+                        return new RpcClientHandler();
+                    }
+                });
     }
 
     public final class RpcServerHandler extends SimpleChannelUpstreamHandler {
@@ -101,14 +102,14 @@ public final class AlternatingTypeChannel {
                 counter += 1;
 
                 serverChannelPipelineFactory.isControl = true;
-                serverChannelPipelineFactory.newInputIsParsed();
+                serverChannelPipelineFactory.putNextPrototype(Rpc.RpcControl.getDefaultInstance());
             } else if (message instanceof Rpc.RpcControl) {
                 final Rpc.RpcControl msg = (Rpc.RpcControl) e.getMessage();
                 serverControlReceiver.receive(msg);
                 counter += 1;
 
                 serverChannelPipelineFactory.isControl = false;
-                serverChannelPipelineFactory.newInputIsParsed();
+                serverChannelPipelineFactory.putNextPrototype(Rpc.RpcParam.getDefaultInstance());
             } else {
                 fail("Unknown type of incoming message to server: " + message);
             }
@@ -148,11 +149,7 @@ public final class AlternatingTypeChannel {
             log.info("The client received message object : " + message);
             final Rpc.RpcResult result = (Rpc.RpcResult) e.getMessage();
             log.info("The client received result: " + result);
-            serverChannelPipelineFactory.newInputIsParsable();
-            clientPipelineFactory.newInputIsParsed();
-
-            clientPipelineFactory.isControl = true;
-            clientPipelineFactory.newInputIsParsable();
+            clientPipelineFactory.putNextPrototype(Rpc.RpcControl.getDefaultInstance());
         }
 
         @Override
@@ -176,78 +173,23 @@ public final class AlternatingTypeChannel {
     public final class AdaptiveDecoder implements ChannelPipelineFactory {
 
         private final String name;
-
         final SimpleChannelUpstreamHandlerFactory upstreamHandlerFactory;
         private boolean isControl = true;
         private final Lock lock = new ReentrantLock();
         private Condition inputIsParsable;
         private Condition inputIsParsed;
-
         private boolean firstTime = true;
 
         public AdaptiveDecoder(final String name,
                 final SimpleChannelUpstreamHandlerFactory upstreamHandlerFactory) {
             this.upstreamHandlerFactory = upstreamHandlerFactory;
             this.name = name;
-
-            lock.lock();
-            try {
-                this.isControl = isControl;
-                inputIsParsed = lock.newCondition();
-                inputIsParsable = lock.newCondition();
-            }
-            finally {
-                lock.unlock();
-            }
         }
+        private final DynamicProtobufDecoder protbufDecoder =
+                new DynamicProtobufDecoder();
 
-        private void newInputIsParsable() {
-            lock.lock();
-            try {
-                if (!firstTime) {
-                    inputIsParsed.await();
-                }
-            }
-            catch (InterruptedException ex) {
-                fail("SHouldn't happen");
-            }
-            try {
-                inputIsParsed = lock.newCondition();
-                inputIsParsable = lock.newCondition();
-                if (firstTime) {
-                    return;
-                } else {
-                    firstTime = false;
-                    try {
-                        inputIsParsable.await();
-                    }
-                    catch (InterruptedException ex) {
-                       fail("Should never happen");
-                     }
-                }
-            }
-            finally {
-                lock.unlock();
-            }
-        }
-
-        private void newInputIsParsed() {
-            lock.lock();
-            try {
-                inputIsParsed.signal();
-            }
-            finally {
-                lock.unlock();
-            }
-        }
-
-        private ProtobufDecoder newProtobufDecoder() {
-            newInputIsParsable();
-            if (isControl) {
-                return new ProtobufDecoder(Rpc.RpcControl.getDefaultInstance());
-            } else {
-                return new ProtobufDecoder(Rpc.RpcResult.getDefaultInstance());
-            }
+        public void putNextPrototype(final MessageLite prototype) {
+            protbufDecoder.putNextPrototype(prototype.getDefaultInstanceForType());
         }
 
         @SuppressWarnings("WA_AWAIT_NOT_IN_LOOP")
@@ -257,14 +199,12 @@ public final class AlternatingTypeChannel {
 
                 final ChannelPipeline p = pipeline();
                 p.addLast("frameDecoder", new ProtobufVarint32FrameDecoder());
-                p.addLast("protobufDecoder",
-                        newProtobufDecoder());
+                p.addLast("protobufDecoder", protbufDecoder);
                 p.addLast("frameEncoder", new ProtobufVarint32LengthFieldPrepender());
                 p.addLast("protobufEncoder", new ProtobufEncoder());
                 p.addLast("handler", upstreamHandlerFactory.newHandler());
                 return p;
             }
-
             finally {
                 lock.unlock();
             }
@@ -280,7 +220,7 @@ public final class AlternatingTypeChannel {
 
         // Set up the pipeline factory.
         bootstrap.setPipelineFactory(serverChannelPipelineFactory);
-
+        serverChannelPipelineFactory.putNextPrototype(Rpc.RpcControl.getDefaultInstance());
         // Bind and start to accept incoming connections.
         bootstrap.bind(new InetSocketAddress(PORT));
     }
@@ -295,6 +235,7 @@ public final class AlternatingTypeChannel {
 
         clientBootstrap.setPipelineFactory(
                 clientPipelineFactory);
+        clientPipelineFactory.putNextPrototype(Rpc.RpcControl.getDefaultInstance());
 
         // Start the connection attempt.
         final ChannelFuture future =
