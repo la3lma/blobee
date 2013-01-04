@@ -35,6 +35,10 @@ import org.mockito.Mock;
 import static org.mockito.Mockito.*;
 import org.mockito.runners.MockitoJUnitRunner;
 
+/**
+ * An essential test: Testing that we can send two  completely different
+ * types of things over the same netty channel.
+ */
 @RunWith(MockitoJUnitRunner.class)
 public final class AlternatingTypeChannelTest {
 

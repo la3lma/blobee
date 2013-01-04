@@ -1,3 +1,6 @@
-o Make some kind of pipeline that can switch back and forth
-  between control messages and other kinds of messages.
+o Make a proper RPC channel implementation based on the alternating channel thing.
+o Test that we can use  blobee on RPC code that is not part of blobee (checking
+  that we don't screw ut things from a classloader's perspective).
+o Make some performance tests.  Nothing fancy, but they should be there
+  from not very far into the future and forever, with historical record.
 
