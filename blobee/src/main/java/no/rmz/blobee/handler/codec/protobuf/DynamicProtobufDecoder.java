@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-package org.jboss.netty.handler.codec.protobuf;
+package no.rmz.blobee.handler.codec.protobuf;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.Message;
@@ -33,34 +33,36 @@ import org.jboss.netty.handler.codec.frame.LengthFieldPrepender;
 import org.jboss.netty.handler.codec.oneone.OneToOneDecoder;
 
 /**
- * Decodes a received {@link ChannelBuffer} into a
- * <a href="http://code.google.com/p/protobuf/">Google Protocol Buffers</a>
- * {@link Message} and {@link MessageLite}.  Please note that this decoder must
- * be used with a proper {@link FrameDecoder} such as {@link ProtobufVarint32FrameDecoder}
- * or {@link LengthFieldBasedFrameDecoder} if you are using a stream-based
- * transport such as TCP/IP.  A typical setup for TCP/IP would be:
+ *
+ * XXX NOTE: These are the original comments from the ProtobufDecoder that this
+ * class is based on, not comments that actually describes what this class does.
+ * A new set of comments should be written.
+ *
+ * Decodes a received {@link ChannelBuffer} into a <a
+ * href="http://code.google.com/p/protobuf/">Google Protocol Buffers</a>
+ * {@link Message} and {@link MessageLite}. Please note that this decoder must
+ * be used with a proper {@link FrameDecoder} such as
+ * {@link ProtobufVarint32FrameDecoder} or {@link LengthFieldBasedFrameDecoder}
+ * if you are using a stream-based transport such as TCP/IP. A typical setup for
+ * TCP/IP would be:
  * <pre>
  * {@link ChannelPipeline} pipeline = ...;
  *
- * // Decoders
- * pipeline.addLast("frameDecoder",
- *                  new {@link LengthFieldBasedFrameDecoder}(1048576, 0, 4, 0, 4));
- * pipeline.addLast("protobufDecoder",
- *                  new {@link ProtobufDecoder}(MyMessage.getDefaultInstance()));
+ * // Decoders pipeline.addLast("frameDecoder", new
+ * {@link LengthFieldBasedFrameDecoder}(1048576, 0, 4, 0, 4));
+ * pipeline.addLast("protobufDecoder", new
+ * {@link ProtobufDecoder}(MyMessage.getDefaultInstance()));
  *
- * // Encoder
- * pipeline.addLast("frameEncoder", new {@link LengthFieldPrepender}(4));
- * pipeline.addLast("protobufEncoder", new {@link ProtobufEncoder}());
- * </pre>
- * and then you can use a {@code MyMessage} instead of a {@link ChannelBuffer}
- * as a message:
+ * // Encoder pipeline.addLast("frameEncoder", new
+ * {@link LengthFieldPrepender}(4)); pipeline.addLast("protobufEncoder", new
+ * {@link ProtobufEncoder}());
+ * </pre> and then you can use a {@code MyMessage} instead of a
+ * {@link ChannelBuffer} as a message:
  * <pre>
- * void messageReceived({@link ChannelHandlerContext} ctx, {@link MessageEvent} e) {
- *     MyMessage req = (MyMessage) e.getMessage();
- *     MyMessage res = MyMessage.newBuilder().setText(
- *                               "Did you say '" + req.getText() + "'?").build();
- *     ch.write(res);
- * }
+ * void messageReceived({@link ChannelHandlerContext} ctx, {@link MessageEvent}
+ * e) { MyMessage req = (MyMessage) e.getMessage(); MyMessage res =
+ * MyMessage.newBuilder().setText( "Did you say '" + req.getText() +
+ * "'?").build(); ch.write(res); }
  * </pre>
  *
  * @apiviz.landmark
@@ -68,37 +70,18 @@ import org.jboss.netty.handler.codec.oneone.OneToOneDecoder;
 @Sharable
 public final class DynamicProtobufDecoder extends OneToOneDecoder {
 
+    private final BlockingQueue<MessageLite> queue;
+
     public DynamicProtobufDecoder() {
+         queue = new ArrayBlockingQueue<MessageLite>(1);
     }
 
-
-
-
-    /*
-     * private final MessageLite prototype;
-    // XXX Introduce a prototypeSource that is a sequence
-    //     (BlockingQueue, e.g. an ArrayBlockingQueue of size 1?)
-    //     of MessageLite instances.
-    public DynamicProtobufDecoder(
-            final MessageLite prototype) {
-        checkNotNull(prototype, "prototype");
-        this.prototype = prototype.getDefaultInstanceForType();
-    }
-    */
-
-
-    private final BlockingQueue<MessageLite> queue =
-            new ArrayBlockingQueue<MessageLite>(1);
-
-
-    // XXX Refactor this to use the sequence of
-    //     prototypes.
     private MessageLite getNextPrototype() throws InterruptedException {
         return queue.take();
-        // return prototype;
     }
 
     public void putNextPrototype(final MessageLite msg) {
+        checkNotNull(msg);
         queue.add(msg);
     }
 
@@ -113,13 +96,13 @@ public final class DynamicProtobufDecoder extends OneToOneDecoder {
         }
 
         final ChannelBuffer buf = (ChannelBuffer) msg;
-        final MessageLite proto = getNextPrototype();
+        final MessageLite prototype = getNextPrototype();
         if (buf.hasArray()) {
             final int offset = buf.readerIndex();
-            return proto.newBuilderForType().mergeFrom(
+            return prototype.newBuilderForType().mergeFrom(
                     buf.array(), buf.arrayOffset() + offset, buf.readableBytes()).build();
         } else {
-            return proto.newBuilderForType().mergeFrom(
+            return prototype.newBuilderForType().mergeFrom(
                     new ChannelBufferInputStream((ChannelBuffer) msg)).build();
         }
     }

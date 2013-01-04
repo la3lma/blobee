@@ -9,6 +9,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import no.rmz.blobee.handler.codec.protobuf.DynamicProtobufDecoder;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.bootstrap.ServerBootstrap;
@@ -23,7 +24,6 @@ import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
-import org.jboss.netty.handler.codec.protobuf.DynamicProtobufDecoder;
 import org.jboss.netty.handler.codec.protobuf.ProtobufEncoder;
 import org.jboss.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import org.jboss.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
@@ -36,10 +36,10 @@ import static org.mockito.Mockito.*;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public final class AlternatingTypeChannel {
+public final class AlternatingTypeChannelTest {
 
     private static final Logger log = Logger.getLogger(
-            no.rmz.mvp.hello.AlternatingTypeChannel.class.getName());
+            no.rmz.mvp.hello.AlternatingTypeChannelTest.class.getName());
     private final static String PARAMETER_STRING = "Hello server";
     private final static int PORT = 7172;
     private final static String HOST = "localhost";
