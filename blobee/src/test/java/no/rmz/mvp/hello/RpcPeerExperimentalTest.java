@@ -64,10 +64,9 @@ public final class RpcPeerExperimentalTest {
     Receiver<Rpc.RpcControl> serverControlReceiver;
     private Rpc.RpcParam sampleRpcMessage;
     private Rpc.RpcControl sampleControlMessage;
-
     private Rpc.RpcControl heartbeatMessage;
     private RpcPeerPipelineFactory serverChannelPipelineFactory;
-    private DynamicPipelineFactory clientPipelineFactory;
+    private RpcPeerPipelineFactory clientPipelineFactory;
 
     @Before
     public void setUp() {
@@ -77,12 +76,13 @@ public final class RpcPeerExperimentalTest {
 
         serverChannelPipelineFactory = new RpcPeerPipelineFactory("server");
 
-        clientPipelineFactory = new DynamicPipelineFactory("client",
-                new SimpleChannelUpstreamHandlerFactory() {
-                    public SimpleChannelUpstreamHandler newHandler() {
-                        return new RpcClientHandler();
-                    }
-                });
+        clientPipelineFactory = new RpcPeerPipelineFactory("server");
+        /*new DynamicPipelineFactory("client",
+         new SimpleChannelUpstreamHandlerFactory() {
+         public SimpleChannelUpstreamHandler newHandler() {
+         return new RpcClientHandler();
+         }
+         }); */
     }
 
     public final class RpcPeerHandler extends SimpleChannelUpstreamHandler {
@@ -111,6 +111,7 @@ public final class RpcPeerExperimentalTest {
                 final Rpc.RpcControl msg = (Rpc.RpcControl) e.getMessage();
                 serverControlReceiver.receive(msg); // XXX For testing
                 protbufDecoder.putNextPrototype(Rpc.RpcControl.getDefaultInstance());
+                ctx.getChannel().close(); // XXX Ok for testing purposes, not otherwise
             } else {
                 fail("Unknown type of incoming message to server: " + message);
             }
@@ -144,7 +145,7 @@ public final class RpcPeerExperimentalTest {
             log.info("The client received message object : " + message);
             final Rpc.RpcResult result = (Rpc.RpcResult) e.getMessage();
             log.info("The client received result: " + result);
-            clientPipelineFactory.putNextPrototype(Rpc.RpcControl.getDefaultInstance());
+            // clientPipelineFactory.putNextPrototype(Rpc.RpcControl.getDefaultInstance());
         }
 
         @Override
@@ -259,7 +260,7 @@ public final class RpcPeerExperimentalTest {
 
         clientBootstrap.setPipelineFactory(
                 clientPipelineFactory);
-        clientPipelineFactory.putNextPrototype(Rpc.RpcControl.getDefaultInstance());
+
 
         // Start the connection attempt.
         final ChannelFuture future =
@@ -277,6 +278,6 @@ public final class RpcPeerExperimentalTest {
         setUpServer();
         setUpClient();
 
-        verify(serverControlReceiver).receive(heartbeatMessage);
+        verify(serverControlReceiver, times(2)).receive(heartbeatMessage);
     }
 }
