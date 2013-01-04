@@ -1,10 +1,3 @@
-o ServingRpcChannel sets up a local serving channel, but
-  that's not enough.  We now need:
- 
-    o A NettyIncomingRpcAdapter that can be connected
-      to a  ServingRpcChannel and serve incoming requests.
-
-    o A NettyClientRpcChannel that can connect to a
-      NettyIncomingRpcAdapter through Netty
-
+o Make some kind of pipeline that can switch back and forth
+  between control messages and other kinds of messages.
 
