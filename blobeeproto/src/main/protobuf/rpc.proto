@@ -1,17 +1,35 @@
 package no.rmz.blobeeproto.api.proto;
 option optimize_for = SPEED;
 
-
-
 message RpcControl {
-  required StatusCode Stat = 1;
+
+  required MessageType type = 1;
+
+  // For handling RPC requests
+  optional string methodName = 2;
+
+  optional StatusCode Stat = 3;
+
+  // XXX Missing: SequenceNumber
 }
 
+
+enum MessageType {
+        RPC_INVOCATION  = 1;
+        RPC_RETURNVALUE = 2;
+        HEARTBEAT       = 3;
+}
 enum StatusCode {
         NO_HANDLER = 1;
         HANDLER_FAILURE = 2;
         OK = 3;
 }
+
+
+//
+//  The rest of the file is just test code that should
+//  eventually be refactored out and stored elsewhere.
+//
 
 message RpcParam {
 	 optional string parameter = 1;

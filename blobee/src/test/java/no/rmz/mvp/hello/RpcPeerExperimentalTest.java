@@ -64,15 +64,16 @@ public final class RpcPeerExperimentalTest {
     Receiver<Rpc.RpcControl> serverControlReceiver;
     private Rpc.RpcParam sampleRpcMessage;
     private Rpc.RpcControl sampleControlMessage;
+
+    private Rpc.RpcControl heartbeatMessage;
     private RpcPeerPipelineFactory serverChannelPipelineFactory;
     private DynamicPipelineFactory clientPipelineFactory;
 
     @Before
     public void setUp() {
-        sampleRpcMessage =
-                Rpc.RpcParam.newBuilder().setParameter(PARAMETER_STRING).build();
-        sampleControlMessage =
-                Rpc.RpcControl.newBuilder().setStat(Rpc.StatusCode.OK).build();
+
+        heartbeatMessage =
+                Rpc.RpcControl.newBuilder().setType(Rpc.MessageType.HEARTBEAT).build();
 
         serverChannelPipelineFactory = new RpcPeerPipelineFactory("server");
 
@@ -86,11 +87,16 @@ public final class RpcPeerExperimentalTest {
 
     public final class RpcPeerHandler extends SimpleChannelUpstreamHandler {
 
-        volatile int counter = 0;
         private final DynamicProtobufDecoder protbufDecoder;
 
         private RpcPeerHandler(final DynamicProtobufDecoder protbufDecoder) {
             this.protbufDecoder = checkNotNull(protbufDecoder);
+        }
+
+        @Override
+        public void channelConnected(
+                final ChannelHandlerContext ctx, final ChannelStateEvent e) {
+            e.getChannel().write(heartbeatMessage);
         }
 
         @Override
@@ -101,26 +107,12 @@ public final class RpcPeerExperimentalTest {
 
             log.info("Received message " + message);
 
-            if (message instanceof Rpc.RpcParam) {
-                final Rpc.RpcParam msg = (Rpc.RpcParam) e.getMessage();
-                serverParamReceiver.receive(msg);
-                counter += 1;
-
-                protbufDecoder.putNextPrototype(Rpc.RpcControl.getDefaultInstance());
-            } else if (message instanceof Rpc.RpcControl) {
+            if (message instanceof Rpc.RpcControl) {
                 final Rpc.RpcControl msg = (Rpc.RpcControl) e.getMessage();
-                serverControlReceiver.receive(msg);
-                counter += 1;
-
-                protbufDecoder.putNextPrototype(Rpc.RpcParam.getDefaultInstance());
+                serverControlReceiver.receive(msg); // XXX For testing
+                protbufDecoder.putNextPrototype(Rpc.RpcControl.getDefaultInstance());
             } else {
                 fail("Unknown type of incoming message to server: " + message);
-            }
-
-            // For this test, this is actually a proper termination
-            // criterion.
-            if (counter > 1) {
-                e.getChannel().close();
             }
         }
 
@@ -141,8 +133,8 @@ public final class RpcPeerExperimentalTest {
         @Override
         public void channelConnected(
                 final ChannelHandlerContext ctx, final ChannelStateEvent e) {
-            e.getChannel().write(sampleControlMessage);
-            e.getChannel().write(sampleRpcMessage);
+
+            e.getChannel().write(heartbeatMessage);
         }
 
         @Override
@@ -157,7 +149,8 @@ public final class RpcPeerExperimentalTest {
 
         @Override
         public void exceptionCaught(
-                final ChannelHandlerContext ctx, final ExceptionEvent e) {
+                final ChannelHandlerContext ctx,
+                final ExceptionEvent e) {
             // Close the connection when an exception is raised.
             log.log(
                     Level.WARNING,
@@ -173,7 +166,6 @@ public final class RpcPeerExperimentalTest {
         SimpleChannelUpstreamHandler newHandler();
     }
 
-
     public final class RpcPeerPipelineFactory implements ChannelPipelineFactory {
 
         private final String name;
@@ -183,7 +175,7 @@ public final class RpcPeerExperimentalTest {
         public RpcPeerPipelineFactory(final String name) {
             this.name = checkNotNull(name);
         }
-    
+
         public void putNextPrototype(final ChannelPipeline pipeline, final MessageLite prototype) {
             if (decoderMap.containsKey(pipeline)) {
                 decoderMap.get(pipeline).putNextPrototype(prototype.getDefaultInstanceForType());
@@ -212,6 +204,7 @@ public final class RpcPeerExperimentalTest {
         }
     }
 
+    @Deprecated
     public final class DynamicPipelineFactory implements ChannelPipelineFactory {
 
         private final String name;
@@ -284,7 +277,6 @@ public final class RpcPeerExperimentalTest {
         setUpServer();
         setUpClient();
 
-        verify(serverControlReceiver).receive(sampleControlMessage);
-        verify(serverParamReceiver).receive(sampleRpcMessage);
+        verify(serverControlReceiver).receive(heartbeatMessage);
     }
 }
