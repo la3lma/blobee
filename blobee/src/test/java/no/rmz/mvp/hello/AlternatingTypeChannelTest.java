@@ -49,12 +49,7 @@ public final class AlternatingTypeChannelTest {
     private final static String HOST = "localhost";
     private final static int FIRST_MESSAGE_SIZE = 256;
 
-    // We need an interface to receive something into a mock
-    // and this is it.
-    public interface Receiver<T> {
 
-        public void receive(final T param);
-    }
     // This is the receptacle for the message that goes
     // over the wire.
     @Mock

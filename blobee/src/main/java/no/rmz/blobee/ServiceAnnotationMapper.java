@@ -20,7 +20,9 @@ public final class ServiceAnnotationMapper {
     //     A lot more checking should be done here, including
     //     typechecking that is done at startup (semi-static ;-)
 
-    public static void bindServices(final Object implementation, final ServingRpcChannel rchannel) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    public static void bindServices(
+            final Object implementation,
+            final ServingRpcChannel rchannel) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         checkNotNull(implementation);
         for (final Method method : implementation.getClass().getMethods()) {
             if (method.isAnnotationPresent(ProtobufRpcImplementation.class)) {

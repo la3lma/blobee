@@ -14,16 +14,13 @@ import org.mockito.Mock;
 import static org.mockito.Mockito.*;
 import org.mockito.runners.MockitoJUnitRunner;
 
-/**
- * An essential test: Testing that we can send two completely different types of
- * things over the same netty channel.
- */
+
 @RunWith(MockitoJUnitRunner.class)
-public final class RpcPeerExperimentalTest {
+public final class RpcPeerStartupAndShutdownTest {
 
     private static final Logger log = Logger.getLogger(
-            no.rmz.mvp.hello.RpcPeerExperimentalTest.class.getName());
-    private final static String PARAMETER_STRING = "Hello server";
+            no.rmz.mvp.hello.RpcPeerStartupAndShutdownTest.class.getName());
+
 
     private final static String HOST = "localhost";
     private final static Rpc.RpcControl HEARTBEAT_MESSAGE =
@@ -32,12 +29,7 @@ public final class RpcPeerExperimentalTest {
      private final static Rpc.RpcControl SHUTDOWN_MESSAGE =
             Rpc.RpcControl.newBuilder().setMessageType(Rpc.MessageType.SHUTDOWN).build();
 
-    // We need an interface to receive something into a mock
-    // and this is it.
-    public interface Receiver<T> {
-        public void receive(final T param);
-    }
-
+  
     int port;
 
     @Before
@@ -48,7 +40,7 @@ public final class RpcPeerExperimentalTest {
     @Mock
     Receiver<Rpc.RpcControl> serverControlReceiver;
 
-    // @Test
+    @Test
     public void testTransmissionOfHeartbeatsAtStartup() {
 
         final RpcMessageListener ml = new RpcMessageListener() {
@@ -100,4 +92,5 @@ public final class RpcPeerExperimentalTest {
         //     but there you are :-)
         verify(serverControlReceiver, times(4)).receive(SHUTDOWN_MESSAGE);
     }
+
 }
