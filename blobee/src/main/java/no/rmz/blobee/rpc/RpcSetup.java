@@ -17,6 +17,11 @@ public final class RpcSetup {
     }
 
     public static void setUpServer(
+            final int port) {
+        setUpServer(port, null);
+    }
+
+    public static void setUpServer(
             final int port,
             final RpcMessageListener listener) {
 
@@ -40,7 +45,13 @@ public final class RpcSetup {
 
     }
 
-    public static void setUpClient(
+    public static RpcClient setUpClient(
+            final String host,
+            final int port) {
+        return setUpClient(host, port, null);
+    }
+
+    public static RpcClient setUpClient(
             final String host,
             final int port,
             final RpcMessageListener listener) {
@@ -63,10 +74,24 @@ public final class RpcSetup {
         final ChannelFuture future =
                 clientBootstrap.connect(new InetSocketAddress(host, port));
 
-        // Wait until the connection is closed or the connection attempt fails.
-        future.getChannel().getCloseFuture().awaitUninterruptibly();
+        final Runnable runnable = new Runnable() {
+            public void run() {
+                // Wait until the connection is closed or the connection attempt fails.
+                future.getChannel().getCloseFuture().awaitUninterruptibly();
 
-        // Shut down thread pools to exit.
-        clientBootstrap.releaseExternalResources();
+                // Shut down thread pools to exit.
+                clientBootstrap.releaseExternalResources();
+            }
+        };
+
+        final Thread thread = new Thread(runnable, "client cleaner");
+        thread.start();
+
+        final int bufferSize = 1;
+
+        return new RpcClient(
+                bufferSize,
+                future.getChannel(),
+                clientPipelineFactory);
     }
 }

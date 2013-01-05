@@ -5,14 +5,14 @@ message RpcControl {
 
   required MessageType messageType = 1;
 
+  optional StatusCode Stat   = 2;
+
   // For handling RPC requests
-  optional string methodName = 2;
-
-  optional StatusCode Stat = 3;
-
-  // XXX Missing: SequenceNumber
+  optional string methodName = 3;
+  optional int64 rpcIndex    = 4;
+  optional string inputType  = 5;
+  optional string outputType = 6;
 }
-
 
 enum MessageType {
         RPC_INVOCATION  = 1;

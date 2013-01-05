@@ -27,7 +27,7 @@ public final class RpcPeerPipelineFactory implements ChannelPipelineFactory {
             final String name,
             final RpcMessageListener listener) {
         this.name = checkNotNull(name);
-        this.listener = checkNotNull(listener);
+        this.listener = listener;
     }
 
     public void putNextPrototype(final ChannelPipeline pipeline, final MessageLite prototype) {
