@@ -18,6 +18,7 @@ enum MessageType {
         RPC_INVOCATION  = 1;
         RPC_RETURNVALUE = 2;
         HEARTBEAT       = 3;
+        SHUTDOWN        = 4;
 }
 enum StatusCode {
         NO_HANDLER = 1;

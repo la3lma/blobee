@@ -1,14 +1,16 @@
 package no.rmz.blobee.rpc;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import java.awt.TrayIcon.MessageType;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.rmz.blobee.handler.codec.protobuf.DynamicProtobufDecoder;
 import no.rmz.blobeeproto.api.proto.Rpc;
+import no.rmz.blobeeproto.api.proto.Rpc.StatusCode;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
-import static com.google.common.base.Preconditions.checkNotNull;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 
 
@@ -49,16 +51,28 @@ public final class RpcPeerHandler extends SimpleChannelUpstreamHandler {
     @Override
     public void messageReceived(final ChannelHandlerContext ctx, final MessageEvent e) {
         final Object message = e.getMessage();
+
         // First send the object to the listener, if we have one.
         synchronized (listenerLock) {
             if (listener != null) {
                 listener.receiveMessage(message, ctx);
             }
         }
+
         // Then parse it the regular way.
         if (message instanceof Rpc.RpcControl) {
             final Rpc.RpcControl msg = (Rpc.RpcControl) e.getMessage();
             protbufDecoder.putNextPrototype(Rpc.RpcControl.getDefaultInstance());
+            final Rpc.MessageType messageType = msg.getMessageType();
+            if (messageType == Rpc.MessageType.HEARTBEAT) {
+            } else if (messageType == Rpc.MessageType.RPC_INVOCATION) {
+            } else if (messageType == Rpc.MessageType.RPC_RETURNVALUE) {
+            } else if (messageType == Rpc.MessageType.SHUTDOWN) {
+                ctx.getChannel().close();
+            } else {
+                log.warning("Unknown control message  received: " + msg);
+            }
+
         } else {
             throw new RuntimeException("Unknown type of incoming message to server: " + message);
         }
@@ -70,5 +84,13 @@ public final class RpcPeerHandler extends SimpleChannelUpstreamHandler {
         log.log(Level.WARNING, "Unexpected exception from downstream.", e.getCause());
         e.getChannel().close();
     }
+
+    @Override
+    public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
+        log.log(Level.INFO, "Channel closed");
+        super.channelClosed(ctx, e);
+    }
+
+
 
 }
