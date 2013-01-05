@@ -3,9 +3,6 @@ package no.rmz.mvp.hello;
 import com.google.protobuf.MessageLite;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.rmz.blobee.handler.codec.protobuf.DynamicProtobufDecoder;
@@ -26,6 +23,7 @@ import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.jboss.netty.handler.codec.protobuf.ProtobufEncoder;
 import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.WeakHashMap;
+import javax.xml.ws.handler.MessageContext;
 import org.jboss.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import org.jboss.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 import static org.junit.Assert.*;
@@ -65,7 +63,7 @@ public final class RpcPeerExperimentalTest {
     private Rpc.RpcParam sampleRpcMessage;
     private Rpc.RpcControl sampleControlMessage;
     private Rpc.RpcControl heartbeatMessage;
-    private RpcPeerPipelineFactory serverChannelPipelineFactory;
+
     private RpcPeerPipelineFactory clientPipelineFactory;
 
     @Before
@@ -74,29 +72,45 @@ public final class RpcPeerExperimentalTest {
         heartbeatMessage =
                 Rpc.RpcControl.newBuilder().setType(Rpc.MessageType.HEARTBEAT).build();
 
-        serverChannelPipelineFactory = new RpcPeerPipelineFactory("server");
 
         clientPipelineFactory = new RpcPeerPipelineFactory("server");
-        /*new DynamicPipelineFactory("client",
-         new SimpleChannelUpstreamHandlerFactory() {
-         public SimpleChannelUpstreamHandler newHandler() {
-         return new RpcClientHandler();
-         }
-         }); */
     }
 
-    public final class RpcPeerHandler extends SimpleChannelUpstreamHandler {
+
+    public interface RpcMessageListener {
+        public void receiveMessage(Object message, ChannelHandlerContext ctx);
+    }
+
+    public static final class RpcPeerHandler extends SimpleChannelUpstreamHandler {
+        private final static Rpc.RpcControl HEARTBEAT =
+                Rpc.RpcControl.newBuilder().setType(Rpc.MessageType.HEARTBEAT).build();
 
         private final DynamicProtobufDecoder protbufDecoder;
+
+        /**
+         * Used to listen in to incoming messages. Intended for
+         * debugging purposes.
+         */
+        private RpcMessageListener listener;
+
+        private final Object listenerLock = new Object();
 
         private RpcPeerHandler(final DynamicProtobufDecoder protbufDecoder) {
             this.protbufDecoder = checkNotNull(protbufDecoder);
         }
 
+        public void setListener(RpcMessageListener listener) {
+            synchronized (listenerLock) {
+                this.listener = listener;
+            }
+        }
+
+
+
         @Override
         public void channelConnected(
                 final ChannelHandlerContext ctx, final ChannelStateEvent e) {
-            e.getChannel().write(heartbeatMessage);
+            e.getChannel().write(HEARTBEAT);
         }
 
         @Override
@@ -105,13 +119,18 @@ public final class RpcPeerExperimentalTest {
                 final MessageEvent e) {
             final Object message = e.getMessage();
 
-            log.info("Received message " + message);
+            // First send the object to the listener, if we have one.
+            synchronized (listenerLock) {
+                if (listener != null) {
+                    listener.receiveMessage(message, ctx);
+                }
+            }
 
+            // Then parse it the regular way.
             if (message instanceof Rpc.RpcControl) {
                 final Rpc.RpcControl msg = (Rpc.RpcControl) e.getMessage();
-                serverControlReceiver.receive(msg); // XXX For testing
+
                 protbufDecoder.putNextPrototype(Rpc.RpcControl.getDefaultInstance());
-                ctx.getChannel().close(); // XXX Ok for testing purposes, not otherwise
             } else {
                 fail("Unknown type of incoming message to server: " + message);
             }
@@ -129,43 +148,6 @@ public final class RpcPeerExperimentalTest {
         }
     }
 
-    public final class RpcClientHandler extends SimpleChannelUpstreamHandler {
-
-        @Override
-        public void channelConnected(
-                final ChannelHandlerContext ctx, final ChannelStateEvent e) {
-
-            e.getChannel().write(heartbeatMessage);
-        }
-
-        @Override
-        public void messageReceived(
-                final ChannelHandlerContext ctx, final MessageEvent e) {
-            final Object message = e.getMessage();
-            log.info("The client received message object : " + message);
-            final Rpc.RpcResult result = (Rpc.RpcResult) e.getMessage();
-            log.info("The client received result: " + result);
-            // clientPipelineFactory.putNextPrototype(Rpc.RpcControl.getDefaultInstance());
-        }
-
-        @Override
-        public void exceptionCaught(
-                final ChannelHandlerContext ctx,
-                final ExceptionEvent e) {
-            // Close the connection when an exception is raised.
-            log.log(
-                    Level.WARNING,
-                    "Unexpected exception from downstream.",
-                    e.getCause());
-            e.getChannel().close();
-            fail();
-        }
-    }
-
-    public interface SimpleChannelUpstreamHandlerFactory {
-
-        SimpleChannelUpstreamHandler newHandler();
-    }
 
     public final class RpcPeerPipelineFactory implements ChannelPipelineFactory {
 
@@ -173,8 +155,16 @@ public final class RpcPeerExperimentalTest {
         private final WeakHashMap<ChannelPipeline, DynamicProtobufDecoder> decoderMap =
                 new WeakHashMap<ChannelPipeline, DynamicProtobufDecoder>();
 
+        private RpcMessageListener listener;
+
         public RpcPeerPipelineFactory(final String name) {
             this.name = checkNotNull(name);
+        }
+
+        // XXX for testing
+        protected RpcPeerPipelineFactory(final String name, final RpcMessageListener listener) {
+            this.name = checkNotNull(name);
+            this.listener = checkNotNull(listener);
         }
 
         public void putNextPrototype(final ChannelPipeline pipeline, final MessageLite prototype) {
@@ -198,49 +188,26 @@ public final class RpcPeerExperimentalTest {
             p.addLast("protobufDecoder", protbufDecoder);
             p.addLast("frameEncoder", new ProtobufVarint32LengthFieldPrepender());
             p.addLast("protobufEncoder", new ProtobufEncoder());
-            p.addLast("handler", new RpcPeerHandler(protbufDecoder));
+            final RpcPeerHandler handler = new RpcPeerHandler(protbufDecoder);
+            if (listener != null) {
+                handler.setListener(listener);
+            }
+            p.addLast("handler", handler);
 
             putNextPrototype(p, Rpc.RpcControl.getDefaultInstance());
             return p;
         }
     }
 
-    @Deprecated
-    public final class DynamicPipelineFactory implements ChannelPipelineFactory {
-
-        private final String name;
-        final SimpleChannelUpstreamHandlerFactory upstreamHandlerFactory;
-        private boolean firstTime = true;
-
-        public DynamicPipelineFactory(final String name,
-                final SimpleChannelUpstreamHandlerFactory upstreamHandlerFactory) {
-            this.upstreamHandlerFactory = upstreamHandlerFactory;
-            this.name = name;
-        }
-        private final DynamicProtobufDecoder protbufDecoder =
-                new DynamicProtobufDecoder();
-
-        public void putNextPrototype(final MessageLite prototype) {
-            protbufDecoder.putNextPrototype(prototype.getDefaultInstanceForType());
-        }
-
-        public ChannelPipeline getPipeline() throws Exception {
-            final ChannelPipeline p = pipeline();
-            p.addLast("frameDecoder", new ProtobufVarint32FrameDecoder());
-            p.addLast("protobufDecoder", protbufDecoder);
-            p.addLast("frameEncoder", new ProtobufVarint32LengthFieldPrepender());
-            p.addLast("protobufEncoder", new ProtobufEncoder());
-            p.addLast("handler", upstreamHandlerFactory.newHandler());
-            return p;
-        }
-    }
-
-    public void setUpServer() {
+    public void setUpServer(final RpcMessageListener listener) {
 
         final ServerBootstrap bootstrap = new ServerBootstrap(
                 new NioServerSocketChannelFactory(
                 Executors.newCachedThreadPool(),
                 Executors.newCachedThreadPool()));
+
+       final RpcPeerPipelineFactory serverChannelPipelineFactory =
+               new RpcPeerPipelineFactory("server", listener);
 
         // Set up the pipeline factory.
         bootstrap.setPipelineFactory(serverChannelPipelineFactory);
@@ -248,6 +215,7 @@ public final class RpcPeerExperimentalTest {
 
         // Bind and start to accept incoming connections.
         bootstrap.bind(new InetSocketAddress(PORT));
+
     }
 
     private void setUpClient() {
@@ -261,7 +229,6 @@ public final class RpcPeerExperimentalTest {
         clientBootstrap.setPipelineFactory(
                 clientPipelineFactory);
 
-
         // Start the connection attempt.
         final ChannelFuture future =
                 clientBootstrap.connect(new InetSocketAddress(HOST, PORT));
@@ -273,11 +240,28 @@ public final class RpcPeerExperimentalTest {
         clientBootstrap.releaseExternalResources();
     }
 
+
+
     @Test
     public void testTransmission() {
-        setUpServer();
+
+        final RpcMessageListener ml = new RpcMessageListener() {
+            @Override
+            public void receiveMessage(
+                    final Object message,
+                    final ChannelHandlerContext ctx) {
+                if (message instanceof Rpc.RpcControl) {
+                    Rpc.RpcControl msg = (Rpc.RpcControl) message;
+                    serverControlReceiver.receive(msg);
+
+                    ctx.getChannel().close();
+                }
+            }
+        };
+
+        setUpServer(ml);
         setUpClient();
 
-        verify(serverControlReceiver, times(2)).receive(heartbeatMessage);
+        verify(serverControlReceiver).receive(heartbeatMessage);
     }
 }
