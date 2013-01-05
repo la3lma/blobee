@@ -97,7 +97,7 @@ public final class RpcPeerExperimentalTest {
         RpcSetup.setUpClient(HOST, port, ml);
 
         // XXX Don't understand why this leads to four (!!) shutdown messages
-        //     but there you are.
+        //     but there you are :-)
         verify(serverControlReceiver, times(4)).receive(SHUTDOWN_MESSAGE);
     }
 }
