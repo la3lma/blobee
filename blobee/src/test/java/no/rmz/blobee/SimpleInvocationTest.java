@@ -30,7 +30,10 @@ public final class SimpleInvocationTest {
     private boolean callbackWasCalled;
     private RpcController controller;
     private RpcControl failureResult =
-            RpcControl.newBuilder().setStat(Rpc.StatusCode.HANDLER_FAILURE).build();
+            RpcControl.newBuilder()
+            .setMessageType(Rpc.MessageType.RPC_RETURNVALUE)
+            .setStat(Rpc.StatusCode.HANDLER_FAILURE)
+            .build();
 
     @Before
     public void setUp() throws

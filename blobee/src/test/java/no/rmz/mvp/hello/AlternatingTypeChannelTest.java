@@ -71,7 +71,10 @@ public final class AlternatingTypeChannelTest {
         sampleRpcMessage =
                 Rpc.RpcParam.newBuilder().setParameter(PARAMETER_STRING).build();
         sampleControlMessage =
-                Rpc.RpcControl.newBuilder().setStat(Rpc.StatusCode.OK).build();
+                Rpc.RpcControl.newBuilder()
+                .setMessageType(Rpc.MessageType.RPC_RETURNVALUE)
+                .setStat(Rpc.StatusCode.OK)
+                .build();
 
         serverChannelPipelineFactory = new AdaptiveDecoder("server",
                 new SimpleChannelUpstreamHandlerFactory() {

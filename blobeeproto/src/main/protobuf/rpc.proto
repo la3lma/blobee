@@ -3,7 +3,7 @@ option optimize_for = SPEED;
 
 message RpcControl {
 
-  required MessageType type = 1;
+  required MessageType messageType = 1;
 
   // For handling RPC requests
   optional string methodName = 2;
