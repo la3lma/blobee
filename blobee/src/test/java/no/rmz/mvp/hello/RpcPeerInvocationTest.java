@@ -8,9 +8,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Logger;
 import no.rmz.blobee.SampleServerImpl;
 import no.rmz.blobee.rpc.RpcClient;
+import no.rmz.blobee.rpc.RpcMessageListener;
 import no.rmz.blobee.rpc.RpcSetup;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import no.rmz.testtools.Net;
+import org.jboss.netty.channel.ChannelHandlerContext;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,6 +46,15 @@ public final class RpcPeerInvocationTest {
             .setStat(Rpc.StatusCode.HANDLER_FAILURE)
             .build();
 
+     RpcMessageListener foo = new RpcMessageListener() {
+
+        public void receiveMessage(
+                final Object message,
+                final ChannelHandlerContext ctx) {
+           log.info("message = " + message);
+        }
+    };
+
     @Before
     public void setUp() throws
             NoSuchMethodException,
@@ -53,7 +64,8 @@ public final class RpcPeerInvocationTest {
             IOException {
         port = Net.getFreePort();
 
-        RpcSetup.setUpServer(port);
+
+        RpcSetup.setUpServer(port, foo);
         RpcClient client = RpcSetup.setUpClient(HOST, port);
 
         rchannel   = client.newClientRpcChannel();
@@ -71,6 +83,7 @@ public final class RpcPeerInvocationTest {
 
     @Test
     public void testRpcInvocation() {
+        
         /**
          * XXX Use this instead?
          * final Descriptors.ServiceDescriptor descriptor;
@@ -86,7 +99,7 @@ public final class RpcPeerInvocationTest {
 
         final Rpc.RpcService myService = Rpc.RpcService.newStub(rchannel);
         myService.invoke(controller, request, callback);
-        
+
         // XXX Eventually we'll enable this again
         // verify(callbackResponse).receive(SampleServerImpl.RETURN_VALUE);
     }

@@ -7,11 +7,15 @@ message RpcControl {
 
   optional StatusCode Stat   = 2;
 
-  // For handling RPC requests
-  optional string methodName = 3;
-  optional int64 rpcIndex    = 4;
-  optional string inputType  = 5;
-  optional string outputType = 6;
+  // For handling RPC requests;
+  optional int64 rpcIndex    = 3;
+  optional MethodSignature methodSignature = 4;
+}
+
+message MethodSignature {
+  required string methodName = 1;
+  required string inputType  = 2;
+  required string outputType = 3;
 }
 
 enum MessageType {
@@ -20,6 +24,7 @@ enum MessageType {
         HEARTBEAT       = 3;
         SHUTDOWN        = 4;
 }
+
 enum StatusCode {
         NO_HANDLER = 1;
         HANDLER_FAILURE = 2;

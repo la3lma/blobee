@@ -12,6 +12,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.logging.Logger;
 import no.rmz.blobeeproto.api.proto.Rpc;
+import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
 import no.rmz.blobeeproto.api.proto.Rpc.RpcControl;
 import org.jboss.netty.channel.Channel;
 
@@ -34,7 +35,6 @@ public final class RpcClient {
         public void run() {
             while(running) {
                 try {
-
                     // First we remember this invocation so we can
                     // get back to it later
                     final RpcClientSideInvocation invocation = incoming.take();
@@ -50,20 +50,25 @@ public final class RpcClient {
                     final String     inputType  = md.getInputType().getName();
                     final String     outputType = md.getOutputType().getName();
 
-                    final RpcControl invocationControl =
-                            Rpc.RpcControl.newBuilder()
-                            .setMessageType(Rpc.MessageType.RPC_INVOCATION)
-                            .setRpcIndex(currentIndex)
+                    final MethodSignature ms = Rpc.MethodSignature.newBuilder()
                             .setMethodName(methodName)
                             .setInputType(inputType)
                             .setOutputType(outputType)
                             .build();
 
-                    // Then send the invocation down the wire and
-                    // hope for the best ;-)
+                    final RpcControl invocationControl =
+                            Rpc.RpcControl.newBuilder()
+                            .setMessageType(Rpc.MessageType.RPC_INVOCATION)
+                            .setRpcIndex(currentIndex)
+                            .setMethodSignature(ms)
+                            .build();
+
+                    // Then send the invocation down the wire.
+                    // XXX This is a bug! Needs to be -strictly- serialized
+                    //     so stronger serialization is required
+                    //     on this operation!
                     channel.write(invocationControl);
                     channel.write(invocation.getRequest());
-
                 }
                 catch (InterruptedException ex) {
                     log.warning("Something went south");
