@@ -1,5 +1,6 @@
 package no.rmz.mvp.hello;
 
+import no.rmz.testtools.Receiver;
 import com.google.protobuf.MessageLite;
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import java.net.InetSocketAddress;

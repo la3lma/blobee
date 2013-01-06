@@ -1,4 +1,4 @@
-package no.rmz.mvp.hello;
+package no.rmz.testtools;
 
 /**
  * We need an interface to receive something into a mock

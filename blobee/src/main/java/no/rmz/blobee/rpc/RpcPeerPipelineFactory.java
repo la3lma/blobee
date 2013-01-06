@@ -19,14 +19,18 @@ public final class RpcPeerPipelineFactory implements ChannelPipelineFactory {
             new WeakHashMap<ChannelPipeline, DynamicProtobufDecoder>();
     private RpcMessageListener listener;
 
-    public RpcPeerPipelineFactory(final String name) {
-        this.name = checkNotNull(name);
+    private final RpcExecutionService executionService;
+
+    public RpcPeerPipelineFactory(final String name,   final RpcExecutionService executionService) {
+        this(name, executionService, null);
     }
 
     protected RpcPeerPipelineFactory(
             final String name,
+            final RpcExecutionService executionService,
             final RpcMessageListener listener) {
         this.name = checkNotNull(name);
+        this.executionService = checkNotNull(executionService);
         this.listener = listener;
     }
 
@@ -50,7 +54,7 @@ public final class RpcPeerPipelineFactory implements ChannelPipelineFactory {
         p.addLast("protobufDecoder", protbufDecoder);
         p.addLast("frameEncoder", new ProtobufVarint32LengthFieldPrepender());
         p.addLast("protobufEncoder", new ProtobufEncoder());
-        final RpcPeerHandler handler = new RpcPeerHandler(protbufDecoder);
+        final RpcPeerHandler handler = new RpcPeerHandler(protbufDecoder, executionService);
         if (listener != null) {
             handler.setListener(listener);
         }

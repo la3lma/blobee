@@ -31,15 +31,16 @@ public final class RpcPeerHandler extends SimpleChannelUpstreamHandler {
     private final Object listenerLock = new Object();
 
 
-    private RpcExecutionService executionService = new RpcExecutionService() {
+    private final RpcExecutionService executionService;
 
-        public void execute(DecodingContext dc, ChannelHandlerContext ctx, Object param) {
-            log.info("Executing dc = " + dc + ", param = " + param);
-        }
-    };
 
-    protected RpcPeerHandler(final DynamicProtobufDecoder protbufDecoder) {
+
+
+    protected RpcPeerHandler(
+            final DynamicProtobufDecoder protbufDecoder,
+            final RpcExecutionService executionService) {
         this.protbufDecoder = checkNotNull(protbufDecoder);
+        this.executionService = checkNotNull(executionService);
     }
 
 
@@ -75,6 +76,8 @@ public final class RpcPeerHandler extends SimpleChannelUpstreamHandler {
     public void messageReceived(final ChannelHandlerContext ctx, final MessageEvent e) {
         final Object message = e.getMessage();
 
+        log.info("Received message:  " + message);
+
         // First send the object to the listener, if we have one.
         synchronized (listenerLock) {
             if (listener != null) {
@@ -109,8 +112,8 @@ public final class RpcPeerHandler extends SimpleChannelUpstreamHandler {
 
         } else {
             final DecodingContext dc = context.get(ctx);
-            executionService.execute(dc, ctx, message);
             protbufDecoder.putNextPrototype(Rpc.RpcControl.getDefaultInstance());
+            executionService.execute(dc, ctx, message);
         }
     }
 

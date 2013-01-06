@@ -17,12 +17,13 @@ public final class RpcSetup {
     }
 
     public static void setUpServer(
-            final int port) {
-        setUpServer(port, null);
+            final int port, RpcExecutionService executionService) {
+        setUpServer(port, executionService, null);
     }
 
     public static void setUpServer(
             final int port,
+            final RpcExecutionService executionService,
             final RpcMessageListener listener) {
 
         final ServerBootstrap bootstrap = new ServerBootstrap(
@@ -34,7 +35,7 @@ public final class RpcSetup {
 
         final RpcPeerPipelineFactory serverChannelPipelineFactory =
                 new RpcPeerPipelineFactory(
-                "server accepting incoming connections at port ", listener);
+                "server accepting incoming connections at port ", executionService, listener);
 
         // Set up the pipeline factory.
         bootstrap.setPipelineFactory(serverChannelPipelineFactory);
@@ -47,13 +48,15 @@ public final class RpcSetup {
 
     public static RpcClient setUpClient(
             final String host,
-            final int port) {
-        return setUpClient(host, port, null);
+            final int port,
+            final RpcExecutionService executor) {
+        return setUpClient(host, port, executor, null);
     }
 
     public static RpcClient setUpClient(
             final String host,
             final int port,
+            final RpcExecutionService executor,
             final RpcMessageListener listener) {
 
         // Configure the client.
@@ -65,7 +68,7 @@ public final class RpcSetup {
         final String name =
                 "client connected to server at host " + host + " port " + port;
         final RpcPeerPipelineFactory clientPipelineFactory =
-                new RpcPeerPipelineFactory(name, listener);
+                new RpcPeerPipelineFactory(name, executor, listener);
 
         clientBootstrap.setPipelineFactory(
                 clientPipelineFactory);

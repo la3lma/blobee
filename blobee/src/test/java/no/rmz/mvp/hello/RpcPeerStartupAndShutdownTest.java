@@ -1,9 +1,11 @@
 package no.rmz.mvp.hello;
 
+import no.rmz.testtools.Receiver;
 import java.io.IOException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+import no.rmz.blobee.rpc.RpcExecutionService;
 import no.rmz.blobee.rpc.RpcMessageListener;
+import no.rmz.blobee.rpc.RpcPeerHandler;
 import no.rmz.blobee.rpc.RpcSetup;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import no.rmz.testtools.Net;
@@ -58,8 +60,8 @@ public final class RpcPeerStartupAndShutdownTest {
             }
         };
 
-        RpcSetup.setUpServer(port, ml);
-        RpcSetup.setUpClient(HOST, port, ml);
+        RpcSetup.setUpServer(port, executor, ml);
+        RpcSetup.setUpClient(HOST, port, executor, ml);
 
         // Need some time to let the startup transient settle.
         sleepHalfASec();
@@ -75,6 +77,12 @@ public final class RpcPeerStartupAndShutdownTest {
             throw new RuntimeException(ex);
         }
     }
+
+    final RpcExecutionService executor = new RpcExecutionService() {
+            public void execute(RpcPeerHandler.DecodingContext dc, ChannelHandlerContext ctx, Object param) {
+                log.info("Executing dc = " + dc + ", param = " + param);
+            }
+        };
 
     @Test
     public void testReactionToShutdown() {
@@ -97,8 +105,8 @@ public final class RpcPeerStartupAndShutdownTest {
             }
         };
 
-        RpcSetup.setUpServer(port, ml);
-        RpcSetup.setUpClient(HOST, port, ml);
+        RpcSetup.setUpServer(port, executor, ml);
+        RpcSetup.setUpClient(HOST, port, executor, ml);
         // Need some time to let the startup transient settle.
         sleepHalfASec();
 

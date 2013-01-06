@@ -1,14 +1,20 @@
 package no.rmz.mvp.hello;
 
+import no.rmz.testtools.Receiver;
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcChannel;
 import com.google.protobuf.RpcController;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
 import no.rmz.blobee.SampleServerImpl;
 import no.rmz.blobee.rpc.RpcClient;
+import no.rmz.blobee.rpc.RpcExecutionService;
 import no.rmz.blobee.rpc.RpcMessageListener;
+import no.rmz.blobee.rpc.RpcPeerHandler.DecodingContext;
 import no.rmz.blobee.rpc.RpcSetup;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import no.rmz.testtools.Net;
@@ -46,7 +52,7 @@ public final class RpcPeerInvocationTest {
             .setStat(Rpc.StatusCode.HANDLER_FAILURE)
             .build();
 
-     RpcMessageListener foo = new RpcMessageListener() {
+     RpcMessageListener rpcMessageListener = new RpcMessageListener() {
 
         public void receiveMessage(
                 final Object message,
@@ -55,6 +61,9 @@ public final class RpcPeerInvocationTest {
         }
     };
 
+   private  Lock lock;
+   private  Condition resultReceived;
+
     @Before
     public void setUp() throws
             NoSuchMethodException,
@@ -62,11 +71,30 @@ public final class RpcPeerInvocationTest {
             IllegalArgumentException,
             InvocationTargetException,
             IOException {
+
+        lock = new ReentrantLock();
+        resultReceived = lock.newCondition();
         port = Net.getFreePort();
 
 
-        RpcSetup.setUpServer(port, foo);
-        RpcClient client = RpcSetup.setUpClient(HOST, port);
+        final RpcExecutionService executor = new RpcExecutionService() {
+            @Override
+            public void execute(DecodingContext dc, ChannelHandlerContext ctx, Object param) {
+                log.info("Executing dc = " + dc + ", param = " + param);
+
+                try {
+                    lock.lock();
+                    resultReceived.signal();
+                } finally {
+                    lock.unlock();
+                }
+            }
+        };
+
+
+
+        RpcSetup.setUpServer(port, executor, rpcMessageListener);
+        RpcClient client = RpcSetup.setUpClient(HOST, port, executor);
 
         rchannel   = client.newClientRpcChannel();
         controller = client.newController(rchannel);
@@ -82,23 +110,41 @@ public final class RpcPeerInvocationTest {
     Receiver<String> callbackResponse;
 
     @Test
-    public void testRpcInvocation() {
-        
+    public void testRpcInvocation() throws InterruptedException {
+
         /**
          * XXX Use this instead?
          * final Descriptors.ServiceDescriptor descriptor;
          * descriptor = Rpc.RpcService.getDescriptor();
          */
 
+
+
+
+
         final RpcCallback<Rpc.RpcResult> callback =
                 new RpcCallback<Rpc.RpcResult>() {
                     public void run(final Rpc.RpcResult response) {
-                        callbackResponse.receive(response.getReturnvalue());
+                        try {
+                            lock.lock();
+                            callbackResponse.receive(response.getReturnvalue());
+                            resultReceived.signal();
+                        }
+                        finally {
+                            lock.unlock();
+                        }
                     }
                 };
 
         final Rpc.RpcService myService = Rpc.RpcService.newStub(rchannel);
         myService.invoke(controller, request, callback);
+
+        try {
+            lock.lock();
+            resultReceived.await();
+        } finally {
+            lock.unlock();
+        }
 
         // XXX Eventually we'll enable this again
         // verify(callbackResponse).receive(SampleServerImpl.RETURN_VALUE);
