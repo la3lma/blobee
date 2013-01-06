@@ -1,3 +1,6 @@
+o Make what we've got now work.  Passing tests etc.  Build on success.  Right now
+  things are starting to become unbound.
+
 o Make a proper RPC channel implementation based on the alternating channel thing.
   o Start by making an RPC channel for the client side, then verify
     that proper parameters are sent in from it, then extend by adding
