@@ -119,9 +119,6 @@ public final class RpcPeerInvocationTest {
          */
 
 
-
-
-
         final RpcCallback<Rpc.RpcResult> callback =
                 new RpcCallback<Rpc.RpcResult>() {
                     public void run(final Rpc.RpcResult response) {
@@ -141,9 +138,11 @@ public final class RpcPeerInvocationTest {
 
         try {
             lock.lock();
+            log.info("Awaiting result received.");
             resultReceived.await();
         } finally {
             lock.unlock();
+            log.info("unlocked, test passed");
         }
 
         // XXX Eventually we'll enable this again
