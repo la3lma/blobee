@@ -1,6 +1,7 @@
 package no.rmz.mvp.hello;
 
 import java.io.IOException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.rmz.blobee.rpc.RpcMessageListener;
 import no.rmz.blobee.rpc.RpcSetup;
@@ -29,7 +30,7 @@ public final class RpcPeerStartupAndShutdownTest {
      private final static Rpc.RpcControl SHUTDOWN_MESSAGE =
             Rpc.RpcControl.newBuilder().setMessageType(Rpc.MessageType.SHUTDOWN).build();
 
-  
+
     int port;
 
     @Before
@@ -60,9 +61,20 @@ public final class RpcPeerStartupAndShutdownTest {
         RpcSetup.setUpServer(port, ml);
         RpcSetup.setUpClient(HOST, port, ml);
 
+        // Need some time to let the startup transient settle.
+        sleepHalfASec();
+
         verify(serverControlReceiver, times(2)).receive(HEARTBEAT_MESSAGE);
     }
 
+    public void sleepHalfASec() {
+         try {
+            Thread.currentThread().sleep(500);
+        }
+        catch (InterruptedException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
 
     @Test
     public void testReactionToShutdown() {
@@ -87,6 +99,8 @@ public final class RpcPeerStartupAndShutdownTest {
 
         RpcSetup.setUpServer(port, ml);
         RpcSetup.setUpClient(HOST, port, ml);
+        // Need some time to let the startup transient settle.
+        sleepHalfASec();
 
         // XXX Don't understand why this leads to four (!!) shutdown messages
         //     but there you are :-)

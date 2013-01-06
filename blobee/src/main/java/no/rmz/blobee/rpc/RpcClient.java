@@ -1,6 +1,5 @@
 package no.rmz.blobee.rpc;
 
-import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.MethodDescriptor;
 import com.google.protobuf.Message;
 import com.google.protobuf.RpcCallback;
@@ -143,7 +142,7 @@ public final class RpcClient {
                 throw new UnsupportedOperationException("Not supported yet.");
             }
 
-            public void notifyOnCancel(RpcCallback<Object> callback) {
+            public void notifyOnCancel(final RpcCallback<Object> callback) {
                 throw new UnsupportedOperationException("Not supported yet.");
             }
         };
