@@ -3,9 +3,10 @@ package no.rmz.mvp.hello;
 import no.rmz.testtools.Receiver;
 import java.io.IOException;
 import java.util.logging.Logger;
+import no.rmz.blobee.rpc.RemoteExecutionContext;
+import no.rmz.blobee.rpc.RpcClient;
 import no.rmz.blobee.rpc.RpcExecutionService;
 import no.rmz.blobee.rpc.RpcMessageListener;
-import no.rmz.blobee.rpc.RpcPeerHandler;
 import no.rmz.blobee.rpc.RpcSetup;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import no.rmz.testtools.Net;
@@ -60,8 +61,16 @@ public final class RpcPeerStartupAndShutdownTest {
             }
         };
 
-        RpcSetup.setUpServer(port, executor, ml);
-        RpcSetup.setUpClient(HOST, port, executor, ml);
+        final RpcClient rpcClient = RpcSetup.setUpClient(HOST, port, executor, ml);
+        // XXX This is actually a bit bogus, since what the server
+        //     needs is not a client that can connect to somewhere (in
+        //     particular it doesn't need a client that can connect to itself
+        //     as we're setting it up to do here), but it does need somewhere
+        //     to send returning RPC invocations to, and that's not strictly
+        //     a client, but something that I've not abstracted out yet.
+        //     Nonetheless, in the present test environment, this should
+        //     work.
+        RpcSetup.setUpServer(port, executor, rpcClient, ml);
 
         // Need some time to let the startup transient settle.
         sleepHalfASec();
@@ -79,7 +88,7 @@ public final class RpcPeerStartupAndShutdownTest {
     }
 
     final RpcExecutionService executor = new RpcExecutionService() {
-            public void execute(RpcPeerHandler.DecodingContext dc, ChannelHandlerContext ctx, Object param) {
+            public void execute(RemoteExecutionContext dc, ChannelHandlerContext ctx, Object param) {
                 log.info("Executing dc = " + dc + ", param = " + param);
             }
         };
@@ -105,8 +114,16 @@ public final class RpcPeerStartupAndShutdownTest {
             }
         };
 
-        RpcSetup.setUpServer(port, executor, ml);
-        RpcSetup.setUpClient(HOST, port, executor, ml);
+       final RpcClient rpcClient = RpcSetup.setUpClient(HOST, port, executor, ml);
+        // XXX This is actually a bit bogus, since what the server
+        //     needs is not a client that can connect to somewhere (in
+        //     particular it doesn't need a client that can connect to itself
+        //     as we're setting it up to do here), but it does need somewhere
+        //     to send returning RPC invocations to, and that's not strictly
+        //     a client, but something that I've not abstracted out yet.
+        //     Nonetheless, in the present test environment, this should
+        //     work.
+        RpcSetup.setUpServer(port, executor, rpcClient, ml);
         // Need some time to let the startup transient settle.
         sleepHalfASec();
 

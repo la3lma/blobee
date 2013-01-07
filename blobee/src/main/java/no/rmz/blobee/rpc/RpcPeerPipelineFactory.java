@@ -20,17 +20,23 @@ public final class RpcPeerPipelineFactory implements ChannelPipelineFactory {
     private RpcMessageListener listener;
 
     private final RpcExecutionService executionService;
+    private final RpcClient rpcClient;
 
-    public RpcPeerPipelineFactory(final String name,   final RpcExecutionService executionService) {
-        this(name, executionService, null);
+    public RpcPeerPipelineFactory(
+            final String name,
+            final RpcExecutionService executionService,
+            final RpcClient rpcClient) {
+        this(name, executionService, rpcClient, null);
     }
 
     protected RpcPeerPipelineFactory(
             final String name,
             final RpcExecutionService executionService,
+            final RpcClient rpcClient,
             final RpcMessageListener listener) {
         this.name = checkNotNull(name);
         this.executionService = checkNotNull(executionService);
+        this.rpcClient = checkNotNull(rpcClient);
         this.listener = listener;
     }
 
@@ -54,7 +60,8 @@ public final class RpcPeerPipelineFactory implements ChannelPipelineFactory {
         p.addLast("protobufDecoder", protbufDecoder);
         p.addLast("frameEncoder", new ProtobufVarint32LengthFieldPrepender());
         p.addLast("protobufEncoder", new ProtobufEncoder());
-        final RpcPeerHandler handler = new RpcPeerHandler(protbufDecoder, executionService);
+        final RpcPeerHandler handler =
+                new RpcPeerHandler(protbufDecoder, executionService, rpcClient);
         if (listener != null) {
             handler.setListener(listener);
         }
@@ -62,5 +69,4 @@ public final class RpcPeerPipelineFactory implements ChannelPipelineFactory {
         putNextPrototype(p, Rpc.RpcControl.getDefaultInstance());
         return p;
     }
-
 }

@@ -66,6 +66,7 @@ public final class RpcClient {
                     // XXX This is a bug! Needs to be -strictly- serialized
                     //     so stronger serialization is required
                     //     on this operation!
+                    // Perhaps use getChannelLock in RpcPeerHandler
                     channel.write(invocationControl);
                     channel.write(invocation.getRequest());
                 }
@@ -76,25 +77,46 @@ public final class RpcClient {
         }
     };
 
-    final Channel channel;
-    final RpcPeerPipelineFactory clientPipelineFactory;
+    private  Channel channel;
+    private  RpcPeerPipelineFactory clientPipelineFactory;
 
     public RpcClient(
-            final int capacity,
-            final Channel channel,
-            final RpcPeerPipelineFactory clientPipelineFactory) {
+            final int capacity) {
         // XXX Checking of params
         this.capacity = capacity;
         this.incoming =
                 new ArrayBlockingQueue<RpcClientSideInvocation>(capacity);
-        this.channel = channel;
-        this.clientPipelineFactory = clientPipelineFactory;
+    }
 
+    private final Object channelMonitor = new Object();
+
+    public void setChannel(final Channel channel) {
+        synchronized (channelMonitor) {
+            // XXX Synchronization missing
+            if (this.channel != null) {
+                throw new IllegalStateException("Can't set channel since channel is already set");
+            }
+
+            this.channel = channel;
+        }
+    }
+
+
+      public void setClientPipelineFactory(RpcPeerPipelineFactory pf) {
+        // XXX Synchronization missing
+        if (clientPipelineFactory != null)  {
+            throw new IllegalStateException("Can't set clientPipelineFactory already set");
+        }
+
+        this.clientPipelineFactory = pf;
+    }
+
+      // XXX Allow only start once, make thread safe
+    public void start() {
         final Thread dispatcherThread =
                 new Thread(incomingDispatcher, "Incoming dispatcher");
         dispatcherThread.start();
     }
-
 
 
     public RpcChannel newClientRpcChannel() {
@@ -146,5 +168,9 @@ public final class RpcClient {
                 throw new UnsupportedOperationException("Not supported yet.");
             }
         };
+    }
+
+    void returnCall(final RemoteExecutionContext dc, final Object message) {
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 }

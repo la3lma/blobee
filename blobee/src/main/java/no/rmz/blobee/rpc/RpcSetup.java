@@ -17,13 +17,14 @@ public final class RpcSetup {
     }
 
     public static void setUpServer(
-            final int port, RpcExecutionService executionService) {
+            final int port, RpcExecutionService executionService, RpcClient rpcClient) {
         setUpServer(port, executionService, null);
     }
 
     public static void setUpServer(
             final int port,
             final RpcExecutionService executionService,
+            final RpcClient rpcClient,
             final RpcMessageListener listener) {
 
         final ServerBootstrap bootstrap = new ServerBootstrap(
@@ -35,7 +36,7 @@ public final class RpcSetup {
 
         final RpcPeerPipelineFactory serverChannelPipelineFactory =
                 new RpcPeerPipelineFactory(
-                "server accepting incoming connections at port ", executionService, listener);
+                "server accepting incoming connections at port ", executionService, rpcClient, listener);
 
         // Set up the pipeline factory.
         bootstrap.setPipelineFactory(serverChannelPipelineFactory);
@@ -65,10 +66,14 @@ public final class RpcSetup {
                 Executors.newCachedThreadPool(),
                 Executors.newCachedThreadPool()));
 
+        final int bufferSize = 1;
+        final RpcClient rpcClient = new RpcClient(bufferSize);
+
         final String name =
                 "client connected to server at host " + host + " port " + port;
         final RpcPeerPipelineFactory clientPipelineFactory =
-                new RpcPeerPipelineFactory(name, executor, listener);
+                new RpcPeerPipelineFactory(name, executor,  rpcClient, listener);
+        rpcClient.setClientPipelineFactory(clientPipelineFactory);
 
         clientBootstrap.setPipelineFactory(
                 clientPipelineFactory);
@@ -76,6 +81,10 @@ public final class RpcSetup {
         // Start the connection attempt.
         final ChannelFuture future =
                 clientBootstrap.connect(new InetSocketAddress(host, port));
+
+        rpcClient.setChannel(future.getChannel());
+
+        rpcClient.start();
 
         final Runnable runnable = new Runnable() {
             public void run() {
@@ -90,11 +99,6 @@ public final class RpcSetup {
         final Thread thread = new Thread(runnable, "client cleaner");
         thread.start();
 
-        final int bufferSize = 1;
-
-        return new RpcClient(
-                bufferSize,
-                future.getChannel(),
-                clientPipelineFactory);
+        return rpcClient;
     }
 }

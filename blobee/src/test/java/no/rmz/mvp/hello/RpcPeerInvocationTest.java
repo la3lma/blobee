@@ -14,7 +14,7 @@ import no.rmz.blobee.SampleServerImpl;
 import no.rmz.blobee.rpc.RpcClient;
 import no.rmz.blobee.rpc.RpcExecutionService;
 import no.rmz.blobee.rpc.RpcMessageListener;
-import no.rmz.blobee.rpc.RpcPeerHandler.DecodingContext;
+import no.rmz.blobee.rpc.RemoteExecutionContext;
 import no.rmz.blobee.rpc.RpcSetup;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import no.rmz.testtools.Net;
@@ -31,7 +31,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 //         med enhetstester basert på probing inn i både server og klientene
 //       o Utvid til roundtrip er oppnådd, vi har da en happy-day implementasjon
 //         som kan funke som basis for diskusjon om sluttmålet :-)
-
 @RunWith(MockitoJUnitRunner.class)
 public final class RpcPeerInvocationTest {
 
@@ -51,18 +50,25 @@ public final class RpcPeerInvocationTest {
             .setMessageType(Rpc.MessageType.RPC_RETURNVALUE)
             .setStat(Rpc.StatusCode.HANDLER_FAILURE)
             .build();
-
-     RpcMessageListener rpcMessageListener = new RpcMessageListener() {
-
+    RpcMessageListener rpcMessageListener = new RpcMessageListener() {
         public void receiveMessage(
                 final Object message,
                 final ChannelHandlerContext ctx) {
-           log.info("message = " + message);
+            log.info("message = " + message);
         }
     };
+    private Lock lock;
+    private Condition resultReceived;
 
-   private  Lock lock;
-   private  Condition resultReceived;
+    private final void signalResultReceived() {
+        try {
+            lock.lock();
+            resultReceived.signal();
+        }
+        finally {
+            lock.unlock();
+        }
+    }
 
     @Before
     public void setUp() throws
@@ -76,27 +82,30 @@ public final class RpcPeerInvocationTest {
         resultReceived = lock.newCondition();
         port = Net.getFreePort();
 
-
-        final RpcExecutionService executor = new RpcExecutionService() {
+        final RpcExecutionService executor;
+        executor = new RpcExecutionService() {
             @Override
-            public void execute(DecodingContext dc, ChannelHandlerContext ctx, Object param) {
+            public void execute(
+                    final RemoteExecutionContext dc,
+                    final ChannelHandlerContext ctx,
+                    final Object param) {
                 log.info("Executing dc = " + dc + ", param = " + param);
 
-                try {
-                    lock.lock();
-                    resultReceived.signal();
-                } finally {
-                    lock.unlock();
-                }
+                // Shortcut the evaluation process and just return the
+                // result back over the wire.
+
+                final Rpc.RpcResult result =
+                        Rpc.RpcResult.newBuilder().setReturnvalue(SampleServerImpl.RETURN_VALUE).build();
+
+                dc.returnResult(result);
             }
         };
 
 
+        final RpcClient client = RpcSetup.setUpClient(HOST, port, executor);
+        RpcSetup.setUpServer(port, executor, client, rpcMessageListener);
 
-        RpcSetup.setUpServer(port, executor, rpcMessageListener);
-        RpcClient client = RpcSetup.setUpClient(HOST, port, executor);
-
-        rchannel   = client.newClientRpcChannel();
+        rchannel = client.newClientRpcChannel();
         controller = client.newController(rchannel);
 
         request = Rpc.RpcParam.newBuilder().build();
@@ -105,31 +114,17 @@ public final class RpcPeerInvocationTest {
         // just get lost, but if we can create the correct parameters
         // that will be a long step in the right direction.
     }
-
     @Mock
     Receiver<String> callbackResponse;
 
     @Test
     public void testRpcInvocation() throws InterruptedException {
 
-        /**
-         * XXX Use this instead?
-         * final Descriptors.ServiceDescriptor descriptor;
-         * descriptor = Rpc.RpcService.getDescriptor();
-         */
-
-
         final RpcCallback<Rpc.RpcResult> callback =
                 new RpcCallback<Rpc.RpcResult>() {
                     public void run(final Rpc.RpcResult response) {
-                        try {
-                            lock.lock();
-                            callbackResponse.receive(response.getReturnvalue());
-                            resultReceived.signal();
-                        }
-                        finally {
-                            lock.unlock();
-                        }
+                        callbackResponse.receive(response.getReturnvalue());
+                        signalResultReceived();
                     }
                 };
 
@@ -140,10 +135,12 @@ public final class RpcPeerInvocationTest {
             lock.lock();
             log.info("Awaiting result received.");
             resultReceived.await();
-        } finally {
+        }
+        finally {
             lock.unlock();
             log.info("unlocked, test passed");
         }
+
 
         // XXX Eventually we'll enable this again
         // verify(callbackResponse).receive(SampleServerImpl.RETURN_VALUE);

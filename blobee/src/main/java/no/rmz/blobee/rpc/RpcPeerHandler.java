@@ -1,14 +1,19 @@
 package no.rmz.blobee.rpc;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import com.google.protobuf.Descriptors;
+import com.google.protobuf.Message;
 import com.google.protobuf.MessageLite;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.rmz.blobee.handler.codec.protobuf.DynamicProtobufDecoder;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
+import no.rmz.blobeeproto.api.proto.Rpc.RpcResult;
+import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.ExceptionEvent;
@@ -33,17 +38,18 @@ public final class RpcPeerHandler extends SimpleChannelUpstreamHandler {
 
     private final RpcExecutionService executionService;
 
-
+    private final RpcClient rpcClient;
 
 
     protected RpcPeerHandler(
             final DynamicProtobufDecoder protbufDecoder,
-            final RpcExecutionService executionService) {
+            final RpcExecutionService executionService,
+            final RpcClient rpcClient) {
+
         this.protbufDecoder = checkNotNull(protbufDecoder);
         this.executionService = checkNotNull(executionService);
+        this.rpcClient = checkNotNull(rpcClient);
     }
-
-
 
     public void setListener(final RpcMessageListener listener) {
         synchronized (listenerLock) {
@@ -52,25 +58,15 @@ public final class RpcPeerHandler extends SimpleChannelUpstreamHandler {
     }
 
     @Override
-    public void channelConnected(final ChannelHandlerContext ctx, final ChannelStateEvent e) {
+    public void channelConnected(
+            final ChannelHandlerContext ctx,
+            final ChannelStateEvent e) {
         e.getChannel().write(HEARTBEAT);
     }
 
-
-    public  final static class DecodingContext {
-        MethodSignature methodSignature;
-        long rpcIndex;
-
-        public DecodingContext(MethodSignature methodSignature, long rpcIndex) {
-            this.methodSignature = methodSignature;
-            this.rpcIndex = rpcIndex;
-        }
-    }
-
     // XXX How about channel locals instead?
-    private Map<ChannelHandlerContext, DecodingContext> context =
-            new ConcurrentHashMap<ChannelHandlerContext, DecodingContext>();
-
+    private Map<ChannelHandlerContext, RemoteExecutionContext> context =
+            new ConcurrentHashMap<ChannelHandlerContext, RemoteExecutionContext>();
 
     @Override
     public void messageReceived(final ChannelHandlerContext ctx, final MessageEvent e) {
@@ -99,9 +95,16 @@ public final class RpcPeerHandler extends SimpleChannelUpstreamHandler {
                 final MessageLite prototypeForParameter =
                         getPrototypeForParameter(methodSignature);
                 protbufDecoder.putNextPrototype(prototypeForParameter);
-                context.put(ctx, new DecodingContext(methodSignature, rpcIndex));
+                context.put(ctx, new RemoteExecutionContext(this, ctx,
+                        methodSignature, rpcIndex, RpcDirection.INVOKING));
             } else if (messageType == Rpc.MessageType.RPC_RETURNVALUE) {
-                // XXX Not done yet
+                final MethodSignature methodSignature = msg.getMethodSignature();
+                final long rpcIndex = msg.getRpcIndex();
+                final MessageLite prototypeForReturnValue =
+                        getPrototypeForReturnValue(methodSignature);
+                protbufDecoder.putNextPrototype(prototypeForReturnValue);
+                context.put(ctx, new RemoteExecutionContext(this, ctx, methodSignature, rpcIndex,
+                        RpcDirection.RETURNING));
             } else if (messageType == Rpc.MessageType.SHUTDOWN) {
                  protbufDecoder.putNextPrototype(Rpc.RpcControl.getDefaultInstance());
                 ctx.getChannel().close();
@@ -111,9 +114,16 @@ public final class RpcPeerHandler extends SimpleChannelUpstreamHandler {
             }
 
         } else {
-            final DecodingContext dc = context.get(ctx);
+            final RemoteExecutionContext dc = context.get(ctx);
             protbufDecoder.putNextPrototype(Rpc.RpcControl.getDefaultInstance());
-            executionService.execute(dc, ctx, message);
+
+            if (dc.getDirection() == RpcDirection.INVOKING) {
+                executionService.execute(dc, ctx, message);
+            } else  if (dc.getDirection() == RpcDirection.RETURNING) {
+                rpcClient.returnCall(dc, message);
+            } else {
+                throw new IllegalStateException("Unknown RpcDirection = " + dc.getDirection());
+            }
         }
     }
 
@@ -131,11 +141,53 @@ public final class RpcPeerHandler extends SimpleChannelUpstreamHandler {
     }
 
 
-
     private MessageLite getPrototypeForParameter(MethodSignature methodSignature) {
 
         // XXX This is a very un-dynamic placeholder for something with a very
-        //     dynamic intension.
+        //     dynamic intension.  Treat it as a stub to be replaced when we
+        //     extend the present proof-of-concept into a fully useful and generic
+        //     RPC mechanism.
         return Rpc.RpcParam.getDefaultInstance();
+    }
+
+    private MessageLite getPrototypeForReturnValue(MethodSignature methodSignature) {
+        // XXX This is a very un-dynamic placeholder for something with a very
+        //     dynamic intension.  Treat it as a stub to be replaced when we
+        //     extend the present proof-of-concept into a fully useful and generic
+        //     RPC mechanism.
+        return Rpc.RpcResult.getDefaultInstance();
+    }
+
+
+    void returnResult(final RemoteExecutionContext context, final Message result) {
+
+        final Rpc.RpcControl invocationControl =
+                Rpc.RpcControl.newBuilder()
+                .setMessageType(Rpc.MessageType.RPC_RETURNVALUE)
+                .setStat(Rpc.StatusCode.OK)
+                .setRpcIndex(context.getRpcIndex())
+                .setMethodSignature(context.getMethodSignature())
+                .build();
+
+        final Channel channel = context.getCtx().getChannel();
+
+        synchronized (getChannelLock(channel)) {
+            channel.write(invocationControl);
+            channel.write(result);
+        }
+    }
+
+    final Map<Channel, Object> lockMap = new WeakHashMap<Channel, Object>();
+
+    private Object getChannelLock(final Channel channel) {
+        synchronized (lockMap) {
+            if (lockMap.containsKey(channel)) {
+                return lockMap.containsKey(channel);
+            } else {
+                final Object lock = new Object();
+                lockMap.put(channel, lock);
+                return lock;
+            }
+        }
     }
 }
