@@ -105,6 +105,8 @@ public final class RpcPeerInvocationTest {
         final RpcClient client = RpcSetup.setUpClient(HOST, port, executor);
         RpcSetup.setUpServer(port, executor, client, rpcMessageListener);
 
+        client.start();
+        
         rchannel = client.newClientRpcChannel();
         controller = client.newController(rchannel);
 

@@ -1,7 +1,6 @@
 package no.rmz.blobee.rpc;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
 import com.google.protobuf.MessageLite;
 import java.util.Map;
@@ -12,7 +11,6 @@ import java.util.logging.Logger;
 import no.rmz.blobee.handler.codec.protobuf.DynamicProtobufDecoder;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
-import no.rmz.blobeeproto.api.proto.Rpc.RpcResult;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelStateEvent;
@@ -34,7 +32,6 @@ public final class RpcPeerHandler extends SimpleChannelUpstreamHandler {
      * Used to synchronize access to the listener instance.
      */
     private final Object listenerLock = new Object();
-
 
     private final RpcExecutionService executionService;
 
@@ -82,6 +79,8 @@ public final class RpcPeerHandler extends SimpleChannelUpstreamHandler {
         }
 
         // Then parse it the regular way.
+        // XXX This block of code is waaay to dense for comfort.
+        //     must be refactored for increased readability
         if (message instanceof Rpc.RpcControl) {
             final Rpc.RpcControl msg = (Rpc.RpcControl) e.getMessage();
 
@@ -106,11 +105,11 @@ public final class RpcPeerHandler extends SimpleChannelUpstreamHandler {
                 context.put(ctx, new RemoteExecutionContext(this, ctx, methodSignature, rpcIndex,
                         RpcDirection.RETURNING));
             } else if (messageType == Rpc.MessageType.SHUTDOWN) {
-                 protbufDecoder.putNextPrototype(Rpc.RpcControl.getDefaultInstance());
+                protbufDecoder.putNextPrototype(Rpc.RpcControl.getDefaultInstance());
                 ctx.getChannel().close();
             } else {
                 log.warning("Unknown type of control message: " + message);
-                 protbufDecoder.putNextPrototype(Rpc.RpcControl.getDefaultInstance());
+                protbufDecoder.putNextPrototype(Rpc.RpcControl.getDefaultInstance());
             }
 
         } else {

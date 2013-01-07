@@ -72,6 +72,7 @@ public final class RpcPeerStartupAndShutdownTest {
         //     work.
         RpcSetup.setUpServer(port, executor, rpcClient, ml);
 
+        rpcClient.start();
         // Need some time to let the startup transient settle.
         sleepHalfASec();
 
@@ -124,6 +125,8 @@ public final class RpcPeerStartupAndShutdownTest {
         //     Nonetheless, in the present test environment, this should
         //     work.
         RpcSetup.setUpServer(port, executor, rpcClient, ml);
+
+        rpcClient.start();
         // Need some time to let the startup transient settle.
         sleepHalfASec();
 

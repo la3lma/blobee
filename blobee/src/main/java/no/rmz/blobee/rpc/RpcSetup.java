@@ -67,7 +67,7 @@ public final class RpcSetup {
                 Executors.newCachedThreadPool()));
 
         final int bufferSize = 1;
-        final RpcClient rpcClient = new RpcClient(bufferSize);
+        final RpcClient rpcClient = new RpcClient(bufferSize, host, port);
 
         final String name =
                 "client connected to server at host " + host + " port " + port;
@@ -77,27 +77,9 @@ public final class RpcSetup {
 
         clientBootstrap.setPipelineFactory(
                 clientPipelineFactory);
+        rpcClient.setBootstrap(clientBootstrap);
 
-        // Start the connection attempt.
-        final ChannelFuture future =
-                clientBootstrap.connect(new InetSocketAddress(host, port));
 
-        rpcClient.setChannel(future.getChannel());
-
-        rpcClient.start();
-
-        final Runnable runnable = new Runnable() {
-            public void run() {
-                // Wait until the connection is closed or the connection attempt fails.
-                future.getChannel().getCloseFuture().awaitUninterruptibly();
-
-                // Shut down thread pools to exit.
-                clientBootstrap.releaseExternalResources();
-            }
-        };
-
-        final Thread thread = new Thread(runnable, "client cleaner");
-        thread.start();
 
         return rpcClient;
     }

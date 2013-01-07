@@ -5,6 +5,7 @@ import com.google.protobuf.Message;
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcChannel;
 import com.google.protobuf.RpcController;
+import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -13,7 +14,9 @@ import java.util.logging.Logger;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
 import no.rmz.blobeeproto.api.proto.Rpc.RpcControl;
+import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.Channel;
+import org.jboss.netty.channel.ChannelFuture;
 
 public final class RpcClient {
     private static final Logger log = Logger.getLogger(RpcClient.class.getName());
@@ -81,15 +84,20 @@ public final class RpcClient {
     private  RpcPeerPipelineFactory clientPipelineFactory;
 
     public RpcClient(
-            final int capacity) {
+            final int capacity,
+            String host,
+            int port) {
         // XXX Checking of params
         this.capacity = capacity;
         this.incoming =
                 new ArrayBlockingQueue<RpcClientSideInvocation>(capacity);
+        this.port = port;
+        this.host = host;
     }
 
     private final Object channelMonitor = new Object();
 
+ 
     public void setChannel(final Channel channel) {
         synchronized (channelMonitor) {
             // XXX Synchronization missing
@@ -111,8 +119,32 @@ public final class RpcClient {
         this.clientPipelineFactory = pf;
     }
 
+      int port;
+      String host;
+
       // XXX Allow only start once, make thread safe
     public void start() {
+
+          // Start the connection attempt.
+        final ChannelFuture future =
+                clientBootstrap.connect(new InetSocketAddress(host, port));
+
+       setChannel(future.getChannel());
+
+        final Runnable runnable = new Runnable() {
+            public void run() {
+                // Wait until the connection is closed or the connection attempt fails.
+                future.getChannel().getCloseFuture().awaitUninterruptibly();
+
+                // Shut down thread pools to exit.
+                clientBootstrap.releaseExternalResources();
+            }
+        };
+
+        final Thread thread = new Thread(runnable, "client cleaner");
+        thread.start();
+
+
         final Thread dispatcherThread =
                 new Thread(incomingDispatcher, "Incoming dispatcher");
         dispatcherThread.start();
@@ -172,5 +204,12 @@ public final class RpcClient {
 
     void returnCall(final RemoteExecutionContext dc, final Object message) {
         throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    private ClientBootstrap clientBootstrap;
+
+    void setBootstrap(ClientBootstrap clientBootstrap) {
+        // XXX CHeck a lot more
+        this.clientBootstrap = clientBootstrap;
     }
 }
