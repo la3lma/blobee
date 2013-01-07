@@ -1,5 +1,8 @@
 o Make the currently failing test pass instead.
 
+o Explain the design to Sverre and get some friendly but critical
+  feedback.
+
 o Refactor a lot, add comments, dot "i"s cross "t"s. Javadoc everything,
   enhance test coverage, but don't add many new features.  
   Consolidate, consolidate.
