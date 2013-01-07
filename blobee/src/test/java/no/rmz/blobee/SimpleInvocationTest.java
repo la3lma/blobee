@@ -42,7 +42,6 @@ public final class SimpleInvocationTest {
             IllegalArgumentException,
             InvocationTargetException {
         rchannel = new ServingRpcChannel();
-
         final SampleServerImpl implementation = new SampleServerImpl();
         ServiceAnnotationMapper.bindServices(implementation, rchannel);
         callbackWasCalled = false;

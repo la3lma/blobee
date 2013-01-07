@@ -1,6 +1,5 @@
 package no.rmz.mvp.hello;
 
-import no.rmz.testtools.Receiver;
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcChannel;
 import com.google.protobuf.RpcController;
@@ -11,13 +10,16 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
 import no.rmz.blobee.SampleServerImpl;
+import no.rmz.blobee.ServiceAnnotationMapper;
+import no.rmz.blobee.ServingRpcChannel;
+import no.rmz.blobee.rpc.RemoteExecutionContext;
 import no.rmz.blobee.rpc.RpcClient;
 import no.rmz.blobee.rpc.RpcExecutionService;
 import no.rmz.blobee.rpc.RpcMessageListener;
-import no.rmz.blobee.rpc.RemoteExecutionContext;
 import no.rmz.blobee.rpc.RpcSetup;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import no.rmz.testtools.Net;
+import no.rmz.testtools.Receiver;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,11 +28,7 @@ import org.mockito.Mock;
 import static org.mockito.Mockito.*;
 import org.mockito.runners.MockitoJUnitRunner;
 
-// TODO:
-//       o Implementer en ny rpc channel for en klient og bygg den opp
-//         med enhetstester basert på probing inn i både server og klientene
-//       o Utvid til roundtrip er oppnådd, vi har da en happy-day implementasjon
-//         som kan funke som basis for diskusjon om sluttmålet :-)
+
 @RunWith(MockitoJUnitRunner.class)
 public final class RpcPeerInvocationTest {
 
@@ -42,6 +40,8 @@ public final class RpcPeerInvocationTest {
     private final static Rpc.RpcControl SHUTDOWN_MESSAGE =
             Rpc.RpcControl.newBuilder().setMessageType(Rpc.MessageType.SHUTDOWN).build();
     private int port;
+
+    private ServingRpcChannel servingChannel;
     private RpcChannel rchannel;
     private Rpc.RpcParam request;
     private RpcController controller;
@@ -59,6 +59,7 @@ public final class RpcPeerInvocationTest {
     };
     private Lock lock;
     private Condition resultReceived;
+    private RpcController servingController;
 
     private final void signalResultReceived() {
         try {
@@ -82,6 +83,16 @@ public final class RpcPeerInvocationTest {
         resultReceived = lock.newCondition();
         port = Net.getFreePort();
 
+        servingChannel = new ServingRpcChannel();
+        final SampleServerImpl implementation = new SampleServerImpl();
+        ServiceAnnotationMapper.bindServices(implementation, servingChannel);
+
+        request =  Rpc.RpcParam.newBuilder().build();
+
+
+         // XXX Could presumably be reused
+        final Rpc.RpcService myService = Rpc.RpcService.newStub(servingChannel);
+
         final RpcExecutionService executor;
         executor = new RpcExecutionService() {
             @Override
@@ -91,13 +102,14 @@ public final class RpcPeerInvocationTest {
                     final Object param) {
                 log.info("Executing dc = " + dc + ", param = " + param);
 
-                // XXX Shortcut the evaluation process and just return the
-                //     result back over the wire.
+                final RpcCallback<Rpc.RpcResult> callback = new RpcCallback<Rpc.RpcResult>() {
+                    public void run(final Rpc.RpcResult response) {
+                        dc.returnResult(response);
+                    }
+                };
 
-                final Rpc.RpcResult result =
-                        Rpc.RpcResult.newBuilder().setReturnvalue(SampleServerImpl.RETURN_VALUE).build();
-
-                dc.returnResult(result);
+                servingController = servingChannel.newController();
+                myService.invoke(servingController, request, callback);
             }
         };
 
