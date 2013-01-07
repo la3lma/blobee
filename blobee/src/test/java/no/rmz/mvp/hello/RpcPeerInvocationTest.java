@@ -91,8 +91,8 @@ public final class RpcPeerInvocationTest {
                     final Object param) {
                 log.info("Executing dc = " + dc + ", param = " + param);
 
-                // Shortcut the evaluation process and just return the
-                // result back over the wire.
+                // XXX Shortcut the evaluation process and just return the
+                //     result back over the wire.
 
                 final Rpc.RpcResult result =
                         Rpc.RpcResult.newBuilder().setReturnvalue(SampleServerImpl.RETURN_VALUE).build();
@@ -111,10 +111,6 @@ public final class RpcPeerInvocationTest {
         controller = client.newController(rchannel);
 
         request = Rpc.RpcParam.newBuilder().build();
-
-        // No server at the other end here, everything will
-        // just get lost, but if we can create the correct parameters
-        // that will be a long step in the right direction.
     }
     @Mock
     Receiver<String> callbackResponse;
