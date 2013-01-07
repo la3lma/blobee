@@ -1,14 +1,29 @@
-o Make what we've got now work.  Passing tests etc.  Build on success.  Right now
-  things are starting to become unbound.
+o Make the currently failing test pass instead.
 
-o Make a proper RPC channel implementation based on the alternating channel thing.
-  o Start by making an RPC channel for the client side, then verify
-    that proper parameters are sent in from it, then extend by adding
-    a serving component.
+o Refactor a lot, add comments, dot "i"s cross "t"s. Javadoc everything,
+  enhance test coverage, but don't add many new features.  
+  Consolidate, consolidate.
+
+o Refactor tests somewhat so that they are in fact not as hardwired as
+  today, but uses parametrization techniques from the implementation 
+  instead.
+
+o Make more independent tests for:
+
+   -> Performance (as soon as a stable API is 
+      available (arguably it is today).  Run from command line
+      as an independent java app.
+
+   -> Service from somewhere else than the master ptotobuf declaration that
+      we currently use for everything.
+
+
 o Start formulating a plan to let us get away with very little, or preferably
   no code generation!
+
 o Test that we can use  blobee on RPC code that is not part of blobee (checking
   that we don't screw ut things from a classloader's perspective).
+
 o Make some performance tests.  Nothing fancy, but they should be there
   from not very far into the future and forever, with historical record.
 
