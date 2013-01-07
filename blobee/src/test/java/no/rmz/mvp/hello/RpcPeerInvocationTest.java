@@ -106,7 +106,7 @@ public final class RpcPeerInvocationTest {
         RpcSetup.setUpServer(port, executor, client, rpcMessageListener);
 
         client.start();
-        
+
         rchannel = client.newClientRpcChannel();
         controller = client.newController(rchannel);
 
@@ -143,8 +143,6 @@ public final class RpcPeerInvocationTest {
             log.info("unlocked, test passed");
         }
 
-
-        // XXX Eventually we'll enable this again
-        // verify(callbackResponse).receive(SampleServerImpl.RETURN_VALUE);
+        verify(callbackResponse).receive(SampleServerImpl.RETURN_VALUE);
     }
 }

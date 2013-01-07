@@ -32,6 +32,18 @@ public final class RpcClient {
 
     private long nextIndex;
 
+    void returnCall(final RemoteExecutionContext dc, final Message message) {
+        synchronized (invocations) {
+            final RpcClientSideInvocation invocation =
+                    invocations.get(dc.getRpcIndex());
+            if (invocation == null) {
+                throw new IllegalStateException("Couldn't find call stub for invocation " + dc);
+            }
+
+           invocation.getDone().run(message);
+        }
+    }
+
     final Runnable incomingDispatcher = new Runnable() {
 
         public void run() {
@@ -97,7 +109,7 @@ public final class RpcClient {
 
     private final Object channelMonitor = new Object();
 
- 
+
     public void setChannel(final Channel channel) {
         synchronized (channelMonitor) {
             // XXX Synchronization missing
@@ -202,9 +214,7 @@ public final class RpcClient {
         };
     }
 
-    void returnCall(final RemoteExecutionContext dc, final Object message) {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
+
 
     private ClientBootstrap clientBootstrap;
 

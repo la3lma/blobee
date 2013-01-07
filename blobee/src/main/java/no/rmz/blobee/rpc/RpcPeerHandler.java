@@ -119,7 +119,8 @@ public final class RpcPeerHandler extends SimpleChannelUpstreamHandler {
             if (dc.getDirection() == RpcDirection.INVOKING) {
                 executionService.execute(dc, ctx, message);
             } else  if (dc.getDirection() == RpcDirection.RETURNING) {
-                rpcClient.returnCall(dc, message);
+                final Message msg = (Message) message;
+                rpcClient.returnCall(dc, msg);
             } else {
                 throw new IllegalStateException("Unknown RpcDirection = " + dc.getDirection());
             }
