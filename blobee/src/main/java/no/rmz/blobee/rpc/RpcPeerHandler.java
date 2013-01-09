@@ -20,22 +20,54 @@ import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 
 public final class RpcPeerHandler extends SimpleChannelUpstreamHandler {
 
-    private static final Logger log = Logger.getLogger(RpcPeerHandler.class.getName());
+    private static final Logger log =
+            Logger.getLogger(RpcPeerHandler.class.getName());
+
+    /**
+     * A constant used when sending heartbeats.
+     */
     private static final Rpc.RpcControl HEARTBEAT =
-            Rpc.RpcControl.newBuilder().setMessageType(Rpc.MessageType.HEARTBEAT).build();
+            Rpc.RpcControl.newBuilder()
+                .setMessageType(Rpc.MessageType.HEARTBEAT)
+                .build();
+
     private final DynamicProtobufDecoder protbufDecoder;
+
     /**
      * Used to listen in to incoming messages. Intended for debugging purposes.
      */
     private RpcMessageListener listener;
+
     /**
      * Used to synchronize access to the listener instance.
      */
     private final Object listenerLock = new Object();
 
+
+    /**
+     * A service that is used to actually execute incoming RPC requests.
+     */
     private final RpcExecutionService executionService;
 
+    /**
+     * A client used to receive requests for RPC invocations, and also
+     * to return incoming responses to the callers.
+     */
     private final RpcClient rpcClient;
+
+
+
+    /**
+     * For each ChannelHandlerContext, this map keeps track of the
+     * RemoteExecution context being processed.   This processing is a
+     * two-step process where the RemoteExecutionContext is first
+     * established by a control message, and then the next payload message
+     * delivers the parameter.  This means that we need to store some context
+     * between processing of incoming messages, and that is what this
+     * map is being used for.
+     */
+    private Map<ChannelHandlerContext, RemoteExecutionContext> contextMap =
+            new ConcurrentHashMap<ChannelHandlerContext, RemoteExecutionContext>();
 
 
     protected RpcPeerHandler(
@@ -60,10 +92,6 @@ public final class RpcPeerHandler extends SimpleChannelUpstreamHandler {
             final ChannelStateEvent e) {
         e.getChannel().write(HEARTBEAT);
     }
-
-    // XXX How about channel locals instead?
-    private Map<ChannelHandlerContext, RemoteExecutionContext> context =
-            new ConcurrentHashMap<ChannelHandlerContext, RemoteExecutionContext>();
 
     @Override
     public void messageReceived(final ChannelHandlerContext ctx, final MessageEvent e) {
@@ -94,7 +122,13 @@ public final class RpcPeerHandler extends SimpleChannelUpstreamHandler {
                 final MessageLite prototypeForParameter =
                         getPrototypeForParameter(methodSignature);
                 protbufDecoder.putNextPrototype(prototypeForParameter);
-                context.put(ctx, new RemoteExecutionContext(this, ctx,
+
+                final RemoteExecutionContext dc = contextMap.get(ctx);
+                if (dc != null) {
+                    throw new IllegalStateException("Protocol decoding error 1");
+                }
+
+                contextMap.put(ctx, new RemoteExecutionContext(this, ctx,
                         methodSignature, rpcIndex, RpcDirection.INVOKING));
             } else if (messageType == Rpc.MessageType.RPC_RETURNVALUE) {
                 final MethodSignature methodSignature = msg.getMethodSignature();
@@ -102,7 +136,15 @@ public final class RpcPeerHandler extends SimpleChannelUpstreamHandler {
                 final MessageLite prototypeForReturnValue =
                         getPrototypeForReturnValue(methodSignature);
                 protbufDecoder.putNextPrototype(prototypeForReturnValue);
-                context.put(ctx, new RemoteExecutionContext(this, ctx, methodSignature, rpcIndex,
+
+                // XXX Perhaps make an abstraction that requires the value to
+                //     be null before setting it to anything else than null?
+                final RemoteExecutionContext dc = contextMap.get(ctx);
+                if (dc != null) {
+                    throw new IllegalStateException("Protocol decoding error 1");
+                }
+
+                contextMap.put(ctx, new RemoteExecutionContext(this, ctx, methodSignature, rpcIndex,
                         RpcDirection.RETURNING));
             } else if (messageType == Rpc.MessageType.SHUTDOWN) {
                 protbufDecoder.putNextPrototype(Rpc.RpcControl.getDefaultInstance());
@@ -113,7 +155,10 @@ public final class RpcPeerHandler extends SimpleChannelUpstreamHandler {
             }
 
         } else {
-            final RemoteExecutionContext dc = context.get(ctx);
+            final RemoteExecutionContext dc = contextMap.get(ctx);
+            if (dc == null) {
+                throw new IllegalStateException("Protocol decoding error 3");
+            }
             protbufDecoder.putNextPrototype(Rpc.RpcControl.getDefaultInstance());
 
             if (dc.getDirection() == RpcDirection.INVOKING) {
@@ -124,6 +169,8 @@ public final class RpcPeerHandler extends SimpleChannelUpstreamHandler {
             } else {
                 throw new IllegalStateException("Unknown RpcDirection = " + dc.getDirection());
             }
+
+            contextMap.put(ctx, null);
         }
     }
 

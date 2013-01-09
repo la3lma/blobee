@@ -39,8 +39,8 @@ import static org.mockito.Mockito.*;
 import org.mockito.runners.MockitoJUnitRunner;
 
 /**
- * An essential test: Testing that we can send two  completely different
- * types of things over the same netty channel.
+ * An essential test: Testing that we can send two completely different types of
+ * things over the same netty channel.
  */
 @RunWith(MockitoJUnitRunner.class)
 public final class AlternatingTypeChannelTest {
@@ -50,10 +50,7 @@ public final class AlternatingTypeChannelTest {
     private final static String PARAMETER_STRING = "Hello server";
     private final static String HOST = "localhost";
     private final static int FIRST_MESSAGE_SIZE = 256;
-
-    private   int port;
-
-
+    private int port;
     // This is the receptacle for the message that goes
     // over the wire.
     @Mock
