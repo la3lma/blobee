@@ -9,21 +9,23 @@ import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcChannel;
 import com.google.protobuf.RpcController;
 import com.google.protobuf.ServiceException;
-import java.util.HashMap;
 
 /**
- * Experimental  implementation of an RpcChannel.  Used as a vehicle
- * to wrap my mind about the various details involved in making an RPC
- * library.
+ * Experimental implementation of an RpcChannel. Used as a vehicle to wrap my
+ * mind about the various details involved in making an RPC library.
  */
 public final class ServingRpcChannel implements RpcChannel {
+    final MethodMap methodMap;
 
-    // XXX Much-too-generic mappers of input params to
-    //     output params.
-    final HashMap<MethodDescriptor,
-            Function<Message, Message>> methods =
-                new HashMap<MethodDescriptor, Function<Message, Message>>();
+    @Deprecated
+    private ServingRpcChannel() {
+        this(new MethodMap());
 
+    }
+
+    public ServingRpcChannel(final MethodMap methodMap) {
+        this.methodMap = checkNotNull(methodMap);
+    }
 
     @Override
     public void callMethod(
@@ -41,55 +43,16 @@ public final class ServingRpcChannel implements RpcChannel {
         // XXX Happy day scenario. Must handle a lot more
         //     bogusness before it's believable :)
         final Function<Message, Message> meth;
-        meth = methods.get(method);
+        meth = methodMap.get(method);
         final Message result = meth.apply(request);
         callback.run(result);
     }
 
-    public void add(
-            final MethodDescriptor key,
-            final Function<Message, Message> function) {
-        // XXX No synchronization or anything here.
-        checkNotNull(key);
-        checkNotNull(function);
-        methods.put(key, function);
-    }
-
-    // XXX So far veeery loosely coupled with anything else.
     public RpcController newController() {
-        return new RpcController() {
-            public void reset() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            public boolean failed() {
-                return false;
-            }
-
-            public String errorText() {
-                return "";
-            }
-
-            public void startCancel() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            public void setFailed(String reason) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            public boolean isCanceled() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            public void notifyOnCancel(RpcCallback<Object> callback) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-        };
+        return new RpcControllerImpl();
     }
 
     // XXX This is a rather bogus api, refactor asap!!
-
     public BlockingRpcChannel newBlockingRchannel() {
         return new BlockingRpcChannel() {
             public Message callBlockingMethod(
@@ -99,7 +62,7 @@ public final class ServingRpcChannel implements RpcChannel {
                     final Message responsePrototype) throws ServiceException {
 
                 final Function<Message, Message> meth;
-                meth = methods.get(method);
+                meth = methodMap.get(method);
                 final Message result = meth.apply(request);
 
                 return result;

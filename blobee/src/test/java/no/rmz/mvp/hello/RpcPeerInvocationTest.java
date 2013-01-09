@@ -9,6 +9,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
+import no.rmz.blobee.MethodMap;
 import no.rmz.blobee.SampleServerImpl;
 import no.rmz.blobee.ServiceAnnotationMapper;
 import no.rmz.blobee.ServingRpcChannel;
@@ -83,9 +84,11 @@ public final class RpcPeerInvocationTest {
         resultReceived = lock.newCondition();
         port = Net.getFreePort();
 
-        servingChannel = new ServingRpcChannel();
+        final MethodMap methodMap = new MethodMap();
+        servingChannel = new ServingRpcChannel(methodMap);
+
         final SampleServerImpl implementation = new SampleServerImpl();
-        ServiceAnnotationMapper.bindServices(implementation, servingChannel);
+        ServiceAnnotationMapper.bindServices(implementation, methodMap);
 
         request =  Rpc.RpcParam.newBuilder().build();
 

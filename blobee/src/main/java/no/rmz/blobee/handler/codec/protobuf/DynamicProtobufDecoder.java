@@ -91,16 +91,21 @@ public final class DynamicProtobufDecoder extends OneToOneDecoder {
             final Channel channel,
             final Object msg) throws Exception {
 
-        if (!( msg instanceof ChannelBuffer )) {
+        if ( !(msg instanceof ChannelBuffer)) {
             return msg;
         }
+
+        checkNotNull(channel);
+        checkNotNull(msg);
+        checkNotNull(ctx);
 
         final ChannelBuffer buf = (ChannelBuffer) msg;
         final MessageLite prototype = getNextPrototype();
         if (buf.hasArray()) {
             final int offset = buf.readerIndex();
             return prototype.newBuilderForType().mergeFrom(
-                    buf.array(), buf.arrayOffset() + offset, buf.readableBytes()).build();
+                    buf.array(), buf.arrayOffset() + offset,
+                    buf.readableBytes()).build();
         } else {
             return prototype.newBuilderForType().mergeFrom(
                     new ChannelBufferInputStream((ChannelBuffer) msg)).build();

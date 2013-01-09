@@ -41,9 +41,10 @@ public final class SimpleInvocationTest {
             IllegalAccessException,
             IllegalArgumentException,
             InvocationTargetException {
-        rchannel = new ServingRpcChannel();
+        final MethodMap methodMap = new MethodMap();
+        rchannel = new ServingRpcChannel(methodMap);
         final SampleServerImpl implementation = new SampleServerImpl();
-        ServiceAnnotationMapper.bindServices(implementation, rchannel);
+        ServiceAnnotationMapper.bindServices(implementation, methodMap);
         callbackWasCalled = false;
         request =  Rpc.RpcParam.newBuilder().build();
         controller = rchannel.newController();
@@ -66,7 +67,8 @@ public final class SimpleInvocationTest {
             public void run(final RpcResult response) {
                 callbackWasCalled = true;
                 if (response != null) {
-                    org.junit.Assert.assertEquals(SampleServerImpl.RETURN_VALUE, response.getReturnvalue());
+                    org.junit.Assert.assertEquals(
+                            SampleServerImpl.RETURN_VALUE, response.getReturnvalue());
                 } else {
                     org.junit.Assert.fail("Badness: " + controller.errorText());
                 }

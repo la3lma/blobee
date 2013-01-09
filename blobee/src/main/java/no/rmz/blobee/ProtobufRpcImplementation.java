@@ -1,4 +1,3 @@
-
 package no.rmz.blobee;
 
 import java.lang.annotation.ElementType;

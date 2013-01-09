@@ -4,7 +4,6 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.bootstrap.ServerBootstrap;
-import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 
@@ -17,7 +16,9 @@ public final class RpcSetup {
     }
 
     public static void setUpServer(
-            final int port, RpcExecutionService executionService, RpcClient rpcClient) {
+            final int port,
+            final RpcExecutionService executionService,
+            final RpcClient rpcClient) {
         setUpServer(port, executionService, null);
     }
 
@@ -78,8 +79,6 @@ public final class RpcSetup {
         clientBootstrap.setPipelineFactory(
                 clientPipelineFactory);
         rpcClient.setBootstrap(clientBootstrap);
-
-
 
         return rpcClient;
     }

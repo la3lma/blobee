@@ -28,8 +28,6 @@ public final class RemoteExecutionContext {
         return direction;
     }
 
-
-
     public MethodSignature getMethodSignature() {
         return methodSignature;
     }

@@ -1,8 +1,8 @@
 package no.rmz.mvp.hello;
 
-import no.rmz.testtools.Receiver;
 import com.google.protobuf.MessageLite;
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.Condition;
@@ -12,6 +12,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.rmz.blobee.handler.codec.protobuf.DynamicProtobufDecoder;
 import no.rmz.blobeeproto.api.proto.Rpc;
+import no.rmz.testtools.Net;
+import no.rmz.testtools.Receiver;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.ChannelFuture;
@@ -46,9 +48,10 @@ public final class AlternatingTypeChannelTest {
     private static final Logger log = Logger.getLogger(
             no.rmz.mvp.hello.AlternatingTypeChannelTest.class.getName());
     private final static String PARAMETER_STRING = "Hello server";
-    private final static int PORT = 7172;
     private final static String HOST = "localhost";
     private final static int FIRST_MESSAGE_SIZE = 256;
+
+    private   int port;
 
 
     // This is the receptacle for the message that goes
@@ -63,7 +66,10 @@ public final class AlternatingTypeChannelTest {
     private AdaptiveDecoder clientPipelineFactory;
 
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
+
+        port = Net.getFreePort();
+
         sampleRpcMessage =
                 Rpc.RpcParam.newBuilder().setParameter(PARAMETER_STRING).build();
         sampleControlMessage =
@@ -225,7 +231,8 @@ public final class AlternatingTypeChannelTest {
         bootstrap.setPipelineFactory(serverChannelPipelineFactory);
         serverChannelPipelineFactory.putNextPrototype(Rpc.RpcControl.getDefaultInstance());
         // Bind and start to accept incoming connections.
-        bootstrap.bind(new InetSocketAddress(PORT));
+        final InetSocketAddress inetSocketAddress = new InetSocketAddress(port);
+        bootstrap.bind(inetSocketAddress);
     }
 
     private void setUpClient() {
@@ -242,7 +249,7 @@ public final class AlternatingTypeChannelTest {
 
         // Start the connection attempt.
         final ChannelFuture future =
-                clientBootstrap.connect(new InetSocketAddress(HOST, PORT));
+                clientBootstrap.connect(new InetSocketAddress(HOST, port));
 
         // Wait until the connection is closed or the connection attempt fails.
         future.getChannel().getCloseFuture().awaitUninterruptibly();

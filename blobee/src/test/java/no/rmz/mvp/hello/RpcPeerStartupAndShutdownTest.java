@@ -1,6 +1,5 @@
 package no.rmz.mvp.hello;
 
-import no.rmz.testtools.Receiver;
 import java.io.IOException;
 import java.util.logging.Logger;
 import no.rmz.blobee.rpc.RemoteExecutionContext;
@@ -10,6 +9,7 @@ import no.rmz.blobee.rpc.RpcMessageListener;
 import no.rmz.blobee.rpc.RpcSetup;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import no.rmz.testtools.Net;
+import no.rmz.testtools.Receiver;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.junit.Before;
 import org.junit.Test;
