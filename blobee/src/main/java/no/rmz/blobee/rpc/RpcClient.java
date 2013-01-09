@@ -182,36 +182,7 @@ public final class RpcClient {
     }
 
     public RpcController newController(final RpcChannel rchannel) {
-         return new RpcController() {
-
-            public void reset() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            public boolean failed() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            public String errorText() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            public void startCancel() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            public void setFailed(String reason) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            public boolean isCanceled() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            public void notifyOnCancel(final RpcCallback<Object> callback) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-        };
+        return new RpcControllerImpl();
     }
 
 
