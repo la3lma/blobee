@@ -1,5 +1,6 @@
 package no.rmz.blobee.rpc;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.Descriptors.MethodDescriptor;
 import com.google.protobuf.Message;
 import com.google.protobuf.RpcCallback;
@@ -19,18 +20,20 @@ import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFuture;
 
 public final class RpcClient {
+
     private static final Logger log = Logger.getLogger(RpcClient.class.getName());
     private final int capacity;
     final BlockingQueue<RpcClientSideInvocation> incoming;
-
     private volatile boolean running = true;
-
-
     private final Map<Long, RpcClientSideInvocation> invocations =
             new TreeMap<Long, RpcClientSideInvocation>();
-
-
+    private final int port;
+    private final String host;
     private long nextIndex;
+    private Channel channel;
+    private RpcPeerPipelineFactory clientPipelineFactory;
+    private final Object channelMonitor = new Object();
+    private ClientBootstrap clientBootstrap;
 
     void returnCall(final RemoteExecutionContext dc, final Message message) {
         synchronized (invocations) {
@@ -40,29 +43,27 @@ public final class RpcClient {
                 throw new IllegalStateException("Couldn't find call stub for invocation " + dc);
             }
 
-           invocation.getDone().run(message);
+            invocation.getDone().run(message);
         }
     }
-
     final Runnable incomingDispatcher = new Runnable() {
-
         public void run() {
-            while(running) {
+            while (running) {
                 try {
                     // First we remember this invocation so we can
                     // get back to it later
                     final RpcClientSideInvocation invocation = incoming.take();
-                    final Long  currentIndex = nextIndex++;
+                    final Long currentIndex = nextIndex++;
                     invocations.put(currentIndex, invocation);
 
                     // Then creating the protobuf representation of
                     // the invocation, in preparation of sending it
                     // down the wire.
 
-                    final MethodDescriptor   md = invocation.getMethod();
-                    final String     methodName = md.getFullName();
-                    final String     inputType  = md.getInputType().getName();
-                    final String     outputType = md.getOutputType().getName();
+                    final MethodDescriptor md = invocation.getMethod();
+                    final String methodName = md.getFullName();
+                    final String inputType = md.getInputType().getName();
+                    final String outputType = md.getOutputType().getName();
 
                     final MethodSignature ms = Rpc.MethodSignature.newBuilder()
                             .setMethodName(methodName)
@@ -82,8 +83,10 @@ public final class RpcClient {
                     //     so stronger serialization is required
                     //     on this operation!
                     // Perhaps use getChannelLock in RpcPeerHandler
-                    channel.write(invocationControl);
-                    channel.write(invocation.getRequest());
+                    WireFactory.getWireForChannel(channel)
+                            .write(
+                                invocationControl,
+                                invocation.getRequest());
                 }
                 catch (InterruptedException ex) {
                     log.warning("Something went south");
@@ -91,9 +94,6 @@ public final class RpcClient {
             }
         }
     };
-
-    private  Channel channel;
-    private  RpcPeerPipelineFactory clientPipelineFactory;
 
     public RpcClient(
             final int capacity,
@@ -107,9 +107,6 @@ public final class RpcClient {
         this.host = host;
     }
 
-    private final Object channelMonitor = new Object();
-
-
     public void setChannel(final Channel channel) {
         synchronized (channelMonitor) {
             // XXX Synchronization missing
@@ -121,27 +118,23 @@ public final class RpcClient {
         }
     }
 
-
-      public void setClientPipelineFactory(RpcPeerPipelineFactory pf) {
+    public void setClientPipelineFactory(RpcPeerPipelineFactory pf) {
         // XXX Synchronization missing
-        if (clientPipelineFactory != null)  {
+        if (clientPipelineFactory != null) {
             throw new IllegalStateException("Can't set clientPipelineFactory already set");
         }
 
         this.clientPipelineFactory = pf;
     }
 
-      int port;
-      String host;
-
-      // XXX Allow only start once, make thread safe
+    // XXX Allow only start once, make thread safe
     public void start() {
 
-          // Start the connection attempt.
+        // Start the connection attempt.
         final ChannelFuture future =
                 clientBootstrap.connect(new InetSocketAddress(host, port));
 
-       setChannel(future.getChannel());
+        setChannel(future.getChannel());
 
         final Runnable runnable = new Runnable() {
             public void run() {
@@ -162,17 +155,20 @@ public final class RpcClient {
         dispatcherThread.start();
     }
 
-
     public RpcChannel newClientRpcChannel() {
         return new RpcChannel() {
-
             public void callMethod(
                     final MethodDescriptor method,
                     final RpcController controller,
                     final Message request,
                     final Message responsePrototype,
                     final RpcCallback<Message> done) {
-                /// XXX CheckNotNull
+
+                checkNotNull(method);
+                checkNotNull(controller);
+                checkNotNull(request);
+                checkNotNull(responsePrototype);
+                checkNotNull(done);
 
                 final RpcClientSideInvocation invocation =
                         new RpcClientSideInvocation(method, controller, request, responsePrototype, done);
@@ -185,12 +181,7 @@ public final class RpcClient {
         return new RpcControllerImpl();
     }
 
-
-
-    private ClientBootstrap clientBootstrap;
-
-    void setBootstrap(ClientBootstrap clientBootstrap) {
-        // XXX CHeck a lot more
-        this.clientBootstrap = clientBootstrap;
+    void setBootstrap(final ClientBootstrap clientBootstrap) {
+        this.clientBootstrap = checkNotNull(clientBootstrap);
     }
 }

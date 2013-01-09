@@ -15,7 +15,8 @@ import org.jboss.netty.channel.ChannelHandlerContext;
  * for.
  */
 public final class ContextMap {
-    private Map<ChannelHandlerContext, RemoteExecutionContext> map = new ConcurrentHashMap<ChannelHandlerContext, RemoteExecutionContext>();
+    private Map<ChannelHandlerContext, RemoteExecutionContext>
+            map = new ConcurrentHashMap<ChannelHandlerContext, RemoteExecutionContext>();
 
     public void put(final ChannelHandlerContext chc, final RemoteExecutionContext rec) {
         checkNotNull(chc);

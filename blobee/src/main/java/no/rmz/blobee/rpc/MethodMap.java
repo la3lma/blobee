@@ -8,8 +8,8 @@ import java.util.HashMap;
 
 
 public final class MethodMap {
-    // XXX Much-too-generic mappers of input params to
-    //     output params.
+
+    
     final HashMap<MethodDescriptor, Function<Message, Message>> methods =
             new HashMap<MethodDescriptor, Function<Message, Message>>();
 

@@ -17,7 +17,10 @@ import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 
-public final class RpcPeerHandler extends SimpleChannelUpstreamHandler {
+
+
+public final class RpcPeerHandler
+        extends SimpleChannelUpstreamHandler {
 
     private static final Logger log =
             Logger.getLogger(RpcPeerHandler.class.getName());
@@ -196,7 +199,6 @@ public final class RpcPeerHandler extends SimpleChannelUpstreamHandler {
         return Rpc.RpcResult.getDefaultInstance();
     }
 
-
     void returnResult(final RemoteExecutionContext context, final Message result) {
 
         final Rpc.RpcControl invocationControl =
@@ -209,10 +211,8 @@ public final class RpcPeerHandler extends SimpleChannelUpstreamHandler {
 
         final Channel channel = context.getCtx().getChannel();
 
-        synchronized (getChannelLock(channel)) {
-            channel.write(invocationControl);
-            channel.write(result);
-        }
+        WireFactory.getWireForChannel(channel)
+                .write(invocationControl, result);
     }
 
     final Map<Channel, Object> lockMap = new WeakHashMap<Channel, Object>();
