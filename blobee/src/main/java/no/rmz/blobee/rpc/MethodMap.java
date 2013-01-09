@@ -9,8 +9,8 @@ import java.util.HashMap;
 
 public final class MethodMap {
 
-    
-    final HashMap<MethodDescriptor, Function<Message, Message>> methods =
+
+    private final HashMap<MethodDescriptor, Function<Message, Message>> methods =
             new HashMap<MethodDescriptor, Function<Message, Message>>();
 
     public MethodMap() {
@@ -29,6 +29,7 @@ public final class MethodMap {
     }
 
     public Function<Message, Message> get(final MethodDescriptor key) {
+        checkNotNull(key);
         synchronized (methods) {
             return methods.get(key);
         }

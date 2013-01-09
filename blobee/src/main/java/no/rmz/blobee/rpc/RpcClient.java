@@ -24,7 +24,7 @@ public final class RpcClient {
     private static final Logger log = Logger.getLogger(RpcClient.class.getName());
     private final int capacity;
     final BlockingQueue<RpcClientSideInvocation> incoming;
-    private volatile boolean running = true;
+    private volatile boolean running = false;
     private final Map<Long, RpcClientSideInvocation> invocations =
             new TreeMap<Long, RpcClientSideInvocation>();
     private final int port;
@@ -32,7 +32,8 @@ public final class RpcClient {
     private long nextIndex;
     private Channel channel;
     private RpcPeerPipelineFactory clientPipelineFactory;
-    private final Object channelMonitor = new Object();
+    private final Object mutationMonitor = new Object();
+    private final Object runLock = new Object();
     private ClientBootstrap clientBootstrap;
 
     void returnCall(final RemoteExecutionContext dc, final Message message) {
@@ -49,56 +50,56 @@ public final class RpcClient {
     final Runnable incomingDispatcher = new Runnable() {
         public void run() {
             while (running) {
-                try {
-                    // First we remember this invocation so we can
-                    // get back to it later
-                    final RpcClientSideInvocation invocation = incoming.take();
-                    final Long currentIndex = nextIndex++;
-                    invocations.put(currentIndex, invocation);
-
-                    // Then creating the protobuf representation of
-                    // the invocation, in preparation of sending it
-                    // down the wire.
-
-                    final MethodDescriptor md = invocation.getMethod();
-                    final String methodName = md.getFullName();
-                    final String inputType = md.getInputType().getName();
-                    final String outputType = md.getOutputType().getName();
-
-                    final MethodSignature ms = Rpc.MethodSignature.newBuilder()
-                            .setMethodName(methodName)
-                            .setInputType(inputType)
-                            .setOutputType(outputType)
-                            .build();
-
-                    final RpcControl invocationControl =
-                            Rpc.RpcControl.newBuilder()
-                            .setMessageType(Rpc.MessageType.RPC_INVOCATION)
-                            .setRpcIndex(currentIndex)
-                            .setMethodSignature(ms)
-                            .build();
-
-                    // Then send the invocation down the wire.
-                    // XXX This is a bug! Needs to be -strictly- serialized
-                    //     so stronger serialization is required
-                    //     on this operation!
-                    // Perhaps use getChannelLock in RpcPeerHandler
-                    WireFactory.getWireForChannel(channel)
-                            .write(
-                                invocationControl,
-                                invocation.getRequest());
-                }
-                catch (InterruptedException ex) {
-                    log.warning("Something went south");
-                }
+                sendFirstAvailableOutgoingInvocation();
             }
         }
     };
 
+    private void sendFirstAvailableOutgoingInvocation() {
+        try {
+            // down the wire.
+            // get back to it later
+            final RpcClientSideInvocation invocation = incoming.take();
+            final Long currentIndex = nextIndex++;
+            invocations.put(currentIndex, invocation);
+
+            // Then creating the protobuf representation of
+            // the invocation, in preparation of sending it
+            // down the wire.
+
+            final MethodDescriptor md = invocation.getMethod();
+            final String methodName = md.getFullName();
+            final String inputType = md.getInputType().getName();
+            final String outputType = md.getOutputType().getName();
+
+            final MethodSignature ms = Rpc.MethodSignature.newBuilder()
+                    .setMethodName(methodName)
+                    .setInputType(inputType)
+                    .setOutputType(outputType)
+                    .build();
+
+            final RpcControl invocationControl =
+                    Rpc.RpcControl.newBuilder()
+                    .setMessageType(Rpc.MessageType.RPC_INVOCATION)
+                    .setRpcIndex(currentIndex)
+                    .setMethodSignature(ms)
+                    .build();
+
+            // Then send the invocation down the wire.
+            WireFactory.getWireForChannel(channel)
+                    .write(
+                    invocationControl,
+                    invocation.getRequest());
+        }
+        catch (InterruptedException ex) {
+            log.warning("Something went south");
+        }
+    }
+
     public RpcClient(
             final int capacity,
-            String host,
-            int port) {
+            final String host,
+            final int port) {
         // XXX Checking of params
         this.capacity = capacity;
         this.incoming =
@@ -108,27 +109,40 @@ public final class RpcClient {
     }
 
     public void setChannel(final Channel channel) {
-        synchronized (channelMonitor) {
-            // XXX Synchronization missing
+        synchronized (mutationMonitor) {
             if (this.channel != null) {
                 throw new IllegalStateException("Can't set channel since channel is already set");
             }
-
-            this.channel = channel;
+            this.channel = checkNotNull(channel);
         }
     }
 
-    public void setClientPipelineFactory(RpcPeerPipelineFactory pf) {
-        // XXX Synchronization missing
-        if (clientPipelineFactory != null) {
-            throw new IllegalStateException("Can't set clientPipelineFactory already set");
-        }
+    public void setClientPipelineFactory(final RpcPeerPipelineFactory pf) {
+        synchronized (mutationMonitor) {
+            // XXX Synchronization missing
+            if (clientPipelineFactory != null) {
+                throw new IllegalStateException("Can't set clientPipelineFactory already set");
+            }
 
-        this.clientPipelineFactory = pf;
+            this.clientPipelineFactory = checkNotNull(pf);
+        }
     }
 
-    // XXX Allow only start once, make thread safe
+    void setBootstrap(final ClientBootstrap clientBootstrap) {
+        if (this.clientBootstrap != null) {
+            throw new IllegalStateException("Can't set clientBotstrap more than once");
+        }
+        this.clientBootstrap = checkNotNull(clientBootstrap);
+    }
+
     public void start() {
+
+        synchronized (runLock) {
+            if (running) {
+                throw new IllegalStateException("Cannot start an already running RPC Client");
+            }
+            running = true;
+        }
 
         // Start the connection attempt.
         final ChannelFuture future =
@@ -149,10 +163,10 @@ public final class RpcClient {
         final Thread thread = new Thread(runnable, "client cleaner");
         thread.start();
 
-
         final Thread dispatcherThread =
                 new Thread(incomingDispatcher, "Incoming dispatcher");
         dispatcherThread.start();
+
     }
 
     public RpcChannel newClientRpcChannel() {
@@ -179,9 +193,5 @@ public final class RpcClient {
 
     public RpcController newController(final RpcChannel rchannel) {
         return new RpcControllerImpl();
-    }
-
-    void setBootstrap(final ClientBootstrap clientBootstrap) {
-        this.clientBootstrap = checkNotNull(clientBootstrap);
     }
 }
