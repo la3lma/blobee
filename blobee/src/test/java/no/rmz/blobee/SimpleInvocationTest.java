@@ -1,5 +1,8 @@
 package no.rmz.blobee;
 
+import no.rmz.blobee.rpc.ServiceAnnotationMapper;
+import no.rmz.blobee.rpc.MethodMap;
+import no.rmz.blobee.rpc.ServingRpcChannel;
 import com.google.protobuf.Descriptors.ServiceDescriptor;
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcController;

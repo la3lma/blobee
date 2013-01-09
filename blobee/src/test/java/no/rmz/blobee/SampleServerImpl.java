@@ -1,5 +1,6 @@
 package no.rmz.blobee;
 
+import no.rmz.blobee.rpc.ProtobufRpcImplementation;
 import no.rmz.blobeeproto.api.proto.Rpc;
 
 

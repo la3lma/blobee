@@ -5,7 +5,6 @@ import com.google.protobuf.Message;
 import com.google.protobuf.MessageLite;
 import java.util.Map;
 import java.util.WeakHashMap;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.rmz.blobee.handler.codec.protobuf.DynamicProtobufDecoder;

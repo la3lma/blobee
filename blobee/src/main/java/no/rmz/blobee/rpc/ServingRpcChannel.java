@@ -1,4 +1,4 @@
-package no.rmz.blobee;
+package no.rmz.blobee.rpc;
 
 import com.google.common.base.Function;
 import static com.google.common.base.Preconditions.checkNotNull;
