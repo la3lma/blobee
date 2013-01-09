@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import no.rmz.blobee.handler.codec.protobuf.DynamicProtobufDecoder;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
+import no.rmz.blobeeprototest.api.proto.Testservice;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelStateEvent;
@@ -188,7 +189,7 @@ public final class RpcPeerHandler
         //     dynamic intension.  Treat it as a stub to be replaced when we
         //     extend the present proof-of-concept into a fully useful and generic
         //     RPC mechanism.
-        return Rpc.RpcParam.getDefaultInstance();
+        return Testservice.RpcParam.getDefaultInstance();
     }
 
     private MessageLite getPrototypeForReturnValue(MethodSignature methodSignature) {
@@ -196,7 +197,7 @@ public final class RpcPeerHandler
         //     dynamic intension.  Treat it as a stub to be replaced when we
         //     extend the present proof-of-concept into a fully useful and generic
         //     RPC mechanism.
-        return Rpc.RpcResult.getDefaultInstance();
+        return Testservice.RpcResult.getDefaultInstance();
     }
 
     void returnResult(final RemoteExecutionContext context, final Message result) {

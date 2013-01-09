@@ -2,6 +2,8 @@ package no.rmz.blobee;
 
 import no.rmz.blobee.rpc.ProtobufRpcImplementation;
 import no.rmz.blobeeproto.api.proto.Rpc;
+import no.rmz.blobeeprototest.api.proto.Testservice;
+import no.rmz.blobeeprototest.api.proto.Testservice.RpcService;
 
 
 public final class SampleServerImpl {
@@ -9,9 +11,9 @@ public final class SampleServerImpl {
     public final static String RETURN_VALUE = "Going home";
 
     @ProtobufRpcImplementation(
-            serviceClass = no.rmz.blobeeproto.api.proto.Rpc.RpcService.class,
+            serviceClass =  RpcService.class,
             method = "Invoke")
-    public Rpc.RpcResult invoke(final Rpc.RpcParam param) {
-        return Rpc.RpcResult.newBuilder().setReturnvalue(RETURN_VALUE).build();
+    public Testservice.RpcResult invoke(final Testservice.RpcParam param) {
+        return Testservice.RpcResult.newBuilder().setReturnvalue(RETURN_VALUE).build();
     }
 }

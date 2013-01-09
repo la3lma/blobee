@@ -17,6 +17,7 @@ import no.rmz.blobee.rpc.RpcMessageListener;
 import no.rmz.blobee.rpc.RpcSetup;
 import no.rmz.blobee.rpc.ServingRpcChannel;
 import no.rmz.blobeeproto.api.proto.Rpc;
+import no.rmz.blobeeprototest.api.proto.Testservice;
 import no.rmz.testtools.Net;
 import no.rmz.testtools.Receiver;
 import org.jboss.netty.channel.ChannelHandlerContext;
@@ -40,7 +41,7 @@ public final class RpcPeerInvocationTest {
     private int port;
     private ServingRpcChannel servingChannel;
     private RpcChannel clientChannel;
-    private Rpc.RpcParam request = Rpc.RpcParam.newBuilder().build();;
+    private Testservice.RpcParam request = Testservice.RpcParam.newBuilder().build();;
     private RpcController clientController;
     private Rpc.RpcControl failureResult =
             Rpc.RpcControl.newBuilder()
@@ -97,15 +98,15 @@ public final class RpcPeerInvocationTest {
     @SuppressWarnings("WA_AWAIT_NOT_IN_LOOP")
     public void testRpcInvocation() throws InterruptedException {
 
-        final RpcCallback<Rpc.RpcResult> callback =
-                new RpcCallback<Rpc.RpcResult>() {
-                    public void run(final Rpc.RpcResult response) {
+        final RpcCallback<Testservice.RpcResult> callback =
+                new RpcCallback<Testservice.RpcResult>() {
+                    public void run(final Testservice.RpcResult response) {
                         callbackResponse.receive(response.getReturnvalue());
                         signalResultReceived();
                     }
                 };
 
-        final Rpc.RpcService myService = Rpc.RpcService.newStub(clientChannel);
+        final Testservice.RpcService myService = Testservice.RpcService.newStub(clientChannel);
         myService.invoke(clientController, request, callback);
 
         try {

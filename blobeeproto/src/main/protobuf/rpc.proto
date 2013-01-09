@@ -31,20 +31,3 @@ enum StatusCode {
         OK = 3;
 }
 
-
-//
-//  The rest of the file is just test code that should
-//  eventually be refactored out and stored elsewhere.
-//
-
-message RpcParam {
-	 optional string parameter = 1;
-}
-
-message RpcResult {
-	 required string returnvalue = 1;
-}
-
-service RpcService {
-  rpc Invoke (RpcParam) returns (RpcResult);
-}

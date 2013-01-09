@@ -49,8 +49,16 @@
             <groupId>no.rmz</groupId>
             <artifactId>blobeeproto</artifactId>
             <version>1.0-SNAPSHOT</version>
-             <!-- This should be <scope>test</scope>  but for now it can't be -->
         </dependency>
+
+
+         <dependency>
+            <groupId>no.rmz</groupId>
+            <artifactId>blobeetestproto</artifactId>
+            <version>1.0-SNAPSHOT</version>
+             <!-- THIS MUST BE ENABLED ASAP <scope>test</scope> -->
+        </dependency>
+
 
 
        <!--  If we don't need this we should drop it

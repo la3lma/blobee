@@ -13,6 +13,7 @@ import java.util.logging.Logger;
 import no.rmz.blobee.handler.codec.protobuf.DynamicProtobufDecoder;
 import no.rmz.blobee.rpc.WireFactory;
 import no.rmz.blobeeproto.api.proto.Rpc;
+import no.rmz.blobeeprototest.api.proto.Testservice;
 import no.rmz.testtools.Net;
 import no.rmz.testtools.Receiver;
 import org.jboss.netty.bootstrap.ClientBootstrap;
@@ -55,12 +56,12 @@ public final class AlternatingTypeChannelTest {
     // This is the receptacle for the message that goes
     // over the wire.
     @Mock
-    Receiver<Rpc.RpcParam> serverParamReceiver;
+    Receiver<Testservice.RpcParam> serverParamReceiver;
     @Mock
-    Receiver<Rpc.RpcControl> serverControlReceiver;
-    private Rpc.RpcParam sampleRpcMessage;
+    private Receiver<Rpc.RpcControl> serverControlReceiver;
+    private Testservice.RpcParam sampleRpcMessage;
     private Rpc.RpcControl sampleControlMessage;
-    AdaptiveDecoder serverChannelPipelineFactory;
+    private AdaptiveDecoder serverChannelPipelineFactory;
     private AdaptiveDecoder clientPipelineFactory;
 
     @Before
@@ -69,7 +70,7 @@ public final class AlternatingTypeChannelTest {
         port = Net.getFreePort();
 
         sampleRpcMessage =
-                Rpc.RpcParam.newBuilder().setParameter(PARAMETER_STRING).build();
+                Testservice.RpcParam.newBuilder().setParameter(PARAMETER_STRING).build();
         sampleControlMessage =
                 Rpc.RpcControl.newBuilder()
                 .setMessageType(Rpc.MessageType.RPC_RETURNVALUE)
@@ -103,8 +104,8 @@ public final class AlternatingTypeChannelTest {
 
             log.info("Received message " + message);
 
-            if (message instanceof Rpc.RpcParam) {
-                final Rpc.RpcParam msg = (Rpc.RpcParam) e.getMessage();
+            if (message instanceof Testservice.RpcParam) {
+                final Testservice.RpcParam msg = (Testservice.RpcParam) e.getMessage();
                 serverParamReceiver.receive(msg);
                 counter += 1;
 
@@ -116,7 +117,7 @@ public final class AlternatingTypeChannelTest {
                 counter += 1;
 
                 serverChannelPipelineFactory.isControl = false;
-                serverChannelPipelineFactory.putNextPrototype(Rpc.RpcParam.getDefaultInstance());
+                serverChannelPipelineFactory.putNextPrototype(Testservice.RpcParam.getDefaultInstance());
             } else {
                 fail("Unknown type of incoming message to server: " + message);
             }
@@ -156,7 +157,7 @@ public final class AlternatingTypeChannelTest {
                 final ChannelHandlerContext ctx, final MessageEvent e) {
             final Object message = e.getMessage();
             log.info("The client received message object : " + message);
-            final Rpc.RpcResult result = (Rpc.RpcResult) e.getMessage();
+            final Testservice.RpcResult result = (Testservice.RpcResult) e.getMessage();
             log.info("The client received result: " + result);
             clientPipelineFactory.putNextPrototype(Rpc.RpcControl.getDefaultInstance());
         }

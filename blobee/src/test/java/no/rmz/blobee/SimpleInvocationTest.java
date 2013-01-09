@@ -1,19 +1,20 @@
 package no.rmz.blobee;
 
-import no.rmz.blobee.rpc.ServiceAnnotationMapper;
-import no.rmz.blobee.rpc.MethodMap;
-import no.rmz.blobee.rpc.ServingRpcChannel;
 import com.google.protobuf.Descriptors.ServiceDescriptor;
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcController;
 import com.google.protobuf.ServiceException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Logger;
+import no.rmz.blobee.rpc.MethodMap;
+import no.rmz.blobee.rpc.ServiceAnnotationMapper;
+import no.rmz.blobee.rpc.ServingRpcChannel;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import no.rmz.blobeeproto.api.proto.Rpc.RpcControl;
-import no.rmz.blobeeproto.api.proto.Rpc.RpcParam;
-import no.rmz.blobeeproto.api.proto.Rpc.RpcResult;
-import no.rmz.blobeeproto.api.proto.Rpc.RpcService;
+import no.rmz.blobeeprototest.api.proto.Testservice;
+import no.rmz.blobeeprototest.api.proto.Testservice.RpcParam;
+import no.rmz.blobeeprototest.api.proto.Testservice.RpcResult;
+import no.rmz.blobeeprototest.api.proto.Testservice.RpcService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -49,7 +50,7 @@ public final class SimpleInvocationTest {
         final SampleServerImpl implementation = new SampleServerImpl();
         ServiceAnnotationMapper.bindServices(implementation, methodMap);
         callbackWasCalled = false;
-        request =  Rpc.RpcParam.newBuilder().build();
+        request =  RpcParam.newBuilder().build();
         controller = rchannel.newController();
     }
 
@@ -64,7 +65,7 @@ public final class SimpleInvocationTest {
     @Test
     public void testBasicNonblockingRpc() {
         final ServiceDescriptor descriptor;
-        descriptor = Rpc.RpcService.getDescriptor();
+        descriptor = Testservice.RpcService.getDescriptor();
 
         final RpcCallback<RpcResult> callback = new RpcCallback<RpcResult>() {
             public void run(final RpcResult response) {
@@ -86,8 +87,8 @@ public final class SimpleInvocationTest {
 
     @Test
     public void testBasicBlockingRpc() throws ServiceException {
-        final Rpc.RpcService.BlockingInterface service;
-        service = Rpc.RpcService.newBlockingStub(rchannel.newBlockingRchannel());
+        final Testservice.RpcService.BlockingInterface service;
+        service = Testservice.RpcService.newBlockingStub(rchannel.newBlockingRchannel());
 
         final RpcResult response = service.invoke(controller, request);
         org.junit.Assert.assertEquals(SampleServerImpl.RETURN_VALUE, response.getReturnvalue());
