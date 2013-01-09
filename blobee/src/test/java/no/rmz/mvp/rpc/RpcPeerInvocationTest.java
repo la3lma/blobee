@@ -10,13 +10,10 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
 import no.rmz.blobee.SampleServerImpl;
-import no.rmz.blobee.rpc.MethodMap;
-import no.rmz.blobee.rpc.RemoteExecutionContext;
 import no.rmz.blobee.rpc.RpcClient;
 import no.rmz.blobee.rpc.RpcExecutionService;
 import no.rmz.blobee.rpc.RpcMessageListener;
 import no.rmz.blobee.rpc.RpcSetup;
-import no.rmz.blobee.rpc.ServiceAnnotationMapper;
 import no.rmz.blobee.rpc.ServingRpcChannel;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import no.rmz.testtools.Net;
@@ -41,9 +38,9 @@ public final class RpcPeerInvocationTest {
             Rpc.RpcControl.newBuilder().setMessageType(Rpc.MessageType.SHUTDOWN).build();
     private int port;
     private ServingRpcChannel servingChannel;
-    private RpcChannel rchannel;
-    private Rpc.RpcParam request;
-    private RpcController controller;
+    private RpcChannel clientChannel;
+    private Rpc.RpcParam request = Rpc.RpcParam.newBuilder().build();;
+    private RpcController clientController;
     private Rpc.RpcControl failureResult =
             Rpc.RpcControl.newBuilder()
             .setMessageType(Rpc.MessageType.RPC_RETURNVALUE)
@@ -70,48 +67,6 @@ public final class RpcPeerInvocationTest {
         }
     }
 
-    public final static class Foo implements RpcExecutionService {
-
-        private static final Logger log = Logger.getLogger(
-                Foo.class.getName());
-        private Rpc.RpcParam request;
-        final ServingRpcChannel servingChannel;
-        final Rpc.RpcService myService;
-
-        public Foo() throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-            final MethodMap methodMap = new MethodMap();
-            servingChannel = new ServingRpcChannel(methodMap);
-
-            final SampleServerImpl implementation = new SampleServerImpl();
-            ServiceAnnotationMapper.bindServices(implementation, methodMap);
-
-            request = Rpc.RpcParam.newBuilder().build();
-
-
-            // XXX Could presumably be reused
-            myService = Rpc.RpcService.newStub(servingChannel);
-
-        }
-
-        @Override
-        public void execute(
-                final RemoteExecutionContext dc,
-                final ChannelHandlerContext ctx,
-                final Object param) {
-            log.info("Executing dc = " + dc + ", param = " + param);
-
-            final RpcCallback<Rpc.RpcResult> callback = new RpcCallback<Rpc.RpcResult>() {
-                public void run(final Rpc.RpcResult response) {
-                    dc.returnResult(response);
-                }
-            };
-
-            RpcController servingController;
-            servingController = servingChannel.newController();
-            myService.invoke(servingController, request, callback);
-        }
-    }
-
     @Before
     public void setUp() throws
             NoSuchMethodException,
@@ -124,50 +79,15 @@ public final class RpcPeerInvocationTest {
         resultReceived = lock.newCondition();
         port = Net.getFreePort();
 
-        final MethodMap methodMap = new MethodMap();
-        servingChannel = new ServingRpcChannel(methodMap);
-
-        final SampleServerImpl implementation = new SampleServerImpl();
-        ServiceAnnotationMapper.bindServices(implementation, methodMap);
-
-        request = Rpc.RpcParam.newBuilder().build();
-
-
-        // XXX Could presumably be reused
-        final Rpc.RpcService myService = Rpc.RpcService.newStub(servingChannel);
-
-        final RpcExecutionService executor;
-        executor = new RpcExecutionService() {
-            @Override
-            public void execute(
-                    final RemoteExecutionContext dc,
-                    final ChannelHandlerContext ctx,
-                    final Object param) {
-                log.info("Executing dc = " + dc + ", param = " + param);
-
-                final RpcCallback<Rpc.RpcResult> callback = new RpcCallback<Rpc.RpcResult>() {
-                    public void run(final Rpc.RpcResult response) {
-                        dc.returnResult(response);
-                    }
-                };
-
-                servingController = servingChannel.newController();
-                myService.invoke(servingController, request, callback);
-            }
-        };
-
-         final RpcExecutionService snapdoll = new Foo();
-
+        final RpcExecutionService snapdoll = new RpcExecutionServiceImpl();
 
         final RpcClient client = RpcSetup.setUpClient(HOST, port, snapdoll);
         RpcSetup.setUpServer(port, snapdoll, client, rpcMessageListener);
 
         client.start();
 
-        rchannel = client.newClientRpcChannel();
-        controller = client.newController(rchannel);
-
-        request = Rpc.RpcParam.newBuilder().build();
+        clientChannel   = client.newClientRpcChannel();
+        clientController = client.newController(clientChannel);
     }
     @Mock
     Receiver<String> callbackResponse;
@@ -183,8 +103,8 @@ public final class RpcPeerInvocationTest {
                     }
                 };
 
-        final Rpc.RpcService myService = Rpc.RpcService.newStub(rchannel);
-        myService.invoke(controller, request, callback);
+        final Rpc.RpcService myService = Rpc.RpcService.newStub(clientChannel);
+        myService.invoke(clientController, request, callback);
 
         try {
             lock.lock();
