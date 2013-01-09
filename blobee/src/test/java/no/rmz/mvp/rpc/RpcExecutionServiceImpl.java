@@ -15,7 +15,8 @@ import org.jboss.netty.channel.ChannelHandlerContext;
 
 public final class RpcExecutionServiceImpl implements RpcExecutionService {
     private static final Logger log = Logger.getLogger(RpcExecutionServiceImpl.class.getName());
-    private Rpc.RpcParam request;
+
+
     final ServingRpcChannel servingChannel;
     final Rpc.RpcService myService;
 
@@ -24,13 +25,12 @@ public final class RpcExecutionServiceImpl implements RpcExecutionService {
         servingChannel = new ServingRpcChannel(methodMap);
         final SampleServerImpl implementation = new SampleServerImpl();
         ServiceAnnotationMapper.bindServices(implementation, methodMap);
-        request = Rpc.RpcParam.newBuilder().build();
         myService = Rpc.RpcService.newStub(servingChannel);
     }
 
     @Override
     public void execute(final RemoteExecutionContext dc, final ChannelHandlerContext ctx, final Object param) {
-        log.info("Executing dc = " + dc + ", param = " + param);
+
         final RpcCallback<Rpc.RpcResult> callback = new RpcCallback<Rpc.RpcResult>() {
             public void run(final Rpc.RpcResult response) {
                 dc.returnResult(response);
@@ -38,7 +38,7 @@ public final class RpcExecutionServiceImpl implements RpcExecutionService {
         };
         RpcController servingController;
         servingController = servingChannel.newController();
+        final  Rpc.RpcParam request = (Rpc.RpcParam) param;
         myService.invoke(servingController, request, callback);
     }
-
 }

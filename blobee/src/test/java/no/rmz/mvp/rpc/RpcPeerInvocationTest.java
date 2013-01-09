@@ -3,6 +3,7 @@ package no.rmz.mvp.rpc;
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcChannel;
 import com.google.protobuf.RpcController;
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.locks.Condition;
@@ -93,6 +94,7 @@ public final class RpcPeerInvocationTest {
     Receiver<String> callbackResponse;
 
     @Test
+    @SuppressWarnings("WA_AWAIT_NOT_IN_LOOP")
     public void testRpcInvocation() throws InterruptedException {
 
         final RpcCallback<Rpc.RpcResult> callback =
@@ -110,8 +112,7 @@ public final class RpcPeerInvocationTest {
             lock.lock();
             log.info("Awaiting result received.");
             resultReceived.await();
-        }
-        finally {
+        } finally {
             lock.unlock();
             log.info("unlocked, test passed");
         }
