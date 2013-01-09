@@ -84,7 +84,7 @@ public final class RpcPeerHandler
     public void channelConnected(
             final ChannelHandlerContext ctx,
             final ChannelStateEvent e) {
-        e.getChannel().write(HEARTBEAT);
+        WireFactory.getWireForChannel(e.getChannel()).write(HEARTBEAT);
     }
 
     @Override

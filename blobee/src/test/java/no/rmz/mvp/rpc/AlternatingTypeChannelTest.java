@@ -11,6 +11,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.rmz.blobee.handler.codec.protobuf.DynamicProtobufDecoder;
+import no.rmz.blobee.rpc.WireFactory;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import no.rmz.testtools.Net;
 import no.rmz.testtools.Receiver;
@@ -144,8 +145,10 @@ public final class AlternatingTypeChannelTest {
         @Override
         public void channelConnected(
                 final ChannelHandlerContext ctx, final ChannelStateEvent e) {
-            e.getChannel().write(sampleControlMessage);
-            e.getChannel().write(sampleRpcMessage);
+            WireFactory.getWireForChannel(e.getChannel())
+                    .write(
+                        sampleControlMessage,
+                        sampleRpcMessage);
         }
 
         @Override
