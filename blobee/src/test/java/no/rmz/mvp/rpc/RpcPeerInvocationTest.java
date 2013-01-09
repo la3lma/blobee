@@ -29,7 +29,6 @@ import org.mockito.Mock;
 import static org.mockito.Mockito.*;
 import org.mockito.runners.MockitoJUnitRunner;
 
-
 @RunWith(MockitoJUnitRunner.class)
 public final class RpcPeerInvocationTest {
 
@@ -41,7 +40,6 @@ public final class RpcPeerInvocationTest {
     private final static Rpc.RpcControl SHUTDOWN_MESSAGE =
             Rpc.RpcControl.newBuilder().setMessageType(Rpc.MessageType.SHUTDOWN).build();
     private int port;
-
     private ServingRpcChannel servingChannel;
     private RpcChannel rchannel;
     private Rpc.RpcParam request;
@@ -72,6 +70,48 @@ public final class RpcPeerInvocationTest {
         }
     }
 
+    public final static class Foo implements RpcExecutionService {
+
+        private static final Logger log = Logger.getLogger(
+                Foo.class.getName());
+        private Rpc.RpcParam request;
+        final ServingRpcChannel servingChannel;
+        final Rpc.RpcService myService;
+
+        public Foo() throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+            final MethodMap methodMap = new MethodMap();
+            servingChannel = new ServingRpcChannel(methodMap);
+
+            final SampleServerImpl implementation = new SampleServerImpl();
+            ServiceAnnotationMapper.bindServices(implementation, methodMap);
+
+            request = Rpc.RpcParam.newBuilder().build();
+
+
+            // XXX Could presumably be reused
+            myService = Rpc.RpcService.newStub(servingChannel);
+
+        }
+
+        @Override
+        public void execute(
+                final RemoteExecutionContext dc,
+                final ChannelHandlerContext ctx,
+                final Object param) {
+            log.info("Executing dc = " + dc + ", param = " + param);
+
+            final RpcCallback<Rpc.RpcResult> callback = new RpcCallback<Rpc.RpcResult>() {
+                public void run(final Rpc.RpcResult response) {
+                    dc.returnResult(response);
+                }
+            };
+
+            RpcController servingController;
+            servingController = servingChannel.newController();
+            myService.invoke(servingController, request, callback);
+        }
+    }
+
     @Before
     public void setUp() throws
             NoSuchMethodException,
@@ -90,10 +130,10 @@ public final class RpcPeerInvocationTest {
         final SampleServerImpl implementation = new SampleServerImpl();
         ServiceAnnotationMapper.bindServices(implementation, methodMap);
 
-        request =  Rpc.RpcParam.newBuilder().build();
+        request = Rpc.RpcParam.newBuilder().build();
 
 
-         // XXX Could presumably be reused
+        // XXX Could presumably be reused
         final Rpc.RpcService myService = Rpc.RpcService.newStub(servingChannel);
 
         final RpcExecutionService executor;
@@ -116,9 +156,11 @@ public final class RpcPeerInvocationTest {
             }
         };
 
+         final RpcExecutionService snapdoll = new Foo();
 
-        final RpcClient client = RpcSetup.setUpClient(HOST, port, executor);
-        RpcSetup.setUpServer(port, executor, client, rpcMessageListener);
+
+        final RpcClient client = RpcSetup.setUpClient(HOST, port, snapdoll);
+        RpcSetup.setUpServer(port, snapdoll, client, rpcMessageListener);
 
         client.start();
 
