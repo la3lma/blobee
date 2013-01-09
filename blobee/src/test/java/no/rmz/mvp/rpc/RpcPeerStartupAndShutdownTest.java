@@ -1,4 +1,4 @@
-package no.rmz.mvp.hello;
+package no.rmz.mvp.rpc;
 
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -23,7 +23,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 public final class RpcPeerStartupAndShutdownTest {
 
     private static final Logger log = Logger.getLogger(
-            no.rmz.mvp.hello.RpcPeerStartupAndShutdownTest.class.getName());
+            no.rmz.mvp.rpc.RpcPeerStartupAndShutdownTest.class.getName());
 
 
     private final static String HOST = "localhost";

@@ -1,4 +1,4 @@
-package no.rmz.mvp.hello;
+package no.rmz.mvp.rpc;
 
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcChannel;
@@ -34,7 +34,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 public final class RpcPeerInvocationTest {
 
     private static final Logger log = Logger.getLogger(
-            no.rmz.mvp.hello.RpcPeerInvocationTest.class.getName());
+            no.rmz.mvp.rpc.RpcPeerInvocationTest.class.getName());
     private final static String HOST = "localhost";
     private final static Rpc.RpcControl HEARTBEAT_MESSAGE =
             Rpc.RpcControl.newBuilder().setMessageType(Rpc.MessageType.HEARTBEAT).build();

@@ -1,4 +1,4 @@
-package no.rmz.mvp.hello;
+package no.rmz.mvp.rpc;
 
 import com.google.protobuf.MessageLite;
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
@@ -46,7 +46,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 public final class AlternatingTypeChannelTest {
 
     private static final Logger log = Logger.getLogger(
-            no.rmz.mvp.hello.AlternatingTypeChannelTest.class.getName());
+            no.rmz.mvp.rpc.AlternatingTypeChannelTest.class.getName());
     private final static String PARAMETER_STRING = "Hello server";
     private final static String HOST = "localhost";
     private final static int FIRST_MESSAGE_SIZE = 256;
