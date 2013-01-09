@@ -14,12 +14,35 @@ import org.jboss.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepend
 
 
 public final class RpcPeerPipelineFactory implements ChannelPipelineFactory {
+    /**
+     * A name used to keep track of which pipeline factory this
+     * is.
+     */
     private final String name;
+
+    // XXX
     private final WeakHashMap<ChannelPipeline, DynamicProtobufDecoder> decoderMap =
             new WeakHashMap<ChannelPipeline, DynamicProtobufDecoder>();
+
+    /**
+     * For debugging purposes we can insert a listener
+     * that can listen in to the messages that arrives at this
+     * RpcPeer.
+     */
     private RpcMessageListener listener;
 
+    /**
+     * A service that is used to execute incoming requests for
+     * remote procedure calls.
+     */
     private final RpcExecutionService executionService;
+
+    /**
+     * An endpoint that can accept incoming requests for remote
+     * procedure calls, and that can receive answers from our
+     * peer at the other end of the wire when it has processed
+     * the request.
+     */
     private final RpcClient rpcClient;
 
     public RpcPeerPipelineFactory(
@@ -44,6 +67,7 @@ public final class RpcPeerPipelineFactory implements ChannelPipelineFactory {
         if (decoderMap.containsKey(pipeline)) {
             decoderMap.get(pipeline).putNextPrototype(prototype.getDefaultInstanceForType());
         } else {
+            // XXX Don't use runtime exception, use a checkable exception
             throw new RuntimeException("This is awful");
         }
     }
@@ -66,6 +90,9 @@ public final class RpcPeerPipelineFactory implements ChannelPipelineFactory {
             handler.setListener(listener);
         }
         p.addLast("handler", handler);
+
+        // The first message to receive is always a control message,
+        // so we set the pipeline up to expect that.
         putNextPrototype(p, Rpc.RpcControl.getDefaultInstance());
         return p;
     }

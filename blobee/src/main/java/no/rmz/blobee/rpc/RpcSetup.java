@@ -42,7 +42,6 @@ public final class RpcSetup {
         // Set up the pipeline factory.
         bootstrap.setPipelineFactory(serverChannelPipelineFactory);
 
-
         // Bind and start to accept incoming connections.
         bootstrap.bind(new InetSocketAddress(port));
 

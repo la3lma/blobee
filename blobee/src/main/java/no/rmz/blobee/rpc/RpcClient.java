@@ -1,6 +1,7 @@
 package no.rmz.blobee.rpc;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkArgument;
 import com.google.protobuf.Descriptors.MethodDescriptor;
 import com.google.protobuf.Message;
 import com.google.protobuf.RpcCallback;
@@ -22,6 +23,7 @@ import org.jboss.netty.channel.ChannelFuture;
 public final class RpcClient {
 
     private static final Logger log = Logger.getLogger(RpcClient.class.getName());
+    public static final int MAXIMUM_TCP_PORT_NUMBER = 65535;
     private final int capacity;
     final BlockingQueue<RpcClientSideInvocation> incoming;
     private volatile boolean running = false;
@@ -35,6 +37,7 @@ public final class RpcClient {
     private final Object mutationMonitor = new Object();
     private final Object runLock = new Object();
     private ClientBootstrap clientBootstrap;
+    private final static int MAX_CAPACITY_FOR_INPUT_BUFFER = 10000;
 
     void returnCall(final RemoteExecutionContext dc, final Message message) {
         synchronized (invocations) {
@@ -47,6 +50,7 @@ public final class RpcClient {
             invocation.getDone().run(message);
         }
     }
+
     final Runnable incomingDispatcher = new Runnable() {
         public void run() {
             while (running) {
@@ -96,16 +100,19 @@ public final class RpcClient {
         }
     }
 
+
     public RpcClient(
             final int capacity,
             final String host,
             final int port) {
-        // XXX Checking of params
+
+        checkArgument(0 < capacity && capacity < MAX_CAPACITY_FOR_INPUT_BUFFER);
         this.capacity = capacity;
         this.incoming =
                 new ArrayBlockingQueue<RpcClientSideInvocation>(capacity);
+        checkArgument(0 < port &&  port < MAXIMUM_TCP_PORT_NUMBER);
         this.port = port;
-        this.host = host;
+        this.host = checkNotNull(host);
     }
 
     public void setChannel(final Channel channel) {
@@ -166,7 +173,6 @@ public final class RpcClient {
         final Thread dispatcherThread =
                 new Thread(incomingDispatcher, "Incoming dispatcher");
         dispatcherThread.start();
-
     }
 
     public RpcChannel newClientRpcChannel() {

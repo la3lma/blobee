@@ -17,11 +17,7 @@ import com.google.protobuf.ServiceException;
 public final class ServingRpcChannel implements RpcChannel {
     final MethodMap methodMap;
 
-    @Deprecated
-    private ServingRpcChannel() {
-        this(new MethodMap());
 
-    }
 
     public ServingRpcChannel(final MethodMap methodMap) {
         this.methodMap = checkNotNull(methodMap);

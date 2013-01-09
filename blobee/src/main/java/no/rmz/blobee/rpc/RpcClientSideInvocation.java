@@ -1,5 +1,6 @@
 package no.rmz.blobee.rpc;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.Descriptors.MethodDescriptor;
 import com.google.protobuf.Message;
 import com.google.protobuf.RpcCallback;
@@ -14,17 +15,17 @@ public final class RpcClientSideInvocation {
     private final RpcCallback<Message> done;
 
     public RpcClientSideInvocation(
-            MethodDescriptor method,
-            RpcController controller,
-            Message request,
-            Message responsePrototype,
-            RpcCallback<Message> done) {
-        // XXX Checknotnulls
-        this.method = method;
-        this.controller = controller;
-        this.request = request;
-        this.responsePrototype = responsePrototype;
-        this.done = done;
+            final MethodDescriptor method,
+            final RpcController controller,
+            final Message request,
+            final Message responsePrototype,
+            final RpcCallback<Message> done) {
+        
+        this.method = checkNotNull(method);
+        this.controller = checkNotNull(controller);
+        this.request = checkNotNull(request);
+        this.responsePrototype = checkNotNull(responsePrototype);
+        this.done = checkNotNull(done);
     }
 
     public MethodDescriptor getMethod() {
