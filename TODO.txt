@@ -1,7 +1,3 @@
-o Make the currently failing test pass instead.
-
-o Explain the design to Sverre and get some friendly but critical
-  feedback.
 
 o Refactor a lot, add comments, dot "i"s cross "t"s. Javadoc everything,
   enhance test coverage, but don't add many new features.  
@@ -16,6 +12,9 @@ o Make more independent tests for:
    -> Performance (as soon as a stable API is 
       available (arguably it is today).  Run from command line
       as an independent java app.
+
+   -> Benchmark against java RMI. If we're in the same ballpark
+      or faster we're pretty well set.
 
    -> Service from somewhere else than the master ptotobuf declaration that
       we currently use for everything.
