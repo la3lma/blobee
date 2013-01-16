@@ -81,7 +81,13 @@ public final class RpcPeerInvocationTest {
         resultReceived = lock.newCondition();
         port = Net.getFreePort();
 
-        final RpcExecutionService snapdoll = new RpcExecutionServiceImpl();
+        final RpcExecutionService snapdoll = new RpcExecutionServiceImpl<
+                Testservice.RpcService,
+                Testservice.RpcParam,
+                Testservice.RpcResult>(
+                Testservice.RpcService.class,
+                Testservice.RpcParam.class,
+                Testservice.RpcResult.class);
 
         final RpcClient client = RpcSetup.setUpClient(HOST, port, snapdoll);
         RpcSetup.setUpServer(port, snapdoll, client, rpcMessageListener);
