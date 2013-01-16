@@ -18,8 +18,6 @@ import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
 public final class ServingRpcChannel implements RpcChannel {
     final MethodMap methodMap;
 
-
-
     public ServingRpcChannel(final MethodMap methodMap) {
         this.methodMap = checkNotNull(methodMap);
     }

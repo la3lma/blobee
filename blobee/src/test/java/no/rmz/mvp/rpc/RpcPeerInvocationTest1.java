@@ -1,6 +1,6 @@
 package no.rmz.mvp.rpc;
 
-import no.rmz.blobee.rpc.RpcExecutionServiceImpl;
+import no.rmz.blobee.rpc.AnnotationReadingRpcExecutionServiceImpl;
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcChannel;
 import com.google.protobuf.RpcController;
@@ -11,7 +11,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
-import no.rmz.blobee.SampleServerImpl;
+import no.rmz.blobee.SampleServerImpl1;
 import no.rmz.blobee.rpc.RpcClient;
 import no.rmz.blobee.rpc.RpcExecutionService;
 import no.rmz.blobee.rpc.RpcMessageListener;
@@ -30,10 +30,10 @@ import static org.mockito.Mockito.*;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public final class RpcPeerInvocationTest {
+public final class RpcPeerInvocationTest1 {
 
     private static final Logger log = Logger.getLogger(
-            no.rmz.mvp.rpc.RpcPeerInvocationTest.class.getName());
+            no.rmz.mvp.rpc.RpcPeerInvocationTest1.class.getName());
     private final static String HOST = "localhost";
     private final static Rpc.RpcControl HEARTBEAT_MESSAGE =
             Rpc.RpcControl.newBuilder().setMessageType(Rpc.MessageType.HEARTBEAT).build();
@@ -82,8 +82,8 @@ public final class RpcPeerInvocationTest {
         resultReceived = lock.newCondition();
         port = Net.getFreePort();
 
-        final RpcExecutionService snapdoll = new RpcExecutionServiceImpl(
-                new SampleServerImpl());
+        final RpcExecutionService snapdoll = new AnnotationReadingRpcExecutionServiceImpl(
+                new SampleServerImpl1());
 
         final RpcClient client = RpcSetup.setUpClient(HOST, port, snapdoll);
 
@@ -124,6 +124,6 @@ public final class RpcPeerInvocationTest {
             log.info("unlocked, test passed");
         }
 
-        verify(callbackResponse).receive(SampleServerImpl.RETURN_VALUE);
+        verify(callbackResponse).receive(SampleServerImpl1.RETURN_VALUE);
     }
 }

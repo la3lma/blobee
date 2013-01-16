@@ -18,6 +18,21 @@ public final class ServiceAnnotationMapper {
     private ServiceAnnotationMapper() {
     }
 
+    public static MethodDescriptor getMethodDescriptor(
+            final Class serviceInterface,
+            final String methodName) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        checkNotNull(methodName);
+        checkNotNull(serviceInterface);
+
+        
+        final Method getDescriptor = serviceInterface.getMethod("getDescriptor");
+        final ServiceDescriptor serviceDescriptor =
+                (ServiceDescriptor) getDescriptor.invoke(null);
+        final MethodDescriptor methodDesc =
+                serviceDescriptor.findMethodByName(methodName);
+        return methodDesc;
+    }
+
     // XXX This is obviously just a stub.
     //     A lot more checking should be done here, including
     //     typechecking that is done at startup (semi-static ;-)
@@ -35,12 +50,18 @@ public final class ServiceAnnotationMapper {
                         method.getAnnotation(ProtobufRpcImplementation.class);
                 // Then find the MethodDescriptor for the
                 // service class
+
                 final Class serviceClass = annotation.serviceClass();
+                 /*
                 final Method getDescriptor = serviceClass.getMethod("getDescriptor");
                 final ServiceDescriptor serviceDescriptor =
                         (ServiceDescriptor) getDescriptor.invoke(null);
                 final MethodDescriptor methodDesc =
                         serviceDescriptor.findMethodByName(annotation.method());
+                */
+
+                final MethodDescriptor methodDesc =
+                        getMethodDescriptor(serviceClass,annotation.method());
                 // Then use that method descriptor to create a proper wrapper
                 // for the implementation.
                 final Function<Message, Message> wrapper =

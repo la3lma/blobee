@@ -47,7 +47,7 @@ public final class SimpleInvocationTest {
             InvocationTargetException {
         final MethodMap methodMap = new MethodMap();
         rchannel = new ServingRpcChannel(methodMap);
-        final SampleServerImpl implementation = new SampleServerImpl();
+        final SampleServerImpl1 implementation = new SampleServerImpl1();
         ServiceAnnotationMapper.bindServices(implementation, methodMap);
         callbackWasCalled = false;
         request =  RpcParam.newBuilder().build();
@@ -72,7 +72,7 @@ public final class SimpleInvocationTest {
                 callbackWasCalled = true;
                 if (response != null) {
                     org.junit.Assert.assertEquals(
-                            SampleServerImpl.RETURN_VALUE, response.getReturnvalue());
+                            SampleServerImpl1.RETURN_VALUE, response.getReturnvalue());
                 } else {
                     org.junit.Assert.fail("Badness: " + controller.errorText());
                 }
@@ -91,6 +91,6 @@ public final class SimpleInvocationTest {
         service = Testservice.RpcService.newBlockingStub(rchannel.newBlockingRchannel());
 
         final RpcResult response = service.invoke(controller, request);
-        org.junit.Assert.assertEquals(SampleServerImpl.RETURN_VALUE, response.getReturnvalue());
+        org.junit.Assert.assertEquals(SampleServerImpl1.RETURN_VALUE, response.getReturnvalue());
     }
 }

@@ -152,9 +152,11 @@ public final class RpcPeerHandler
 
         } else {
             final RemoteExecutionContext dc = contextMap.get(ctx);
+            
             if (dc == null) {
                 throw new IllegalStateException("Protocol decoding error 3");
             }
+
             protbufDecoder.putNextPrototype(Rpc.RpcControl.getDefaultInstance());
 
             if (dc.getDirection() == RpcDirection.INVOKING) {

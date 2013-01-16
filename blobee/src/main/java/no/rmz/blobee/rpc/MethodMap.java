@@ -22,6 +22,18 @@ public final class MethodMap {
     public MethodMap() {
     }
 
+    public static MethodSignature getMethodSignatureFromMethodDescriptor(
+            final MethodDescriptor key) {
+         checkNotNull(key);
+          final MethodSignature signature =
+                    MethodSignature.newBuilder()
+                    .setInputType(key.getInputType().getFullName().toString())
+                    .setMethodName(key.getFullName())
+                    .setOutputType(key.getOutputType().getFullName().toString())
+                    .build();
+          return signature;
+    }
+
     public void add(
             final MethodDescriptor key,
             final Function<Message, Message> function) {
@@ -31,11 +43,7 @@ public final class MethodMap {
         synchronized (monitor) {
             methodsByMethodDescriptor.put(key, function);
             final MethodSignature signature =
-                    MethodSignature.newBuilder()
-                    .setInputType(key.getInputType().getFullName().toString())
-                    .setMethodName(key.getFullName())
-                    .setOutputType(key.getOutputType().getFullName().toString())
-                    .build();
+                    getMethodSignatureFromMethodDescriptor(key);
             methodsByMethodSignature.put(signature, function);
 
             methodDescriptorByMethodSignature.put(signature, key);

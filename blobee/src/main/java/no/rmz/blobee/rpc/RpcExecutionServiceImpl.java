@@ -17,25 +17,21 @@ import org.jboss.netty.channel.ChannelHandlerContext;
 public final class RpcExecutionServiceImpl implements RpcExecutionService {
 
     private static final Logger log = Logger.getLogger(RpcExecutionServiceImpl.class.getName());
-    private final ServingRpcChannel servingChannel;
-    private final Object implementation;
-    private final MethodMap methodMap;
 
-    public RpcExecutionServiceImpl(
-            final Object implementation)
-            throws
-            NoSuchMethodException,
-            IllegalAccessException,
-            IllegalArgumentException,
-            InvocationTargetException {
 
-        this.methodMap = new MethodMap();
-        servingChannel = new ServingRpcChannel(methodMap);
-        this.implementation = checkNotNull(implementation);
-        ServiceAnnotationMapper.bindServices(implementation, methodMap);
+    private final MethodMap methodMap = new MethodMap();
+    private final ServingRpcChannel servingChannel = new ServingRpcChannel(methodMap);
+
+    public RpcExecutionServiceImpl() {
     }
 
-    private static MessageLite getReturnTypePrototype(final Class returnType)
+    public MethodMap getMethodMap() {
+        return methodMap;
+    }
+
+
+
+    public static MessageLite getReturnTypePrototype(final Class returnType)
             throws RpcExecutionException {
 
         try {

@@ -5,7 +5,7 @@ import no.rmz.blobeeprototest.api.proto.Testservice;
 import no.rmz.blobeeprototest.api.proto.Testservice.RpcService;
 
 
-public final class SampleServerImpl {
+public final class SampleServerImpl1 {
 
     public final static String RETURN_VALUE = "Going home";
 
