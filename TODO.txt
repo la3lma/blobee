@@ -1,13 +1,63 @@
+MAKE THE BASICS WORK
+=====================
+
+o Make the implementation used by the tests into a fully
+  abstract one (no references to the test classes).
+
+o Make the bindings happen automatically.
+
+o Make a pretty client API.
+
+o Make another test that is a bit more complex to 
+  make sure the implementation is actually minimally
+  useful.
+
+o Get someone else to use the API and offer feedback.
+
+
+DISCUSS EXTENSIONS
+==================
+
+The purpose of this discussion is to determine their
+impact on the current, minimal API design.
+
+o Discuss possible extensions with someone.  Some possibilities are:
+ 
+    o Drop ongoing calls.  If the invoker for some reason
+      determines that it no longer needs the result of an invocation
+      (e.g. in a "first response wins" fan-out situation), this should
+      be supported by the API.
+
+      IDEA:  Let this be supported by invoking a method with some
+             additional parameters, including the RPC channel
+             so that an implementing method can
+             query the channel to see if it's result is actually
+	     wanted.
+
+    o Collect statistics (usage, timing).
+
+    o Send an userid in the envelope.  Assume that the
+      client can do authentication, so that the server can
+      perform authorization if it wants to.
+
+    o Streaming results: An invocation can return multiple
+      results spread out over time. (combined with the "drop
+      ongoing calls" this is actually pretty cool).
+
+    o Source quench:  Let the server send a signal that
+      indicates that too much traffic is coming in.
+
+
+QUALITY IMPROVEMENTS
+====================
 
 o Refactor a lot, add comments, dot "i"s cross "t"s. Javadoc everything,
   enhance test coverage, but don't add many new features.  
   Consolidate, consolidate.
 
-o Refactor tests somewhat so that they are in fact not as hardwired as
-  today, but uses parametrization techniques from the implementation 
-  instead.
 
-o Make more independent tests for:
+o Make some performance tests.  Nothing fancy, but they should be there
+  from not very far into the future and forever, with historical record.
 
    -> Performance (as soon as a stable API is 
       available (arguably it is today).  Run from command line
@@ -15,17 +65,3 @@ o Make more independent tests for:
 
    -> Benchmark against java RMI. If we're in the same ballpark
       or faster we're pretty well set.
-
-   -> Service from somewhere else than the master ptotobuf declaration that
-      we currently use for everything.
-
-
-o Start formulating a plan to let us get away with very little, or preferably
-  no code generation!
-
-o Test that we can use  blobee on RPC code that is not part of blobee (checking
-  that we don't screw ut things from a classloader's perspective).
-
-o Make some performance tests.  Nothing fancy, but they should be there
-  from not very far into the future and forever, with historical record.
-
