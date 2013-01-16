@@ -1,6 +1,7 @@
 package no.rmz.mvp.rpc;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import com.google.protobuf.DescriptorProtos.DescriptorProto;
 import com.google.protobuf.Descriptors.MethodDescriptor;
 import com.google.protobuf.Message;
 import com.google.protobuf.MessageLite;
@@ -16,81 +17,57 @@ import no.rmz.blobee.rpc.RpcExecutionService;
 import no.rmz.blobee.rpc.ServiceAnnotationMapper;
 import no.rmz.blobee.rpc.ServingRpcChannel;
 import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
-import no.rmz.blobeeprototest.api.proto.Testservice;
-import no.rmz.blobeeprototest.api.proto.Testservice.RpcResult;
 import org.jboss.netty.channel.ChannelHandlerContext;
 
-// XXX Do whatever is necessary to make this class completely
-//     generic, then promote it to the source package
-//      directory.
-public final class RpcExecutionServiceImpl<
-        ServiceType, ParamType extends Message, ResultType extends Message> implements RpcExecutionService {
+
+public final class RpcExecutionServiceImpl implements RpcExecutionService {
 
     private static final Logger log = Logger.getLogger(RpcExecutionServiceImpl.class.getName());
-    private final Class serviceType;
-    private final Class paramType;
-    private final Class resultType;
     private final ServingRpcChannel servingChannel;
-    private final Testservice.RpcService myService;
     private final Object implementation;
     private final MethodMap methodMap;
 
     public RpcExecutionServiceImpl(
-            final Object implementation,
-            final Class serviceType,
-            final Class paramType,
-            final Class resultType)
+            final Object implementation)
             throws
             NoSuchMethodException,
             IllegalAccessException,
             IllegalArgumentException,
             InvocationTargetException {
-        this.serviceType = checkNotNull(serviceType);
-        this.paramType = checkNotNull(paramType);
-        this.resultType = checkNotNull(resultType);
+
         this.methodMap = new MethodMap();
         servingChannel = new ServingRpcChannel(methodMap);
         this.implementation = checkNotNull(implementation);
         ServiceAnnotationMapper.bindServices(implementation, methodMap);
-        // XXX Bogus cast
-        myService = Testservice.RpcService.newStub(servingChannel);
     }
 
-    public MessageLite getReturnTypePrototype(final Class msg) {
-        MessageLite prototype = null; // XXX THis is bogus
+    private static MessageLite getReturnTypePrototype(final Class returnType)
+            throws RpcExecutionException {
 
         try {
-
-            // XXX We should ask the servide to get the response
-            //     prototype from the method description.
-            final Method method = msg.getMethod("getDefaultInstance");
+            final Method method = returnType.getMethod("getDefaultInstance");
             try {
-                final Object foo;
                 try {
-                    // foo = msg.newInstance();
                     final Object ob = method.invoke(null);
-                    prototype = (MessageLite) ob;
+                    return (MessageLite) ob;
                 }
-
                 catch (IllegalAccessException ex) {
-                    log.log(Level.SEVERE, "y", ex);
+                    throw new RpcExecutionException(ex);
                 }
-
             }
             catch (IllegalArgumentException ex) {
-                log.log(Level.SEVERE, "b", ex);
+                throw new RpcExecutionException(ex);
             }
             catch (InvocationTargetException ex) {
-                log.log(Level.SEVERE, "c", ex);
+                throw new RpcExecutionException(ex);
             }
         }
         catch (NoSuchMethodException ex) {
-            log.log(Level.SEVERE, "d", ex);
+            throw new RpcExecutionException(ex);
         }
         catch (SecurityException ex) {
-            log.log(Level.SEVERE, "e", ex);
+            throw new RpcExecutionException(ex);
         }
-        return prototype;
     }
 
     @Override
@@ -106,32 +83,20 @@ public final class RpcExecutionServiceImpl<
                     }
                 };
 
-
-        // XXX This is bogus
         final RpcController controller;
         controller = servingChannel.newController();
         final MethodSignature methodSignature = dc.getMethodSignature();
         final MethodDescriptor methodDescriptor =
                 methodMap.getMethodDescriptorFromMethodSignature(methodSignature);
-        /*
-         *   final MethodDescriptor method,
-         final RpcController controller,
-         final Message request,
-         final Message responsePrototype,
-         final RpcCallback<Message> callback) {
-         */
-        final MessageLite responsePrototype = getReturnTypePrototype(resultType);
 
-        final Testservice.RpcParam requestParam = (Testservice.RpcParam) param;
-         servingChannel.callMethod(
-         methodDescriptor,
-         controller,
-         requestParam,
-         (Message) responsePrototype,
-         callback);
-/*
-        final Testservice.RpcParam requestParam = (Testservice.RpcParam) param;
-        myService.invoke(controller, requestParam, callback);
-        */
+        final DescriptorProto responsePrototype =
+                methodDescriptor.getOutputType().toProto().getDefaultInstance();
+
+        servingChannel.callMethod(
+                methodDescriptor,
+                controller,
+                (Message) param,
+                (Message) responsePrototype,
+                callback);
     }
 }
