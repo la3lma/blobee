@@ -14,6 +14,12 @@ o Make another test that is a bit more complex to
 
 o Get someone else to use the API and offer feedback.
 
+o Figure out how to involve more people.
+   - Design discussions.
+   - Code review.
+   - Developers.
+   - Users.
+
 
 DISCUSS EXTENSIONS
 ==================
