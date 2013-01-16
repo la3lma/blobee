@@ -6,10 +6,12 @@ import no.rmz.blobeeprototest.api.proto.Testservice.RpcParam;
 import no.rmz.blobeeprototest.api.proto.Testservice.RpcResult;
 import no.rmz.blobeeprototest.api.proto.Testservice.RpcService;
 
-public  final class SampleServerImpl2 extends RpcService {
+public  final class SampleServerImpl extends RpcService {
+
+    public final static String RETURN_VALUE = "Going home";
 
     private final RpcResult result =
-            RpcResult.newBuilder().setReturnvalue(SampleServerImpl1.RETURN_VALUE).build();
+            RpcResult.newBuilder().setReturnvalue(RETURN_VALUE).build();
 
     @Override
     public void invoke(

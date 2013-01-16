@@ -10,15 +10,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-import no.rmz.blobee.SampleServerImpl1;
-import no.rmz.blobee.SampleServerImpl2;
+import no.rmz.blobee.SampleServerImpl;
 import no.rmz.blobee.rpc.RpcClient;
 import no.rmz.blobee.rpc.RpcExecutionService;
 import no.rmz.blobee.rpc.RpcMessageListener;
 import no.rmz.blobee.rpc.RpcSetup;
-import no.rmz.blobee.rpc.ServingRpcChannel;
-import no.rmz.blobeeproto.api.proto.Rpc;
 import no.rmz.blobeeprototest.api.proto.Testservice;
 import no.rmz.testtools.Net;
 import no.rmz.testtools.Receiver;
@@ -38,27 +36,23 @@ public final class RpcPeerInvocationTest2 {
     private final static String HOST = "localhost";
 
     private int port;
-    private ServingRpcChannel servingChannel;
+
     private RpcChannel clientChannel;
     private Testservice.RpcParam request = Testservice.RpcParam.newBuilder().build();
     private RpcController clientController;
-    private Rpc.RpcControl failureResult =
-            Rpc.RpcControl.newBuilder()
-            .setMessageType(Rpc.MessageType.RPC_RETURNVALUE)
-            .setStat(Rpc.StatusCode.HANDLER_FAILURE)
-            .build();
+
     RpcMessageListener rpcMessageListener = new RpcMessageListener() {
         public void receiveMessage(
                 final Object message,
                 final ChannelHandlerContext ctx) {
-            log.info("message = " + message);
+            log.log(Level.INFO, "message = {0}", message);
         }
     };
     private Lock lock;
     private Condition resultReceived;
     private RpcController servingController;
 
-    private final void signalResultReceived() {
+    private void signalResultReceived() {
         try {
             lock.lock();
             resultReceived.signal();
@@ -82,7 +76,7 @@ public final class RpcPeerInvocationTest2 {
 
         final RpcExecutionService executionService;
         executionService = new RpcExecutionServiceImpl(
-                new SampleServerImpl2(),
+                new SampleServerImpl(),
                 Testservice.RpcService.Interface.class);
 
         final RpcClient client = RpcSetup.setUpClient(HOST, port, executionService);
@@ -123,6 +117,6 @@ public final class RpcPeerInvocationTest2 {
             log.info("unlocked, test passed");
         }
 
-        verify(callbackResponse).receive(SampleServerImpl1.RETURN_VALUE);
+        verify(callbackResponse).receive(SampleServerImpl.RETURN_VALUE);
     }
 }
