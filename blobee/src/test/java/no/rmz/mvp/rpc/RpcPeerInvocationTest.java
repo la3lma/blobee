@@ -1,5 +1,6 @@
 package no.rmz.mvp.rpc;
 
+import no.rmz.blobee.rpc.RpcExecutionServiceImpl;
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcChannel;
 import com.google.protobuf.RpcController;

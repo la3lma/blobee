@@ -1,4 +1,4 @@
-package no.rmz.mvp.rpc;
+package no.rmz.blobee.rpc;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.DescriptorProtos.DescriptorProto;
@@ -9,13 +9,7 @@ import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcController;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import no.rmz.blobee.rpc.MethodMap;
-import no.rmz.blobee.rpc.RemoteExecutionContext;
-import no.rmz.blobee.rpc.RpcExecutionService;
-import no.rmz.blobee.rpc.ServiceAnnotationMapper;
-import no.rmz.blobee.rpc.ServingRpcChannel;
 import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
 import org.jboss.netty.channel.ChannelHandlerContext;
 
