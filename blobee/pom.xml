@@ -53,12 +53,19 @@
 
 
          <dependency>
-            <groupId>no.rmz</groupId>
-            <artifactId>blobeetestproto</artifactId>
-            <version>1.0-SNAPSHOT</version>
-             <!-- THIS MUST BE ENABLED ASAP <scope>test</scope> -->
-        </dependency>
+             <groupId>no.rmz</groupId>
+             <artifactId>blobeetestproto</artifactId>
+             <version>1.0-SNAPSHOT</version>
+             <scope>test</scope>
+         </dependency>
 
+
+         <dependency>
+             <groupId>no.rmz</groupId>
+             <artifactId>blobeetestproto1</artifactId>
+             <version>1.0-SNAPSHOT</version>
+             <scope>test</scope>
+         </dependency>
 
 
        <!--  If we don't need this we should drop it

@@ -1,18 +1,13 @@
 MAKE THE BASICS WORK
 =====================
 
-o Make the implementation used by the tests into a fully
-  abstract one (no references to the test classes).
-
-o Make the bindings happen automatically.
+o Get someone else to use the API and offer feedback.
 
 o Make a pretty client API.
 
 o Make another test that is a bit more complex to 
   make sure the implementation is actually minimally
   useful.
-
-o Get someone else to use the API and offer feedback.
 
 o Figure out how to involve more people.
    - Design discussions.

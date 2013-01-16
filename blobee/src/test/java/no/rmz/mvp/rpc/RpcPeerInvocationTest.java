@@ -1,6 +1,5 @@
 package no.rmz.mvp.rpc;
 
-import no.rmz.blobee.rpc.RpcExecutionServiceImpl;
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcChannel;
 import com.google.protobuf.RpcController;
@@ -15,6 +14,7 @@ import java.util.logging.Logger;
 import no.rmz.blobee.SampleServerImpl;
 import no.rmz.blobee.rpc.RpcClient;
 import no.rmz.blobee.rpc.RpcExecutionService;
+import no.rmz.blobee.rpc.RpcExecutionServiceImpl;
 import no.rmz.blobee.rpc.RpcMessageListener;
 import no.rmz.blobee.rpc.RpcSetup;
 import no.rmz.blobeeprototest.api.proto.Testservice;
@@ -29,10 +29,10 @@ import static org.mockito.Mockito.*;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public final class RpcPeerInvocationTest2 {
+public final class RpcPeerInvocationTest {
 
     private static final Logger log = Logger.getLogger(
-            no.rmz.mvp.rpc.RpcPeerInvocationTest2.class.getName());
+            no.rmz.mvp.rpc.RpcPeerInvocationTest.class.getName());
     private final static String HOST = "localhost";
 
     private int port;
