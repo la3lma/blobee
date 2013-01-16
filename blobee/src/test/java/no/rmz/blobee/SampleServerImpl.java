@@ -1,7 +1,6 @@
 package no.rmz.blobee;
 
 import no.rmz.blobee.rpc.ProtobufRpcImplementation;
-import no.rmz.blobeeproto.api.proto.Rpc;
 import no.rmz.blobeeprototest.api.proto.Testservice;
 import no.rmz.blobeeprototest.api.proto.Testservice.RpcService;
 

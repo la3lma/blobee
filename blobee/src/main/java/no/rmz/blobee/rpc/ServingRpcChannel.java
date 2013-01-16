@@ -9,6 +9,7 @@ import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcChannel;
 import com.google.protobuf.RpcController;
 import com.google.protobuf.ServiceException;
+import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
 
 /**
  * Experimental implementation of an RpcChannel. Used as a vehicle to wrap my

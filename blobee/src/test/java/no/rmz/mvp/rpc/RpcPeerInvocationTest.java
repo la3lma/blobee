@@ -85,18 +85,23 @@ public final class RpcPeerInvocationTest {
                 Testservice.RpcService,
                 Testservice.RpcParam,
                 Testservice.RpcResult>(
+                new SampleServerImpl(),
                 Testservice.RpcService.class,
                 Testservice.RpcParam.class,
                 Testservice.RpcResult.class);
 
         final RpcClient client = RpcSetup.setUpClient(HOST, port, snapdoll);
-        RpcSetup.setUpServer(port, snapdoll, client, rpcMessageListener);
+
+        final RpcClient serversClient = client; // XXX This is an abomination
+        RpcSetup.setUpServer(port, snapdoll, serversClient, rpcMessageListener);
 
         client.start();
 
         clientChannel   = client.newClientRpcChannel();
         clientController = client.newController(clientChannel);
     }
+
+
     @Mock
     Receiver<String> callbackResponse;
 

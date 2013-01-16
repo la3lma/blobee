@@ -37,11 +37,13 @@ public final class RpcExecutionServiceImpl<
     private final Class resultType;
     private final ServingRpcChannel servingChannel;
     private final Testservice.RpcService myService;
+    private final Object implementation;
 
 
 
-
-    public RpcExecutionServiceImpl(final Class serviceType,
+    public RpcExecutionServiceImpl(
+            final Object implementation,
+            final Class serviceType,
             final Class paramType, final Class resultType)
             throws
                NoSuchMethodException,
@@ -53,7 +55,7 @@ public final class RpcExecutionServiceImpl<
         this.resultType = checkNotNull(resultType);
         final MethodMap methodMap = new MethodMap();
         servingChannel = new ServingRpcChannel(methodMap);
-        final SampleServerImpl implementation = new SampleServerImpl();
+        this.implementation = checkNotNull(implementation);
         ServiceAnnotationMapper.bindServices(implementation, methodMap);
         // XXX Bogus cast
         myService =  Testservice.RpcService.newStub(servingChannel);
