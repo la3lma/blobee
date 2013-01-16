@@ -123,8 +123,9 @@ public final class RpcPeerHandler
                     throw new IllegalStateException("Protocol decoding error 1");
                 }
 
-                contextMap.put(ctx, new RemoteExecutionContext(this, ctx,
-                        methodSignature, rpcIndex, RpcDirection.INVOKING));
+                final RemoteExecutionContext rec = new RemoteExecutionContext(this, ctx,
+                        methodSignature, rpcIndex, RpcDirection.INVOKING);
+                contextMap.put(ctx, rec);
             } else if (messageType == Rpc.MessageType.RPC_RETURNVALUE) {
                 final MethodSignature methodSignature = msg.getMethodSignature();
                 final long rpcIndex = msg.getRpcIndex();
@@ -138,8 +139,8 @@ public final class RpcPeerHandler
                 if (dc != null) {
                     throw new IllegalStateException("Protocol decoding error 1");
                 }
-
-                contextMap.put(ctx, new RemoteExecutionContext(this, ctx, methodSignature, rpcIndex,
+                contextMap.put(ctx,
+                        new RemoteExecutionContext(this, ctx, methodSignature, rpcIndex,
                         RpcDirection.RETURNING));
             } else if (messageType == Rpc.MessageType.SHUTDOWN) {
                 protbufDecoder.putNextPrototype(Rpc.RpcControl.getDefaultInstance());

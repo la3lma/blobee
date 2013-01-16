@@ -40,7 +40,7 @@ public final class ServingRpcChannel implements RpcChannel {
         // XXX Happy day scenario. Must handle a lot more
         //     bogusness before it's believable :)
         final Function<Message, Message> meth;
-        meth = methodMap.get(method);
+        meth = methodMap.getByMethodDescriptor(method);
         final Message result = meth.apply(request);
         callback.run(result);
     }
@@ -59,7 +59,7 @@ public final class ServingRpcChannel implements RpcChannel {
                     final Message responsePrototype) throws ServiceException {
 
                 final Function<Message, Message> meth;
-                meth = methodMap.get(method);
+                meth = methodMap.getByMethodDescriptor(method);
                 final Message result = meth.apply(request);
 
                 return result;

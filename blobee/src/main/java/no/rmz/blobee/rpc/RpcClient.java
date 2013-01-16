@@ -73,8 +73,8 @@ public final class RpcClient {
 
             final MethodDescriptor md = invocation.getMethod();
             final String methodName = md.getFullName();
-            final String inputType = md.getInputType().getName();
-            final String outputType = md.getOutputType().getName();
+            final String inputType = md.getInputType().getFullName();
+            final String outputType = md.getOutputType().getFullName();
 
             final MethodSignature ms = Rpc.MethodSignature.newBuilder()
                     .setMethodName(methodName)
