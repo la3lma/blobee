@@ -1,70 +1,81 @@
 package no.rmz.blobee.rpc;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import com.google.protobuf.DescriptorProtos.DescriptorProto;
-import com.google.protobuf.Descriptors.MethodDescriptor;
+import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
-import com.google.protobuf.MessageLite;
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcController;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.TypeVariable;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
 import org.jboss.netty.channel.ChannelHandlerContext;
 
 
-public final class RpcExecutionServiceImpl implements RpcExecutionService {
-
-    private static final Logger log = Logger.getLogger(RpcExecutionServiceImpl.class.getName());
-
-
-    private final MethodMap methodMap = new MethodMap();
-    private final ServingRpcChannel servingChannel = new ServingRpcChannel(methodMap);
-
-    public RpcExecutionServiceImpl() {
-    }
-
-    public MethodMap getMethodMap() {
-        return methodMap;
-    }
+/**
+ * The implementation object implements one or more intefaces
+ * each of those interfaces present methods that can be
+ * served through
+ */
+public final class RpcExecutionServiceImpl
+    implements RpcExecutionService {
 
 
+    private final static Logger log =
+            Logger.getLogger(RpcExecutionServiceImpl.class.getName());
 
-    public static MessageLite getReturnTypePrototype(final Class returnType)
-            throws RpcExecutionException {
+    final Object implementation;
 
-        try {
-            final Method method = returnType.getMethod("getDefaultInstance");
-            try {
-                try {
-                    final Object ob = method.invoke(null);
-                    return (MessageLite) ob;
+    final Map<MethodSignature, Method> mmap;
+
+    public RpcExecutionServiceImpl(
+            final Object implementation, final Class ... interfaces) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        this.implementation = checkNotNull(implementation);
+        mmap = new HashMap<MethodSignature, Method>();
+
+        for (final Class iface : interfaces) {
+            for (final Method interfaceMethod : iface.getMethods()) {
+                final TypeVariable<Method>[] typeParameters =
+                        interfaceMethod.getTypeParameters();
+                // final Class<?> returnType = interfaceMethod.getReturnType();
+                final String name = interfaceMethod.getName();
+                // final String className = iface.getClass().getName();
+
+                final Descriptors.MethodDescriptor descriptor;
+                descriptor = ServiceAnnotationMapper.getMethodDescriptor(
+                        implementation.getClass(),
+                        name.substring(0, 1).toUpperCase()+ // XXX FUCKING UGLY
+                        name.substring(1)
+                        );
+                final MethodSignature methodSignature =
+                        MethodMap.getMethodSignatureFromMethodDescriptor(descriptor);
+
+                boolean foundMethod = false;
+                for (final Method implementationMethod: implementation.getClass().getMethods()) {
+                    if (implementationMethod.getName().equals(name)) {
+                         mmap.put(methodSignature, implementationMethod);
+                         foundMethod = true;
+                         break;
+                    }
                 }
-                catch (IllegalAccessException ex) {
-                    throw new RpcExecutionException(ex);
+                if (!foundMethod) {
+                    throw new IllegalStateException("Unknown method " + name);
                 }
             }
-            catch (IllegalArgumentException ex) {
-                throw new RpcExecutionException(ex);
-            }
-            catch (InvocationTargetException ex) {
-                throw new RpcExecutionException(ex);
-            }
-        }
-        catch (NoSuchMethodException ex) {
-            throw new RpcExecutionException(ex);
-        }
-        catch (SecurityException ex) {
-            throw new RpcExecutionException(ex);
         }
     }
 
-    @Override
     public void execute(
             final RemoteExecutionContext dc,
-            final ChannelHandlerContext ctx,
-            final Object param) {
+            final ChannelHandlerContext ctx, // XXX Redundant? dc.getCtx or something
+            final Object parameter) {
+        final Method method = mmap.get(dc.getMethodSignature());
+
+        final RpcController controller= new RpcControllerImpl(); // XX Placeholder
 
         final RpcCallback<Message> callback =
                 new RpcCallback<Message>() {
@@ -73,20 +84,19 @@ public final class RpcExecutionServiceImpl implements RpcExecutionService {
                     }
                 };
 
-        final RpcController controller;
-        controller = servingChannel.newController();
-        final MethodSignature methodSignature = dc.getMethodSignature();
-        final MethodDescriptor methodDescriptor =
-                methodMap.getMethodDescriptorFromMethodSignature(methodSignature);
-
-        final DescriptorProto responsePrototype =
-                methodDescriptor.getOutputType().toProto().getDefaultInstance();
-
-        servingChannel.callMethod(
-                methodDescriptor,
-                controller,
-                (Message) param,
-                (Message) responsePrototype,
-                callback);
+        // XXX Swalloing exceptions is baaad, but for now that's what
+        //     we're doing.
+        try {
+            method.invoke(implementation, controller, parameter, callback);
+        }
+        catch (IllegalAccessException ex) {
+            log.log(Level.SEVERE, null, ex);
+        }
+        catch (IllegalArgumentException ex) {
+            log.log(Level.SEVERE, null, ex);
+        }
+        catch (InvocationTargetException ex) {
+            log.log(Level.SEVERE, null, ex);
+        }
     }
 }

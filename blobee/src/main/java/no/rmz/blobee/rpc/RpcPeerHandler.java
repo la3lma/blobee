@@ -3,6 +3,8 @@ package no.rmz.blobee.rpc;
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.Message;
 import com.google.protobuf.MessageLite;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
@@ -18,47 +20,36 @@ import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 
-
-
 public final class RpcPeerHandler
         extends SimpleChannelUpstreamHandler {
 
     private static final Logger log =
             Logger.getLogger(RpcPeerHandler.class.getName());
-
     /**
      * A constant used when sending heartbeats.
      */
     private static final Rpc.RpcControl HEARTBEAT =
             Rpc.RpcControl.newBuilder()
-                .setMessageType(Rpc.MessageType.HEARTBEAT)
-                .build();
-
+            .setMessageType(Rpc.MessageType.HEARTBEAT)
+            .build();
     private final DynamicProtobufDecoder protbufDecoder;
-
     /**
      * Used to listen in to incoming messages. Intended for debugging purposes.
      */
     private RpcMessageListener listener;
-
     /**
      * Used to synchronize access to the listener instance.
      */
     private final Object listenerLock = new Object();
-
-
     /**
      * A service that is used to actually execute incoming RPC requests.
      */
     private final RpcExecutionService executionService;
-
     /**
-     * A client used to receive requests for RPC invocations, and also
-     * to return incoming responses to the callers.
+     * A client used to receive requests for RPC invocations, and also to return
+     * incoming responses to the callers.
      */
     private final RpcClient rpcClient;
-
-
     /**
      * For each ChannelHandlerContext, this map keeps track of the
      * RemoteExecution context being processed.
@@ -152,7 +143,7 @@ public final class RpcPeerHandler
 
         } else {
             final RemoteExecutionContext dc = contextMap.get(ctx);
-            
+
             if (dc == null) {
                 throw new IllegalStateException("Protocol decoding error 3");
             }
@@ -161,7 +152,7 @@ public final class RpcPeerHandler
 
             if (dc.getDirection() == RpcDirection.INVOKING) {
                 executionService.execute(dc, ctx, message);
-            } else  if (dc.getDirection() == RpcDirection.RETURNING) {
+            } else if (dc.getDirection() == RpcDirection.RETURNING) {
                 final Message msg = (Message) message;
                 rpcClient.returnCall(dc, msg);
             } else {
@@ -185,22 +176,26 @@ public final class RpcPeerHandler
         super.channelClosed(ctx, e);
     }
 
-
-    private MessageLite getPrototypeForParameter(MethodSignature methodSignature) {
-
-        // XXX This is a very un-dynamic placeholder for something with a very
-        //     dynamic intension.  Treat it as a stub to be replaced when we
-        //     extend the present proof-of-concept into a fully useful and generic
-        //     RPC mechanism.
-        return Testservice.RpcParam.getDefaultInstance();
+    private MessageLite getPrototypeForMessageClass(final String classname) {
+        try {
+            final Class<?> theClass = Class.forName(classname);
+            final Method method = theClass.getMethod("getDefaultInstance", (Class<?>) null);
+            final MessageLite returnValue = (MessageLite) method.invoke(null, (Object) null);
+            return returnValue;
+        }
+        catch (Exception ex) {
+            throw new RuntimeException(ex); // XXX FIXME
+        }
     }
 
-    private MessageLite getPrototypeForReturnValue(MethodSignature methodSignature) {
-        // XXX This is a very un-dynamic placeholder for something with a very
-        //     dynamic intension.  Treat it as a stub to be replaced when we
-        //     extend the present proof-of-concept into a fully useful and generic
-        //     RPC mechanism.
-        return Testservice.RpcResult.getDefaultInstance();
+    private MessageLite getPrototypeForParameter(final MethodSignature methodSignature) {
+        checkNotNull(methodSignature);
+        return getPrototypeForMessageClass(methodSignature.getInputType());
+    }
+
+    private MessageLite getPrototypeForReturnValue(final MethodSignature methodSignature) {
+        checkNotNull(methodSignature);
+        return getPrototypeForMessageClass(methodSignature.getOutputType());
     }
 
     void returnResult(final RemoteExecutionContext context, final Message result) {
@@ -218,7 +213,6 @@ public final class RpcPeerHandler
         WireFactory.getWireForChannel(channel)
                 .write(invocationControl, result);
     }
-
     final Map<Channel, Object> lockMap = new WeakHashMap<Channel, Object>();
 
     private Object getChannelLock(final Channel channel) {
