@@ -7,6 +7,7 @@ import com.google.protobuf.RpcController;
 public final class RpcClientControllerImpl implements RpcController {
 
     private boolean failed = false;
+    private boolean cancelled = false;
     private String reason = "";
     private final Object monitor = new Object();
 
@@ -30,7 +31,13 @@ public final class RpcClientControllerImpl implements RpcController {
     }
 
     public void startCancel() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        synchronized (monitor) {
+            cancelled = true;
+        }
+        // The cancellation needs to be sent to the
+        // message scheduler and/or ove the wire to the
+        // running service.
+        throw new UnsupportedOperationException("Cancellation not fully supported yet");
     }
 
     public void setFailed(final String reason) {
@@ -42,10 +49,12 @@ public final class RpcClientControllerImpl implements RpcController {
     }
 
     public boolean isCanceled() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        synchronized (monitor) {
+            return cancelled;
+        }
     }
 
     public void notifyOnCancel(RpcCallback<Object> callback) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("notifyOnCancel callback not supported on client side");
     }
 }

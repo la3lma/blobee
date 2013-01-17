@@ -1,4 +1,4 @@
-package no.rmz.mvp.rpc;
+package no.rmz.blobee.rpc;
 
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcChannel;
@@ -11,7 +11,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import no.rmz.blobee.SampleServerImpl;
+import no.rmz.blobee.serviceimpls.SampleServerImpl;
 import no.rmz.blobee.rpc.RpcClient;
 import no.rmz.blobee.rpc.RpcExecutionService;
 import no.rmz.blobee.rpc.RpcExecutionServiceImpl;
@@ -38,7 +38,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 public final class ControlChannelFailedInvocationTest {
 
     private static final Logger log = Logger.getLogger(
-            no.rmz.mvp.rpc.ControlChannelFailedInvocationTest.class.getName());
+            no.rmz.blobee.rpc.ControlChannelFailedInvocationTest.class.getName());
     private final static String HOST = "localhost";
     private int port;
     private RpcChannel clientChannel;

@@ -1,4 +1,4 @@
-package no.rmz.mvp.rpc;
+package no.rmz.blobee.rpc;
 
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcChannel;
@@ -6,22 +6,18 @@ import com.google.protobuf.RpcController;
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import no.rmz.blobee.SampleServerImpl;
-import no.rmz.blobee.SampleServerImpl1;
+import no.rmz.blobee.serviceimpls.SampleServerImpl;
 import no.rmz.blobee.rpc.RpcClient;
 import no.rmz.blobee.rpc.RpcExecutionService;
 import no.rmz.blobee.rpc.RpcExecutionServiceImpl;
 import no.rmz.blobee.rpc.RpcMessageListener;
 import no.rmz.blobee.rpc.RpcSetup;
-import no.rmz.blobeetestproto.api.proto.Tullball.RpcPar;
-import no.rmz.blobeetestproto.api.proto.Tullball.RpcRes;
-import no.rmz.blobeetestproto.api.proto.Tullball.RpcServ;
+import no.rmz.blobeeprototest.api.proto.Testservice;
 import no.rmz.testtools.Net;
 import no.rmz.testtools.Receiver;
 import org.jboss.netty.channel.ChannelHandlerContext;
@@ -33,16 +29,16 @@ import static org.mockito.Mockito.*;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public final class RpcPeerInvocation1Test {
+public final class RpcPeerInvocationTest {
 
     private static final Logger log = Logger.getLogger(
-            no.rmz.mvp.rpc.RpcPeerInvocation1Test.class.getName());
+            no.rmz.blobee.rpc.RpcPeerInvocationTest.class.getName());
     private final static String HOST = "localhost";
 
     private int port;
 
     private RpcChannel clientChannel;
-    private RpcPar request = RpcPar.newBuilder().build();
+    private Testservice.RpcParam request = Testservice.RpcParam.newBuilder().build();
     private RpcController clientController;
 
     RpcMessageListener rpcMessageListener = new RpcMessageListener() {
@@ -80,8 +76,8 @@ public final class RpcPeerInvocation1Test {
 
         final RpcExecutionService executionService;
         executionService = new RpcExecutionServiceImpl(
-                new SampleServerImpl1(),  // XXX No actual typechecking here!!
-                RpcServ.Interface.class);
+                new SampleServerImpl(),
+                Testservice.RpcService.Interface.class);
 
         final RpcClient client = RpcSetup.setUpClient(HOST, port, executionService);
 
@@ -101,22 +97,21 @@ public final class RpcPeerInvocation1Test {
     @SuppressWarnings("WA_AWAIT_NOT_IN_LOOP")
     public void testRpcInvocation() throws InterruptedException {
 
-        final RpcCallback<RpcRes> callback =
-                new RpcCallback<RpcRes>() {
-                    public void run(final RpcRes response) {
+        final RpcCallback<Testservice.RpcResult> callback =
+                new RpcCallback<Testservice.RpcResult>() {
+                    public void run(final Testservice.RpcResult response) {
                         callbackResponse.receive(response.getReturnvalue());
                         signalResultReceived();
                     }
                 };
 
-        final RpcServ myService;
-        myService = RpcServ.newStub(clientChannel);
+        final Testservice.RpcService myService = Testservice.RpcService.newStub(clientChannel);
         myService.invoke(clientController, request, callback);
 
         try {
             lock.lock();
             log.info("Awaiting result received.");
-            resultReceived.await(300, TimeUnit.SECONDS); // XXX Should be tuned a bit:-)
+            resultReceived.await();
         } finally {
             lock.unlock();
             log.info("unlocked, test passed");

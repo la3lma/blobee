@@ -1,4 +1,4 @@
-package no.rmz.mvp.rpc;
+package no.rmz.blobee.rpc;
 
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcChannel;
@@ -11,7 +11,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import no.rmz.blobee.SampleServerImpl;
+import no.rmz.blobee.serviceimpls.SampleServerImpl;
 import no.rmz.blobee.rpc.RpcClient;
 import no.rmz.blobee.rpc.RpcExecutionService;
 import no.rmz.blobee.rpc.RpcExecutionServiceImpl;
@@ -21,6 +21,7 @@ import no.rmz.blobeeprototest.api.proto.Testservice;
 import no.rmz.testtools.Net;
 import no.rmz.testtools.Receiver;
 import org.jboss.netty.channel.ChannelHandlerContext;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,19 +29,47 @@ import org.mockito.Mock;
 import static org.mockito.Mockito.*;
 import org.mockito.runners.MockitoJUnitRunner;
 
+/**
+ * In this class we test the functionality of the control channel by sending
+ * various kinds of messages over it, such as error messages, instructions to
+ * halt execution of an ongoing computation etc.
+ */
 @RunWith(MockitoJUnitRunner.class)
-public final class RpcPeerInvocationTest {
+public final class ControlChannelCancelInvocationTest {
 
     private static final Logger log = Logger.getLogger(
-            no.rmz.mvp.rpc.RpcPeerInvocationTest.class.getName());
+            no.rmz.blobee.rpc.ControlChannelCancelInvocationTest.class.getName());
     private final static String HOST = "localhost";
-
     private int port;
-
     private RpcChannel clientChannel;
     private Testservice.RpcParam request = Testservice.RpcParam.newBuilder().build();
     private RpcController clientController;
 
+     private final static String FAILED_TEXT = "The computation failed";
+
+
+    /**
+     * The service instance that we will use to communicate over the controller
+     * channel.
+     */
+    public final class ServiceTestItem extends Testservice.RpcService {
+
+        public final static String RETURN_VALUE = "Going home";
+        private final Testservice.RpcResult result =
+                Testservice.RpcResult.newBuilder().setReturnvalue(RETURN_VALUE).build();
+
+
+        @Override
+        public void invoke(
+                final RpcController controller,
+                final Testservice.RpcParam request,
+                final RpcCallback<Testservice.RpcResult> done) {
+
+
+            controller.setFailed(FAILED_TEXT);
+            done.run(result);
+        }
+    }
     RpcMessageListener rpcMessageListener = new RpcMessageListener() {
         public void receiveMessage(
                 final Object message,
@@ -76,7 +105,7 @@ public final class RpcPeerInvocationTest {
 
         final RpcExecutionService executionService;
         executionService = new RpcExecutionServiceImpl(
-                new SampleServerImpl(),
+                new ServiceTestItem(),
                 Testservice.RpcService.Interface.class);
 
         final RpcClient client = RpcSetup.setUpClient(HOST, port, executionService);
@@ -86,10 +115,9 @@ public final class RpcPeerInvocationTest {
 
         client.start();
 
-        clientChannel    = client.newClientRpcChannel();
+        clientChannel = client.newClientRpcChannel();
         clientController = client.newController(clientChannel);
     }
-
     @Mock
     Receiver<String> callbackResponse;
 
@@ -112,11 +140,15 @@ public final class RpcPeerInvocationTest {
             lock.lock();
             log.info("Awaiting result received.");
             resultReceived.await();
-        } finally {
+        }
+
+        finally {
             lock.unlock();
             log.info("unlocked, test passed");
         }
 
         verify(callbackResponse).receive(SampleServerImpl.RETURN_VALUE);
+        assertTrue(clientController.failed());
+        assertEquals(FAILED_TEXT, clientController.errorText());
     }
 }
