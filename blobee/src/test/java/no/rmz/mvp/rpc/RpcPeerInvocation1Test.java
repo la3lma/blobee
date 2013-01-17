@@ -33,10 +33,10 @@ import static org.mockito.Mockito.*;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public final class RpcPeerInvocationTest1 {
+public final class RpcPeerInvocation1Test {
 
     private static final Logger log = Logger.getLogger(
-            no.rmz.mvp.rpc.RpcPeerInvocationTest1.class.getName());
+            no.rmz.mvp.rpc.RpcPeerInvocation1Test.class.getName());
     private final static String HOST = "localhost";
 
     private int port;

@@ -63,6 +63,7 @@ public final class RpcExecutionServiceImpl
 
         for (final Class iface : interfaces) {
 /*
+ * This fails, and it shouldnt fail.
             if (!ifaces.contains(iface)) {
                 throw new IllegalArgumentException(
                         "The implementation " + implementation + "does not implement interface " + iface);
