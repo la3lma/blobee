@@ -18,15 +18,14 @@ import no.rmz.blobee.rpc.RpcExecutionServiceImpl;
 import no.rmz.blobee.rpc.RpcMessageListener;
 import no.rmz.blobee.rpc.RpcSetup;
 import no.rmz.blobeeprototest.api.proto.Testservice;
-import no.rmz.blobeetestproto.api.proto.Tullball;
 import no.rmz.testtools.Net;
 import no.rmz.testtools.Receiver;
 import org.jboss.netty.channel.ChannelHandlerContext;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -36,10 +35,10 @@ import org.mockito.runners.MockitoJUnitRunner;
  * halt execution of an ongoing computation etc.
  */
 @RunWith(MockitoJUnitRunner.class)
-public final class ControlChannelTest {
+public final class ControlChannelFailedInvocationTest {
 
     private static final Logger log = Logger.getLogger(
-            no.rmz.mvp.rpc.ControlChannelTest.class.getName());
+            no.rmz.mvp.rpc.ControlChannelFailedInvocationTest.class.getName());
     private final static String HOST = "localhost";
     private int port;
     private RpcChannel clientChannel;
@@ -140,12 +139,14 @@ public final class ControlChannelTest {
             log.info("Awaiting result received.");
             resultReceived.await();
         }
+
         finally {
             lock.unlock();
             log.info("unlocked, test passed");
         }
 
         verify(callbackResponse).receive(SampleServerImpl.RETURN_VALUE);
-       // assertEquals(FAILED_TEXT, clientController.errorText());
+        assertTrue(clientController.failed());
+        assertEquals(FAILED_TEXT, clientController.errorText());
     }
 }

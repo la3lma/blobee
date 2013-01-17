@@ -135,9 +135,14 @@ public final class RpcPeerHandler
             } else if (messageType == Rpc.MessageType.SHUTDOWN) {
                 protbufDecoder.putNextPrototype(Rpc.RpcControl.getDefaultInstance());
                 ctx.getChannel().close();
+            } else if (messageType == Rpc.MessageType.INVOCATION_FAILED) {
+               protbufDecoder.putNextPrototype(Rpc.RpcControl.getDefaultInstance());
+               final String errorMessage = msg.getFailed();
+               final long   rpcIndex = msg.getRpcIndex();
+               rpcClient.failInvocation(rpcIndex, errorMessage);
             } else {
-                log.warning("Unknown type of control message: " + message);
                 protbufDecoder.putNextPrototype(Rpc.RpcControl.getDefaultInstance());
+                log.warning("Unknown type of control message: " + message);
             }
 
         } else {

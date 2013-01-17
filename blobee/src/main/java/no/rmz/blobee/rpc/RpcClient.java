@@ -198,6 +198,17 @@ public final class RpcClient {
     }
 
     public RpcController newController(final RpcChannel rchannel) {
-        return new RpcControllerImpl();
+        return new RpcClientControllerImpl();
+    }
+
+    void failInvocation(final long rpcIndex, final String errorMessage) {
+        checkNotNull(errorMessage);
+        checkArgument(rpcIndex >= 0);
+        final RpcClientSideInvocation invocation;
+        synchronized (invocations) {
+            invocation = invocations.get(rpcIndex);
+        }
+        checkNotNull(invocation);
+        invocation.getController().setFailed(errorMessage);
     }
 }

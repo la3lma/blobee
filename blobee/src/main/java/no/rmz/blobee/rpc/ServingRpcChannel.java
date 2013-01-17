@@ -44,7 +44,7 @@ public final class ServingRpcChannel implements RpcChannel {
     }
 
     public RpcController newController() {
-        return new RpcControllerImpl();
+        return new RpcClientControllerImpl();
     }
 
     // XXX This is a rather bogus api, refactor asap!!
