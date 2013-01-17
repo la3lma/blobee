@@ -5,6 +5,8 @@ o Get someone else to use the API and offer feedback.
 
 o Make a pretty client API.
 
+o Make control messages flow for the controller object.
+
 o Make another test that is a bit more complex to 
   make sure the implementation is actually minimally
   useful.
