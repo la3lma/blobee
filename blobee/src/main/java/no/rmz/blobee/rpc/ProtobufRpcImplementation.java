@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 
-
+@Deprecated
 public @interface ProtobufRpcImplementation {
    Class  serviceClass();
    String method();

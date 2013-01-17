@@ -120,7 +120,8 @@ public final class RpcExecutionServiceImpl
 
         final Method method = mmap.get(dc.getMethodSignature());
 
-        final RpcController controller= new RpcControllerImpl(); // XX Placeholder
+        // XXXX Add misc contexts.
+        final RpcController controller= new RpcServiceControllerImpl(dc); // XX Placeholder
 
         final RpcCallback<Message> callback =
                 new RpcCallback<Message>() {

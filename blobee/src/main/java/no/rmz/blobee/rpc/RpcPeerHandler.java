@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 import no.rmz.blobee.handler.codec.protobuf.DynamicProtobufDecoder;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
+import no.rmz.blobeeproto.api.proto.Rpc.RpcControl;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelStateEvent;
@@ -204,6 +205,14 @@ public final class RpcPeerHandler
         final Class parameterType = executionService.getReturnType(methodSignature);
         checkNotNull(parameterType);
         return getPrototypeForMessageClass(parameterType);
+    }
+
+    public void sendControlMessage(
+            final RemoteExecutionContext context,
+            final RpcControl control) {
+        final Channel channel = context.getCtx().getChannel();
+        WireFactory.getWireForChannel(channel)
+                .write(control);
     }
 
     void returnResult(final RemoteExecutionContext context, final Message result) {

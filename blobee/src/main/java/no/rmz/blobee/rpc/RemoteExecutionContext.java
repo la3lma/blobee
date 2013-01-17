@@ -2,7 +2,10 @@ package no.rmz.blobee.rpc;
 
 import com.google.protobuf.Message;
 import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
+import no.rmz.blobeeproto.api.proto.Rpc.RpcControl;
 import org.jboss.netty.channel.ChannelHandlerContext;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 
 public final class RemoteExecutionContext {
     private final MethodSignature methodSignature;
@@ -17,11 +20,11 @@ public final class RemoteExecutionContext {
             final MethodSignature methodSignature,
             final long rpcIndex,
             final RpcDirection direction) {
-        this.ctx = ctx;
-        this.peerHandler = peerHandler;
-        this.methodSignature = methodSignature;
-        this.rpcIndex = rpcIndex;
-        this.direction = direction;
+        this.ctx = checkNotNull(ctx);
+        this.peerHandler = checkNotNull(peerHandler);
+        this.methodSignature = checkNotNull(methodSignature);
+        this.rpcIndex = checkNotNull(rpcIndex);
+        this.direction = checkNotNull(direction);
     }
 
     public RpcDirection getDirection() {
@@ -42,5 +45,10 @@ public final class RemoteExecutionContext {
 
     public ChannelHandlerContext getCtx() {
         return ctx;
+    }
+
+    void sendControlMessage(final RpcControl msg) {
+        checkNotNull(msg);
+        peerHandler.sendControlMessage(this, msg);
     }
 }

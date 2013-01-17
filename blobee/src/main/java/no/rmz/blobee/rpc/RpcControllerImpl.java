@@ -4,7 +4,13 @@ import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcController;
 
 // Stub implementation of the RPC controller.
+@Deprecated
 public final class RpcControllerImpl implements RpcController {
+
+    public RpcControllerImpl() {
+    }
+
+
 
     public void reset() {
         throw new UnsupportedOperationException("Not supported yet.");

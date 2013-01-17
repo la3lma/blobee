@@ -10,6 +10,9 @@ message RpcControl {
   // For handling RPC requests;
   optional int64 rpcIndex    = 3;
   optional MethodSignature methodSignature = 4;
+
+  // For handling Controller messages
+  optional string failed = 5;
 }
 
 message MethodSignature {
@@ -23,6 +26,7 @@ enum MessageType {
         RPC_RETURNVALUE = 2;
         HEARTBEAT       = 3;
         SHUTDOWN        = 4;
+        INVOCATION_FAILED = 5;
 }
 
 enum StatusCode {
