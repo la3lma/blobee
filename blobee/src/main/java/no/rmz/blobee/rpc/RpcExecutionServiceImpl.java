@@ -57,18 +57,18 @@ public final class RpcExecutionServiceImpl
 
         final Collection<Class> ifaces = new HashSet<Class>();
 
-        for (final Class i: implementation.getClass().getInterfaces()) {
+        for (final Class i: implementation.getClass().getClasses()) {
             ifaces.add(i);
         }
 
+        log.info("The interfaces are " + ifaces);
         for (final Class iface : interfaces) {
-/*
- * This fails, and it shouldnt fail.
+
             if (!ifaces.contains(iface)) {
                 throw new IllegalArgumentException(
                         "The implementation " + implementation + "does not implement interface " + iface);
             }
-*/
+
             for (final Method interfaceMethod : iface.getMethods()) {
                 final TypeVariable<Method>[] typeParameters =
                         interfaceMethod.getTypeParameters();
