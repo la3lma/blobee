@@ -8,6 +8,7 @@ import no.rmz.blobee.rpc.RpcExecutionService;
 import no.rmz.blobee.rpc.RpcMessageListener;
 import no.rmz.blobee.rpc.RpcSetup;
 import no.rmz.blobeeproto.api.proto.Rpc;
+import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
 import no.rmz.testtools.Net;
 import no.rmz.testtools.Receiver;
 import org.jboss.netty.channel.ChannelHandlerContext;
@@ -89,10 +90,18 @@ public final class RpcPeerStartupAndShutdownTest {
     }
 
     final RpcExecutionService executor = new RpcExecutionService() {
-            public void execute(RemoteExecutionContext dc, ChannelHandlerContext ctx, Object param) {
-                log.info("Executing dc = " + dc + ", param = " + param);
-            }
-        };
+        public void execute(RemoteExecutionContext dc, ChannelHandlerContext ctx, Object param) {
+            log.info("Executing dc = " + dc + ", param = " + param);
+        }
+
+        public Class getReturnType(MethodSignature sig) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public Class getParameterType(MethodSignature sig) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+    };
 
     @Test
     public void testReactionToShutdown() {

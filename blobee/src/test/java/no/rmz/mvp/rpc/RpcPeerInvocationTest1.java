@@ -6,18 +6,22 @@ import com.google.protobuf.RpcController;
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.rmz.blobee.SampleServerImpl;
+import no.rmz.blobee.SampleServerImpl1;
 import no.rmz.blobee.rpc.RpcClient;
 import no.rmz.blobee.rpc.RpcExecutionService;
 import no.rmz.blobee.rpc.RpcExecutionServiceImpl;
 import no.rmz.blobee.rpc.RpcMessageListener;
 import no.rmz.blobee.rpc.RpcSetup;
-import no.rmz.blobeeprototest.api.proto2.Testservice1;
+import no.rmz.blobeetestproto.api.proto.Tullball.RpcPar;
+import no.rmz.blobeetestproto.api.proto.Tullball.RpcRes;
+import no.rmz.blobeetestproto.api.proto.Tullball.RpcServ;
 import no.rmz.testtools.Net;
 import no.rmz.testtools.Receiver;
 import org.jboss.netty.channel.ChannelHandlerContext;
@@ -38,7 +42,7 @@ public final class RpcPeerInvocationTest1 {
     private int port;
 
     private RpcChannel clientChannel;
-    private Testservice1.RpcParam1 request = Testservice1.RpcParam1.newBuilder().build();
+    private RpcPar request = RpcPar.newBuilder().build();
     private RpcController clientController;
 
     RpcMessageListener rpcMessageListener = new RpcMessageListener() {
@@ -76,8 +80,8 @@ public final class RpcPeerInvocationTest1 {
 
         final RpcExecutionService executionService;
         executionService = new RpcExecutionServiceImpl(
-                new SampleServerImpl(),
-                Testservice.RpcService.Interface.class);
+                new SampleServerImpl1(),  // XXX No actual typechecking here!!
+                RpcServ.Interface.class);
 
         final RpcClient client = RpcSetup.setUpClient(HOST, port, executionService);
 
@@ -97,22 +101,22 @@ public final class RpcPeerInvocationTest1 {
     @SuppressWarnings("WA_AWAIT_NOT_IN_LOOP")
     public void testRpcInvocation() throws InterruptedException {
 
-        final RpcCallback<RpcResult1> callback =
-                new RpcCallback<Testservice1.RpcResult1>() {
-                    public void run(final Testservice1.RpcResult1 response) {
+        final RpcCallback<RpcRes> callback =
+                new RpcCallback<RpcRes>() {
+                    public void run(final RpcRes response) {
                         callbackResponse.receive(response.getReturnvalue());
                         signalResultReceived();
                     }
                 };
 
-        final Testservice.RpcService myService;
-        myService = Testservice1.RpcService1.newStub(clientChannel);
+        final RpcServ myService;
+        myService = RpcServ.newStub(clientChannel);
         myService.invoke(clientController, request, callback);
 
         try {
             lock.lock();
             log.info("Awaiting result received.");
-            resultReceived.await();
+            resultReceived.await(300, TimeUnit.SECONDS); // XXX Should be tuned a bit:-)
         } finally {
             lock.unlock();
             log.info("unlocked, test passed");

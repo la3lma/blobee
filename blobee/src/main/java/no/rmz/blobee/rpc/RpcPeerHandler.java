@@ -174,26 +174,36 @@ public final class RpcPeerHandler
         super.channelClosed(ctx, e);
     }
 
-    private MessageLite getPrototypeForMessageClass(final String classname) {
+    private MessageLite getPrototypeForMessageClass(final Class theClass) {
+        checkNotNull(theClass);
         try {
-            final Class<?> theClass = Class.forName(classname);
-            final Method method = theClass.getMethod("getDefaultInstance", (Class<?>) null);
-            final MessageLite returnValue = (MessageLite) method.invoke(null, (Object) null);
-            return returnValue;
+            final Method[] methods = theClass.getMethods();
+            for (final Method method : methods) {
+                if (method.getName().equals("getDefaultInstance")) {
+                    final Object foo = method.invoke(null, null);
+                    final MessageLite returnValue = (MessageLite) foo;
+                    return returnValue;
+                }
+            }
         }
         catch (Exception ex) {
             throw new RuntimeException(ex); // XXX FIXME
         }
+        throw new RuntimeException("Couldn't find getDefaultIntance method for class " + theClass);
     }
 
     private MessageLite getPrototypeForParameter(final MethodSignature methodSignature) {
         checkNotNull(methodSignature);
-        return getPrototypeForMessageClass(methodSignature.getInputType());
+        final Class parameterType = executionService.getParameterType(methodSignature);
+        checkNotNull(parameterType);
+        return getPrototypeForMessageClass(parameterType);
     }
 
     private MessageLite getPrototypeForReturnValue(final MethodSignature methodSignature) {
         checkNotNull(methodSignature);
-        return getPrototypeForMessageClass(methodSignature.getOutputType());
+        final Class parameterType = executionService.getReturnType(methodSignature);
+        checkNotNull(parameterType);
+        return getPrototypeForMessageClass(parameterType);
     }
 
     void returnResult(final RemoteExecutionContext context, final Message result) {
