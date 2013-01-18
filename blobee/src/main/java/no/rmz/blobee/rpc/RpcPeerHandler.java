@@ -179,7 +179,7 @@ public final class RpcPeerHandler
             }
 
         } else {
-
+             nextMessageIsControl();
             log.info("Received payload message:  " + message);
 
             final RemoteExecutionContext dc = contextMap.get(ctx);
@@ -197,8 +197,6 @@ public final class RpcPeerHandler
                 throw new IllegalStateException("Unknown RpcDirection = " + dc.getDirection());
             }
             contextMap.remove(ctx);
-
-            nextMessageIsControl();
         }
     }
 
