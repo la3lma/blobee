@@ -35,6 +35,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import static org.mockito.Mockito.*;
 import org.mockito.runners.MockitoJUnitRunner;
 
 /**
@@ -48,6 +49,7 @@ public final class ControlChannelCancelInvocationTest {
     private static final Logger log = Logger.getLogger(
             no.rmz.blobee.rpc.ControlChannelCancelInvocationTest.class.getName());
     private final static String HOST = "localhost";
+    public final static String RETURN_VALUE = "Going home";
     private int port;
     private RpcChannel clientChannel;
     private Testservice.RpcParam request = Testservice.RpcParam.newBuilder().build();
@@ -90,7 +92,7 @@ public final class ControlChannelCancelInvocationTest {
      */
     public final class ServiceTestItem extends Testservice.RpcService {
 
-        public final static String RETURN_VALUE = "Going home";
+
         private final Testservice.RpcResult result =
                 Testservice.RpcResult.newBuilder().setReturnvalue(RETURN_VALUE).build();
 
@@ -232,7 +234,7 @@ public final class ControlChannelCancelInvocationTest {
         // Finally checking that all of our assumptions are valid,
         // and if so pass the test.
 
-        // verify(callbackResponse).receive(SampleServerImpl.RETURN_VALUE);
+        verify(callbackResponse).receive(RETURN_VALUE);
         assertTrue(bh.value);
         assertEquals(FAILED_TEXT, clientController.errorText());
     }
