@@ -15,6 +15,7 @@
  */
 package no.rmz.blobee.rpc;
 
+import no.rmz.blobee.controllers.RpcClientControllerImpl;
 import com.google.common.base.Function;
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.BlockingRpcChannel;

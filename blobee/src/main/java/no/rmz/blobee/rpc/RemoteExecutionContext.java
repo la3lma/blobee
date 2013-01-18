@@ -18,7 +18,7 @@ package no.rmz.blobee.rpc;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.Message;
-import com.google.protobuf.RpcController;
+import no.rmz.blobee.controllers.RpcServiceControllerImpl;
 import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
 import no.rmz.blobeeproto.api.proto.Rpc.RpcControl;
 import org.jboss.netty.channel.ChannelHandlerContext;
@@ -74,5 +74,4 @@ public final class RemoteExecutionContext {
     public void startCancel() {
         controller.startCancel();
     }
-
 }

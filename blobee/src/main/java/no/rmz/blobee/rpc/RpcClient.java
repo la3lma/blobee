@@ -17,6 +17,7 @@
 
 package no.rmz.blobee.rpc;
 
+import no.rmz.blobee.controllers.RpcClientControllerImpl;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.Descriptors.MethodDescriptor;
@@ -253,7 +254,7 @@ public final class RpcClient {
     }
 
 
-    void cancelInvocation(final long rpcIndex) {
+    public void cancelInvocation(final long rpcIndex) {
         checkArgument(rpcIndex >= 0);
 
         synchronized (invocations) {

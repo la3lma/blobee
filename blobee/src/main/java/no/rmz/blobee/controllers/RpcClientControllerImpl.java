@@ -14,14 +14,17 @@
  *  limitations under the License.
  */
 
-package no.rmz.blobee.rpc;
+package no.rmz.blobee.controllers;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import no.rmz.blobee.controllers.RpcClientController;
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcController;
+import no.rmz.blobee.rpc.RpcClient;
+import no.rmz.blobee.rpc.RpcClientSideInvocation;
 
-public final class RpcClientControllerImpl implements RpcController {
+public final class RpcClientControllerImpl implements RpcClientController {
 
     private boolean failed = false;
     private boolean cancelled = false;
@@ -51,12 +54,14 @@ public final class RpcClientControllerImpl implements RpcController {
         }
     }
 
+    @Override
     public boolean isActive() {
         synchronized (monitor) {
             return active;
         }
     }
 
+    @Override
     public void setActive(final boolean active) {
         synchronized (monitor) {
             this.active = active;
@@ -105,7 +110,7 @@ public final class RpcClientControllerImpl implements RpcController {
 
     private RpcClientSideInvocation invocation;
 
-    void bindToInvocation(final RpcClientSideInvocation invocation) {
+    public void bindToInvocation(final RpcClientSideInvocation invocation) {
         checkNotNull(invocation);
         synchronized (monitor) {
             if (this.invocation != null) {
@@ -116,8 +121,8 @@ public final class RpcClientControllerImpl implements RpcController {
     }
 
 
-
-    void setClientAndIndex(final RpcClient rpcClient, final long rpcIndex) {
+    @Override
+    public void setClientAndIndex(final RpcClient rpcClient, final long rpcIndex) {
         checkNotNull(rpcClient);
         checkArgument(rpcIndex >= 0);
         synchronized (monitor) {
@@ -130,6 +135,7 @@ public final class RpcClientControllerImpl implements RpcController {
         }
     }
 
+    @Override
     public long getIndex() {
        return rpcIndex;
     }
