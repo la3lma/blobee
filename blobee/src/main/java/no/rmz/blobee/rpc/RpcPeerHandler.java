@@ -71,6 +71,9 @@ public final class RpcPeerHandler
     private ContextMap contextMap = new ContextMap();
 
 
+    final Map<Channel, Object> lockMap = new WeakHashMap<Channel, Object>();
+
+
 
     protected RpcPeerHandler(
             final DynamicProtobufDecoder protbufDecoder,
@@ -93,6 +96,11 @@ public final class RpcPeerHandler
             final ChannelHandlerContext ctx,
             final ChannelStateEvent e) {
         WireFactory.getWireForChannel(e.getChannel()).write(HEARTBEAT);
+    }
+
+
+    private void nextMessageIsControl() {
+        protbufDecoder.putNextPrototype(Rpc.RpcControl.getDefaultInstance());
     }
 
     @Override
@@ -121,7 +129,7 @@ public final class RpcPeerHandler
             final Rpc.MessageType messageType = msg.getMessageType();
             if (messageType == Rpc.MessageType.HEARTBEAT) {
                 // XXX Heartbeats are just ignored.
-                protbufDecoder.putNextPrototype(Rpc.RpcControl.getDefaultInstance());
+                nextMessageIsControl();
             } else if (messageType == Rpc.MessageType.RPC_INVOCATION) {
                 final MethodSignature methodSignature = msg.getMethodSignature();
                 final long rpcIndex = msg.getRpcIndex();
@@ -154,19 +162,19 @@ public final class RpcPeerHandler
                         new RemoteExecutionContext(this, ctx, methodSignature, rpcIndex,
                         RpcDirection.RETURNING));
             } else if (messageType == Rpc.MessageType.SHUTDOWN) {
-                protbufDecoder.putNextPrototype(Rpc.RpcControl.getDefaultInstance());
+                nextMessageIsControl();
                 ctx.getChannel().close();
             } else if (messageType == Rpc.MessageType.INVOCATION_FAILED) {
-               protbufDecoder.putNextPrototype(Rpc.RpcControl.getDefaultInstance());
+               nextMessageIsControl();
                final String errorMessage = msg.getFailed();
                final long   rpcIndex = msg.getRpcIndex();
                rpcClient.failInvocation(rpcIndex, errorMessage);
             } else if (messageType == Rpc.MessageType.RPC_CANCEL) {
-               protbufDecoder.putNextPrototype(Rpc.RpcControl.getDefaultInstance());
+               nextMessageIsControl();
                final long   rpcIndex = msg.getRpcIndex();
                executionService.startCancel(ctx, rpcIndex);
             } else {
-                protbufDecoder.putNextPrototype(Rpc.RpcControl.getDefaultInstance());
+                nextMessageIsControl();
                 log.warning("Unknown type of control message: " + message);
             }
 
@@ -190,7 +198,7 @@ public final class RpcPeerHandler
             }
             contextMap.remove(ctx);
 
-            protbufDecoder.putNextPrototype(Rpc.RpcControl.getDefaultInstance());
+            nextMessageIsControl();
         }
     }
 
@@ -262,7 +270,7 @@ public final class RpcPeerHandler
         WireFactory.getWireForChannel(channel)
                 .write(invocationControl, result);
     }
-    final Map<Channel, Object> lockMap = new WeakHashMap<Channel, Object>();
+
 
     private Object getChannelLock(final Channel channel) {
         synchronized (lockMap) {
