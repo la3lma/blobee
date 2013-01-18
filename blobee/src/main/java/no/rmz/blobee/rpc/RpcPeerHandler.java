@@ -120,83 +120,29 @@ public final class RpcPeerHandler
         }
 
         // Then parse it the regular way.
-        // XXX This block of code is waaay to dense for comfort.
-        //     must be refactored for increased readability
         if (message instanceof Rpc.RpcControl) {
              log.info("Received control message:  " + message);
             final Rpc.RpcControl msg = (Rpc.RpcControl) e.getMessage();
 
             final Rpc.MessageType messageType = msg.getMessageType();
             if (messageType == Rpc.MessageType.HEARTBEAT) {
-                // XXX Heartbeats are just ignored.
-                nextMessageIsControl();
+                processHeartbeatMessage();
             } else if (messageType == Rpc.MessageType.RPC_INVOCATION) {
-                final MethodSignature methodSignature = msg.getMethodSignature();
-                final long rpcIndex = msg.getRpcIndex();
-                final MessageLite prototypeForParameter =
-                        getPrototypeForParameter(methodSignature);
-                protbufDecoder.putNextPrototype(prototypeForParameter);
-
-                final RemoteExecutionContext dc = contextMap.get(ctx);
-                if (dc != null) {
-                    throw new IllegalStateException("Protocol decoding error 1");
-                }
-
-                final RemoteExecutionContext rec = new RemoteExecutionContext(this, ctx,
-                        methodSignature, rpcIndex, RpcDirection.INVOKING);
-                contextMap.put(ctx, rec);
+                processIncomingInvocationMessage(msg, ctx);
             } else if (messageType == Rpc.MessageType.RPC_RETURNVALUE) {
-                final MethodSignature methodSignature = msg.getMethodSignature();
-                final long rpcIndex = msg.getRpcIndex();
-                final MessageLite prototypeForReturnValue =
-                        getPrototypeForReturnValue(methodSignature);
-                protbufDecoder.putNextPrototype(prototypeForReturnValue);
-
-                // XXX Perhaps make an abstraction that requires the value to
-                //     be null before setting it to anything else than null?
-                final RemoteExecutionContext dc = contextMap.get(ctx);
-                if (dc != null) {
-                    throw new IllegalStateException("Protocol decoding error 1");
-                }
-                contextMap.put(ctx,
-                        new RemoteExecutionContext(this, ctx, methodSignature, rpcIndex,
-                        RpcDirection.RETURNING));
+                processIncomingReturnValueMessage(msg, ctx);
             } else if (messageType == Rpc.MessageType.SHUTDOWN) {
-                nextMessageIsControl();
-                ctx.getChannel().close();
+                processChannelShutdownMessage(ctx);
             } else if (messageType == Rpc.MessageType.INVOCATION_FAILED) {
-               nextMessageIsControl();
-               final String errorMessage = msg.getFailed();
-               final long   rpcIndex = msg.getRpcIndex();
-               rpcClient.failInvocation(rpcIndex, errorMessage);
+                processInvocationFailedMessage(msg);
             } else if (messageType == Rpc.MessageType.RPC_CANCEL) {
-               nextMessageIsControl();
-               final long   rpcIndex = msg.getRpcIndex();
-               executionService.startCancel(ctx, rpcIndex);
+                processCancelMessage(msg, ctx);
             } else {
                 nextMessageIsControl();
                 log.warning("Unknown type of control message: " + message);
             }
-
         } else {
-             nextMessageIsControl();
-            log.info("Received payload message:  " + message);
-
-            final RemoteExecutionContext dc = contextMap.get(ctx);
-
-            if (dc == null) {
-                throw new IllegalStateException("Protocol decoding error 3");
-            }
-
-            if (dc.getDirection() == RpcDirection.INVOKING) {
-                executionService.execute(dc, ctx, message);
-            } else if (dc.getDirection() == RpcDirection.RETURNING) {
-                final Message msg = (Message) message;
-                rpcClient.returnCall(dc, msg);
-            } else {
-                throw new IllegalStateException("Unknown RpcDirection = " + dc.getDirection());
-            }
-            contextMap.remove(ctx);
+            processPayloadMessage(message, ctx);
         }
     }
 
@@ -280,5 +226,84 @@ public final class RpcPeerHandler
                 return lock;
             }
         }
+    }
+
+    private void processPayloadMessage(final Object message, final ChannelHandlerContext ctx) throws IllegalStateException {
+        nextMessageIsControl();
+        log.info("Received payload message:  " + message);
+
+        final RemoteExecutionContext dc = contextMap.get(ctx);
+
+        if (dc == null) {
+            throw new IllegalStateException("Protocol decoding error 3");
+        }
+
+        if (dc.getDirection() == RpcDirection.INVOKING) {
+            executionService.execute(dc, ctx, message);
+        } else if (dc.getDirection() == RpcDirection.RETURNING) {
+            final Message msg = (Message) message;
+            rpcClient.returnCall(dc, msg);
+        } else {
+            throw new IllegalStateException("Unknown RpcDirection = " + dc.getDirection());
+        }
+        contextMap.remove(ctx);
+    }
+
+    private void processCancelMessage(final RpcControl msg, final ChannelHandlerContext ctx) {
+        nextMessageIsControl();
+        final long   rpcIndex = msg.getRpcIndex();
+        executionService.startCancel(ctx, rpcIndex);
+    }
+
+    private void processInvocationFailedMessage(final RpcControl msg) {
+        nextMessageIsControl();
+        final String errorMessage = msg.getFailed();
+        final long   rpcIndex = msg.getRpcIndex();
+        rpcClient.failInvocation(rpcIndex, errorMessage);
+    }
+
+    private void processChannelShutdownMessage(final ChannelHandlerContext ctx) {
+        nextMessageIsControl();
+        ctx.getChannel().close();
+    }
+
+    private void processIncomingReturnValueMessage(final RpcControl msg, final ChannelHandlerContext ctx) throws IllegalStateException {
+        final MethodSignature methodSignature = msg.getMethodSignature();
+        final long rpcIndex = msg.getRpcIndex();
+        final MessageLite prototypeForReturnValue =
+                getPrototypeForReturnValue(methodSignature);
+        protbufDecoder.putNextPrototype(prototypeForReturnValue);
+
+        // XXX Perhaps make an abstraction that requires the value to
+        //     be null before setting it to anything else than null?
+        final RemoteExecutionContext dc = contextMap.get(ctx);
+        if (dc != null) {
+            throw new IllegalStateException("Protocol decoding error 1");
+        }
+        contextMap.put(ctx,
+                new RemoteExecutionContext(this, ctx, methodSignature, rpcIndex,
+                RpcDirection.RETURNING));
+    }
+
+    private void processIncomingInvocationMessage(final RpcControl msg, final ChannelHandlerContext ctx) throws IllegalStateException {
+        final MethodSignature methodSignature = msg.getMethodSignature();
+        final long rpcIndex = msg.getRpcIndex();
+        final MessageLite prototypeForParameter =
+                getPrototypeForParameter(methodSignature);
+        protbufDecoder.putNextPrototype(prototypeForParameter);
+
+        final RemoteExecutionContext dc = contextMap.get(ctx);
+        if (dc != null) {
+            throw new IllegalStateException("Protocol decoding error 1");
+        }
+
+        final RemoteExecutionContext rec = new RemoteExecutionContext(this, ctx,
+                methodSignature, rpcIndex, RpcDirection.INVOKING);
+        contextMap.put(ctx, rec);
+    }
+
+    private void processHeartbeatMessage() {
+        // XXX Heartbeats are just ignored.
+        nextMessageIsControl();
     }
 }

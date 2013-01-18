@@ -101,6 +101,7 @@ public final class RpcPeerPipelineFactory implements ChannelPipelineFactory {
         p.addLast("protobufEncoder", new ProtobufEncoder());
         final RpcPeerHandler handler =
                 new RpcPeerHandler(protbufDecoder, executionService, rpcClient);
+        
         if (listener != null) {
             handler.setListener(listener);
         }
