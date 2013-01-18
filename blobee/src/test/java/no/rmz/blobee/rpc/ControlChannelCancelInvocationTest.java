@@ -227,6 +227,11 @@ public final class ControlChannelCancelInvocationTest {
         waitForCondition("main:cancellationReceived", cancelLock, cancellationReceived);
         waitForCondition("main:resultReceivedCondition", resultLock, resultReceivedCondition);
 
+
+        // XXX This test is not good.  There is a race condition
+        //     here that _still_ sometimes make the test fail, even though
+        //     it passes most of the time.   Review & fix.
+
         // Finally checking that all of our assumptions are valid,
         // and if so pass the test.
 
