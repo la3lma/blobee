@@ -1,4 +1,6 @@
-**How hard can it be to write an RPC framework?
+How hard can it be to write an RPC framework?
+=============================================
+
 
 Well, the only way to find out is to try I guess, so that's what I'm
 doing.  Call it a finger exercise, a design study, whatever. It's not
