@@ -1,6 +1,8 @@
 MAKE THE BASICS WORK
 =====================
 
+o Implement the "reset" mechanism for the Controller objects.
+
 o Get someone else to use the API and offer feedback.
 
 o Make a pretty client API.
@@ -17,6 +19,11 @@ o Figure out how to involve more people.
    - Developers.
    - Users.
 
+o Figure out what to do when cancelling invocations.
+  Does it even make sense to return values for a cancelled
+  invocation? I think not, but now it is possible. Discuss
+  and fix.
+
 
 DISCUSS EXTENSIONS
 ==================
@@ -25,17 +32,6 @@ The purpose of this discussion is to determine their
 impact on the current, minimal API design.
 
 o Discuss possible extensions with someone.  Some possibilities are:
- 
-    o Drop ongoing calls.  If the invoker for some reason
-      determines that it no longer needs the result of an invocation
-      (e.g. in a "first response wins" fan-out situation), this should
-      be supported by the API.
-
-      IDEA:  Let this be supported by invoking a method with some
-             additional parameters, including the RPC channel
-             so that an implementing method can
-             query the channel to see if it's result is actually
-	     wanted.
 
     o Collect statistics (usage, timing).
 
