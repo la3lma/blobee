@@ -1,7 +1,7 @@
 MAKE THE BASICS WORK
 =====================
 
-o Implement the "reset" mechanism for the Controller objects.
+o Implement unit test for e "reset" mechanism for the Controller objects.
 
 o Get someone else to use the API and offer feedback.
 
