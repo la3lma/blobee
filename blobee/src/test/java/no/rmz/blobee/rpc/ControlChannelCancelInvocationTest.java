@@ -229,15 +229,11 @@ public final class ControlChannelCancelInvocationTest {
         waitForCondition("main:resultReceivedCondition", resultLock, resultReceivedCondition);
 
 
-        // XXX This test is not good.  There is a race condition
-        //     here that _still_ sometimes make the test fail, even though
-        //     it passes most of the time.   Review & fix.
-
         // Finally checking that all of our assumptions are valid,
         // and if so pass the test.
 
         // verify(callbackResponse).receive(SampleServerImpl.RETURN_VALUE);
         assertTrue(bh.value);
-        // assertEquals(FAILED_TEXT, clientController.errorText());
+        assertEquals(FAILED_TEXT, clientController.errorText());
     }
 }
