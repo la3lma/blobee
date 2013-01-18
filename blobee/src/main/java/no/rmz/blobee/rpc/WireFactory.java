@@ -60,11 +60,6 @@ public final class WireFactory {
             synchronized (monitor) {
                 channel.write(msg1);
                 channel.write(msg2);
-
-                // XXX Remove this asap
-                log.info(String.format(
-                        "Just sent a two-part message over the wire #1='%s', #2='%s'.",
-                        msg1, msg2));
             }
         }
 
@@ -72,11 +67,6 @@ public final class WireFactory {
             checkNotNull(msg1);
             synchronized (monitor) {
                 channel.write(msg1);
-
-                // XXX Remove this asap
-                log.info(String.format(
-                        "Just sent a one-part message over the wire #1='%s'.",
-                        msg1));
             }
         }
     }
