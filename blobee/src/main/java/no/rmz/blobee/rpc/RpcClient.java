@@ -64,7 +64,12 @@ public final class RpcClient {
                 throw new IllegalStateException("Couldn't find call stub for invocation " + dc);
             }
 
+            // Deliver the result then disable the controller
+            // so it can be reused.
             invocation.getDone().run(message);
+            final RpcClientControllerImpl ctl = invocation.getController();
+            invocations.remove(ctl.getIndex());
+            invocation.getController().setActive(false);
         }
     }
 
@@ -214,6 +219,16 @@ public final class RpcClient {
                 checkNotNull(request);
                 checkNotNull(responsePrototype);
                 checkNotNull(done);
+
+                // Binding the controller to this invocation.
+                if (controller instanceof  RpcClientControllerImpl) {
+                    final RpcClientControllerImpl ctrl = (RpcClientControllerImpl) controller;
+                    if (ctrl.isActive()) {
+                        throw new IllegalStateException("Activating already active controller");
+                    } else {
+                        ctrl.setActive(running);
+                    }
+                }
 
                 final RpcClientSideInvocation invocation =
                         new RpcClientSideInvocation(method, controller, request, responsePrototype, done);

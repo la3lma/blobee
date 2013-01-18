@@ -16,12 +16,12 @@
 
 package no.rmz.blobee.rpc;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.Message;
+import com.google.protobuf.RpcController;
 import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
 import no.rmz.blobeeproto.api.proto.Rpc.RpcControl;
 import org.jboss.netty.channel.ChannelHandlerContext;
-import static com.google.common.base.Preconditions.checkNotNull;
-import com.google.protobuf.RpcController;
 
 
 public final class RemoteExecutionContext {
@@ -30,7 +30,7 @@ public final class RemoteExecutionContext {
     private final RpcPeerHandler peerHandler;
     private final ChannelHandlerContext ctx;
     private final RpcDirection direction;
-    final RpcController controller;
+    final RpcServiceControllerImpl controller;
 
     public RemoteExecutionContext(
             final RpcPeerHandler peerHandler,
@@ -73,5 +73,9 @@ public final class RemoteExecutionContext {
 
     public void startCancel() {
         controller.startCancel();
+    }
+
+    public RpcServiceControllerImpl getController() {
+        return controller;
     }
 }

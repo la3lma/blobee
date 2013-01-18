@@ -25,7 +25,7 @@ import com.google.protobuf.RpcController;
 
 public final class RpcClientSideInvocation {
     private final MethodDescriptor method;
-    private final RpcController controller;
+    private final RpcClientControllerImpl controller;
     private final Message request;
     private final Message responsePrototype;
     private final RpcCallback<Message> done;
@@ -38,9 +38,10 @@ public final class RpcClientSideInvocation {
             final RpcCallback<Message> done) {
 
         this.method = checkNotNull(method);
-        this.controller = checkNotNull(controller);
+
         final RpcClientControllerImpl rcci =
                 (RpcClientControllerImpl) controller;
+        this.controller = checkNotNull(rcci);
         rcci.bindToInvocation(this);
 
         this.request = checkNotNull(request);
@@ -52,7 +53,7 @@ public final class RpcClientSideInvocation {
         return method;
     }
 
-    public RpcController getController() {
+    public RpcClientControllerImpl getController() {
         return controller;
     }
 

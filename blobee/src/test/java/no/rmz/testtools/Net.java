@@ -15,6 +15,7 @@
  */
 package no.rmz.testtools;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.ArrayList;
@@ -44,7 +45,7 @@ public class Net {
      * @return a port number which is probably free so we can bind it
      */
     public static int getFreePort() throws IOException {
-        int[] port = getFreePorts(1);
+        final int[] port = getFreePorts(1);
         return port[0];
     }
 
@@ -57,15 +58,17 @@ public class Net {
      * @throws IOException if an IO error occurs.
      */
     public static int[] getFreePorts(int numPorts) throws IOException {
-        List<ServerSocket> sockets = new ArrayList<ServerSocket>(numPorts);
-        int[] portNums = new int[numPorts];
+
+        checkArgument(numPorts > 0);
+        final List<ServerSocket> sockets = new ArrayList<ServerSocket>(numPorts);
+        final int[] portNums = new int[numPorts];
 
         try {
             for (int i = 0; i < numPorts; i++) {
                 // Calling the constructor of ServerSocket with the port
                 // number argument set to zero has defined semantics: it
                 // allocates a free port.
-                ServerSocket ss = new ServerSocket(0);
+                final ServerSocket ss = new ServerSocket(0);
                 ss.setReuseAddress(true);
                 sockets.add(ss);
                 portNums[i] = ss.getLocalPort();
@@ -73,8 +76,8 @@ public class Net {
             return portNums;
         }
         finally {
-            for (ServerSocket sock : sockets) {
-                sock.close();
+            for (final ServerSocket socket : sockets) {
+                socket.close();
             }
         }
     }

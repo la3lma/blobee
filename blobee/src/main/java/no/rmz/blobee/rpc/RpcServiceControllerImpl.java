@@ -33,7 +33,7 @@ public final class RpcServiceControllerImpl implements RpcController {
     }
 
     public void reset() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Reset not supported on server side controller");
     }
 
     boolean failed = false;

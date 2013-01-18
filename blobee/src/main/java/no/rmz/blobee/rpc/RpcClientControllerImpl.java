@@ -28,14 +28,41 @@ public final class RpcClientControllerImpl implements RpcController {
     private String reason = "";
     private final Object monitor = new Object();
     private RpcClient rpcClient;
-    private long rpcIndex;
+    private long rpcIndex = -1;
+    private boolean active = false;
 
     public RpcClientControllerImpl() {
     }
 
     public void reset() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        synchronized (monitor) {
+            if (rpcClient == null) {
+                return;
+            }
+            else if (active) {
+                throw new IllegalStateException(
+                        "Cannot reset controller, it is already connected to "
+                       + " rpcClient = " + rpcClient
+                       + " rpcIndex = " + rpcIndex);
+            } else {
+                rpcClient = null;
+                rpcIndex = -1;
+            }
+        }
     }
+
+    public boolean isActive() {
+        synchronized (monitor) {
+            return active;
+        }
+    }
+
+    public void setActive(final boolean active) {
+        synchronized (monitor) {
+            this.active = active;
+        }
+    }
+
 
     public boolean failed() {
         synchronized (monitor) {
@@ -94,11 +121,16 @@ public final class RpcClientControllerImpl implements RpcController {
         checkNotNull(rpcClient);
         checkArgument(rpcIndex >= 0);
         synchronized (monitor) {
+
             if (this.rpcClient != null) {
-                throw new IllegalArgumentException("rpcClient is already set");
+                throw new IllegalArgumentException("Controller is already in use, can't be reset");
             }
             this.rpcClient = rpcClient;
-            this.rpcIndex = rpcIndex;
+            this.rpcIndex  = rpcIndex;
         }
+    }
+
+    public long getIndex() {
+       return rpcIndex;
     }
 }
