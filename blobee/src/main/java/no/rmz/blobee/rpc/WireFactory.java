@@ -47,12 +47,14 @@ public final class WireFactory {
 
     private static class MessageWireImpl implements MessageWire {
 
+        final Object monitor = new Object();
+
         private final Channel channel;
 
         public MessageWireImpl(Channel channel) {
             this.channel = channel;
         }
-        final Object monitor = new Object();
+
 
         public void write(final Message msg1, final Message msg2) {
             checkNotNull(msg1);
