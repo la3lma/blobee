@@ -25,7 +25,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import no.rmz.blobee.handler.codec.protobuf.DynamicProtobufDecoder;
+import no.rmz.blobee.protobuf.DynamicProtobufDecoder;
 import no.rmz.blobee.rpc.WireFactory;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import no.rmz.blobeeprototest.api.proto.Testservice;

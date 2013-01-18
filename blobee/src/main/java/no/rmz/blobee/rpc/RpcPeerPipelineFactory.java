@@ -18,7 +18,7 @@ package no.rmz.blobee.rpc;
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.MessageLite;
 import java.util.WeakHashMap;
-import no.rmz.blobee.handler.codec.protobuf.DynamicProtobufDecoder;
+import no.rmz.blobee.protobuf.DynamicProtobufDecoder;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;

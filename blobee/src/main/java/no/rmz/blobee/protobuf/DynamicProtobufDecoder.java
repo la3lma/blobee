@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-package no.rmz.blobee.handler.codec.protobuf;
+package no.rmz.blobee.protobuf;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.Message;
