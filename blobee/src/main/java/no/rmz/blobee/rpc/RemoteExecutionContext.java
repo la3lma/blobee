@@ -18,6 +18,7 @@ package no.rmz.blobee.rpc;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.Message;
+import no.rmz.blobee.controllers.RpcServiceController;
 import no.rmz.blobee.controllers.RpcServiceControllerImpl;
 import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
 import no.rmz.blobeeproto.api.proto.Rpc.RpcControl;
@@ -30,7 +31,7 @@ public final class RemoteExecutionContext {
     private final RpcPeerHandler peerHandler;
     private final ChannelHandlerContext ctx;
     private final RpcDirection direction;
-    final RpcServiceControllerImpl controller;
+    final RpcServiceController controller;
 
     public RemoteExecutionContext(
             final RpcPeerHandler peerHandler,

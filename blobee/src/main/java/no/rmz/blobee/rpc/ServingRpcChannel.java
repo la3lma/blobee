@@ -15,7 +15,6 @@
  */
 package no.rmz.blobee.rpc;
 
-import no.rmz.blobee.controllers.RpcClientControllerImpl;
 import com.google.common.base.Function;
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.BlockingRpcChannel;
@@ -25,7 +24,7 @@ import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcChannel;
 import com.google.protobuf.RpcController;
 import com.google.protobuf.ServiceException;
-import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
+import no.rmz.blobee.controllers.RpcClientControllerImpl;
 
 /**
  * Experimental implementation of an RpcChannel. Used as a vehicle to wrap my

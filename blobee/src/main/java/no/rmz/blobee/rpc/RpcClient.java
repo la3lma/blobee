@@ -31,6 +31,7 @@ import java.util.TreeMap;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.logging.Logger;
+import no.rmz.blobee.controllers.RpcClientController;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
 import no.rmz.blobeeproto.api.proto.Rpc.RpcControl;
@@ -68,7 +69,7 @@ public final class RpcClient {
             // Deliver the result then disable the controller
             // so it can be reused.
             invocation.getDone().run(message);
-            final RpcClientControllerImpl ctl = invocation.getController();
+            final RpcClientController ctl = invocation.getController();
             invocations.remove(ctl.getIndex());
             invocation.getController().setActive(false);
         }
@@ -94,7 +95,7 @@ public final class RpcClient {
 
             final Long currentIndex = nextIndex++;
             invocations.put(currentIndex, invocation);
-            final RpcClientControllerImpl rcci = (RpcClientControllerImpl) invocation.getController();
+            final RpcClientController rcci = (RpcClientController) invocation.getController();
 
             rcci.setClientAndIndex(this, currentIndex);
 
@@ -222,8 +223,8 @@ public final class RpcClient {
                 checkNotNull(done);
 
                 // Binding the controller to this invocation.
-                if (controller instanceof  RpcClientControllerImpl) {
-                    final RpcClientControllerImpl ctrl = (RpcClientControllerImpl) controller;
+                if (controller instanceof  RpcClientController) {
+                    final RpcClientController ctrl = (RpcClientController) controller;
                     if (ctrl.isActive()) {
                         throw new IllegalStateException("Activating already active controller");
                     } else {

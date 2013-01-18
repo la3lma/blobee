@@ -15,7 +15,6 @@
  */
 package no.rmz.blobee.rpc;
 
-import no.rmz.blobee.controllers.RpcServiceControllerImpl;
 import com.google.common.base.Objects;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -35,6 +34,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import no.rmz.blobee.controllers.RpcServiceController;
+import no.rmz.blobee.controllers.RpcServiceControllerImpl;
 import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
 import org.jboss.netty.channel.ChannelHandlerContext;
 
@@ -169,24 +170,25 @@ public final class RpcExecutionServiceImpl
 
     public final static class ControllerStorage {
 
-        private final Map<ControllerCoordinate, RpcServiceControllerImpl> map =
-                new HashMap<ControllerCoordinate, RpcServiceControllerImpl>();
+        private final Map<ControllerCoordinate, RpcServiceController> map =
+                new HashMap<ControllerCoordinate, RpcServiceController>();
 
         public void storeController(
                 final ChannelHandlerContext ctx,
                 final long rpcIdx,
-                final RpcServiceControllerImpl controller) {
+                final RpcServiceController controller) {
             checkNotNull(ctx);
             checkArgument(rpcIdx >= 0);
             checkNotNull(controller);
             map.put(new ControllerCoordinate(ctx, rpcIdx), controller);
         }
 
-        public RpcServiceControllerImpl getController(
+        public RpcServiceController getController(
                 final ChannelHandlerContext ctx,
                 final long rpcIdx) {
 
-            final RpcServiceControllerImpl result = map.get(new ControllerCoordinate(ctx, rpcIdx));
+            final RpcServiceController result =
+                    map.get(new ControllerCoordinate(ctx, rpcIdx));
             return result;
         }
     }
@@ -202,11 +204,12 @@ public final class RpcExecutionServiceImpl
             final ChannelHandlerContext ctx, // XXX Redundant? dc.getCtx or something
             final Object parameter) {
 
+        // XXX Handle exceptions better!
         final Runnable runnable = new Runnable() {
             public void run() {
                 final Method method = mmap.get(dc.getMethodSignature());
                 // XXXX Add misc contexts.
-                final RpcServiceControllerImpl controller = new RpcServiceControllerImpl(dc);
+                final RpcServiceController controller = new RpcServiceControllerImpl(dc);
 
                 controllerStorage.storeController(ctx, dc.getRpcIndex(), controller);
 

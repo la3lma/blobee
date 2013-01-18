@@ -16,11 +16,9 @@
 
 package no.rmz.blobee.controllers;
 
-import no.rmz.blobee.controllers.RpcClientController;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.RpcCallback;
-import com.google.protobuf.RpcController;
 import no.rmz.blobee.rpc.RpcClient;
 import no.rmz.blobee.rpc.RpcClientSideInvocation;
 

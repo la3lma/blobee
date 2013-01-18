@@ -16,17 +16,18 @@
 
 package no.rmz.blobee.rpc;
 
-import no.rmz.blobee.controllers.RpcClientControllerImpl;
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.Descriptors.MethodDescriptor;
 import com.google.protobuf.Message;
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcController;
+import no.rmz.blobee.controllers.RpcClientController;
+import no.rmz.blobee.controllers.RpcClientControllerImpl;
 
 
 public final class RpcClientSideInvocation {
     private final MethodDescriptor method;
-    private final RpcClientControllerImpl controller;
+    private final RpcClientController controller;
     private final Message request;
     private final Message responsePrototype;
     private final RpcCallback<Message> done;
@@ -54,7 +55,7 @@ public final class RpcClientSideInvocation {
         return method;
     }
 
-    public RpcClientControllerImpl getController() {
+    public RpcClientController getController() {
         return controller;
     }
 
