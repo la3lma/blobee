@@ -1,7 +1,7 @@
 package no.rmz.blobee.rpc;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.Descriptors.MethodDescriptor;
 import com.google.protobuf.Message;
 import com.google.protobuf.RpcCallback;
@@ -61,11 +61,19 @@ public final class RpcClient {
 
     private void sendFirstAvailableOutgoingInvocation() {
         try {
-            // down the wire.
-            // get back to it later
             final RpcClientSideInvocation invocation = incoming.take();
+
+            // If the invocation is cancelled already, don't even bother
+            // sending it over the wire, just forget about it.
+            if (invocation.getController().isCanceled()) {
+                return;
+            }
+
             final Long currentIndex = nextIndex++;
             invocations.put(currentIndex, invocation);
+            final RpcClientControllerImpl rcci = (RpcClientControllerImpl) invocation.getController();
+
+            rcci.setClientAndIndex(this, currentIndex);
 
             // Then creating the protobuf representation of
             // the invocation, in preparation of sending it
@@ -197,7 +205,7 @@ public final class RpcClient {
         };
     }
 
-    public RpcController newController(final RpcChannel rchannel) {
+    public RpcController newController() {
         return new RpcClientControllerImpl();
     }
 
@@ -210,5 +218,25 @@ public final class RpcClient {
         }
         checkNotNull(invocation);
         invocation.getController().setFailed(errorMessage);
+    }
+
+
+    void cancelInvocation(final long rpcIndex) {
+        checkArgument(rpcIndex >= 0);
+
+        synchronized (invocations) {
+            final RpcClientSideInvocation invocation = invocations.get(rpcIndex);
+            checkNotNull(invocation);
+        }
+
+        final RpcControl cancelRequest =
+                Rpc.RpcControl.newBuilder()
+                .setMessageType(Rpc.MessageType.RPC_CANCEL)
+                .setRpcIndex(rpcIndex)
+                .build();
+
+        WireFactory.getWireForChannel(channel)
+                .write(cancelRequest);
+
     }
 }

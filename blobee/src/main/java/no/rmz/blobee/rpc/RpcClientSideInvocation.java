@@ -20,9 +20,13 @@ public final class RpcClientSideInvocation {
             final Message request,
             final Message responsePrototype,
             final RpcCallback<Message> done) {
-        
+
         this.method = checkNotNull(method);
         this.controller = checkNotNull(controller);
+        final RpcClientControllerImpl rcci =
+                (RpcClientControllerImpl) controller;
+        rcci.bindToInvocation(this);
+
         this.request = checkNotNull(request);
         this.responsePrototype = checkNotNull(responsePrototype);
         this.done = checkNotNull(done);

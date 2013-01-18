@@ -5,6 +5,7 @@ import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
 import no.rmz.blobeeproto.api.proto.Rpc.RpcControl;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import static com.google.common.base.Preconditions.checkNotNull;
+import com.google.protobuf.RpcController;
 
 
 public final class RemoteExecutionContext {
@@ -13,6 +14,7 @@ public final class RemoteExecutionContext {
     private final RpcPeerHandler peerHandler;
     private final ChannelHandlerContext ctx;
     private final RpcDirection direction;
+    final RpcController controller;
 
     public RemoteExecutionContext(
             final RpcPeerHandler peerHandler,
@@ -25,6 +27,7 @@ public final class RemoteExecutionContext {
         this.methodSignature = checkNotNull(methodSignature);
         this.rpcIndex = checkNotNull(rpcIndex);
         this.direction = checkNotNull(direction);
+        this.controller= new RpcServiceControllerImpl(this);
     }
 
     public RpcDirection getDirection() {
@@ -47,8 +50,12 @@ public final class RemoteExecutionContext {
         return ctx;
     }
 
-    void sendControlMessage(final RpcControl msg) {
+    public void sendControlMessage(final RpcControl msg) {
         checkNotNull(msg);
         peerHandler.sendControlMessage(this, msg);
+    }
+
+    public void startCancel() {
+        controller.startCancel();
     }
 }

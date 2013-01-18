@@ -55,6 +55,8 @@ public final class RpcPeerHandler
      */
     private ContextMap contextMap = new ContextMap();
 
+
+
     protected RpcPeerHandler(
             final DynamicProtobufDecoder protbufDecoder,
             final RpcExecutionService executionService,
@@ -79,12 +81,15 @@ public final class RpcPeerHandler
     }
 
     @Override
-    public void messageReceived(final ChannelHandlerContext ctx, final MessageEvent e) {
+    public void messageReceived(
+            final ChannelHandlerContext ctx, final MessageEvent e) {
         final Object message = e.getMessage();
 
-        log.info("Received message:  " + message);
+        log.info("Received control message:  " + message);
 
         // First send the object to the listener, if we have one.
+        // XXX This should probably be removed since it's  only ever used
+        //     for testing and debugging.
         synchronized (listenerLock) {
             if (listener != null) {
                 listener.receiveMessage(message, ctx);
@@ -95,6 +100,7 @@ public final class RpcPeerHandler
         // XXX This block of code is waaay to dense for comfort.
         //     must be refactored for increased readability
         if (message instanceof Rpc.RpcControl) {
+             log.info("Received control message:  " + message);
             final Rpc.RpcControl msg = (Rpc.RpcControl) e.getMessage();
 
             final Rpc.MessageType messageType = msg.getMessageType();
@@ -140,19 +146,24 @@ public final class RpcPeerHandler
                final String errorMessage = msg.getFailed();
                final long   rpcIndex = msg.getRpcIndex();
                rpcClient.failInvocation(rpcIndex, errorMessage);
+            } else if (messageType == Rpc.MessageType.RPC_CANCEL) {
+               protbufDecoder.putNextPrototype(Rpc.RpcControl.getDefaultInstance());
+               final long   rpcIndex = msg.getRpcIndex();
+               executionService.startCancel(ctx, rpcIndex);
             } else {
                 protbufDecoder.putNextPrototype(Rpc.RpcControl.getDefaultInstance());
                 log.warning("Unknown type of control message: " + message);
             }
 
         } else {
+
+            log.info("Received payload message:  " + message);
+
             final RemoteExecutionContext dc = contextMap.get(ctx);
 
             if (dc == null) {
                 throw new IllegalStateException("Protocol decoding error 3");
             }
-
-            protbufDecoder.putNextPrototype(Rpc.RpcControl.getDefaultInstance());
 
             if (dc.getDirection() == RpcDirection.INVOKING) {
                 executionService.execute(dc, ctx, message);
@@ -162,8 +173,9 @@ public final class RpcPeerHandler
             } else {
                 throw new IllegalStateException("Unknown RpcDirection = " + dc.getDirection());
             }
-
             contextMap.remove(ctx);
+            
+            protbufDecoder.putNextPrototype(Rpc.RpcControl.getDefaultInstance());
         }
     }
 

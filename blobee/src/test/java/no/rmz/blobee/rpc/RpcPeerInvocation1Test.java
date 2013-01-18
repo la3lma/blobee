@@ -91,7 +91,7 @@ public final class RpcPeerInvocation1Test {
         client.start();
 
         clientChannel    = client.newClientRpcChannel();
-        clientController = client.newController(clientChannel);
+        clientController = client.newController();
     }
 
     @Mock

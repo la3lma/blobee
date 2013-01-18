@@ -1,10 +1,11 @@
 package no.rmz.blobee.rpc;
 
+import com.google.common.base.Objects;
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
 import com.google.protobuf.RpcCallback;
-import com.google.protobuf.RpcController;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
@@ -14,6 +15,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
@@ -32,6 +35,9 @@ public final class RpcExecutionServiceImpl
     private final static Logger log =
             Logger.getLogger(RpcExecutionServiceImpl.class.getName());
 
+
+    final ExecutorService threadPool = Executors.newCachedThreadPool();
+
     final Object implementation;
 
     final Map<MethodSignature, Method> mmap;
@@ -49,7 +55,7 @@ public final class RpcExecutionServiceImpl
     }
 
     public RpcExecutionServiceImpl(
-            final Object implementation, final Class ... interfaces) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+            final Object implementation, final Class ... interfaceClasses) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         this.implementation = checkNotNull(implementation);
         mmap = new HashMap<MethodSignature, Method>();
         returnTypes = new HashMap<MethodSignature, Class<?>>();
@@ -62,7 +68,7 @@ public final class RpcExecutionServiceImpl
         }
 
         log.info("The interfaces are " + ifaces);
-        for (final Class iface : interfaces) {
+        for (final Class iface : interfaceClasses) {
 
             if (!ifaces.contains(iface)) {
                 throw new IllegalArgumentException(
@@ -113,37 +119,112 @@ public final class RpcExecutionServiceImpl
         }
     }
 
+
+
+    public final static class ControllerCoordinate {
+        final ChannelHandlerContext ctx;
+        final Long rpcIdx;
+
+        public ControllerCoordinate(ChannelHandlerContext ctx, long rpcIdx) {
+            this.ctx = checkNotNull(ctx);
+            checkArgument(rpcIdx >= 0);
+            this.rpcIdx = rpcIdx;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hashCode(rpcIdx, ctx);
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            if (obj instanceof  ControllerCoordinate) {
+                final ControllerCoordinate ob = (ControllerCoordinate) obj;
+             return Objects.equal(ctx, ob.ctx) &&
+                    Objects.equal(rpcIdx, ob.rpcIdx);
+            } else {
+                return false;
+            }
+        }
+    }
+
+    // XXX Use "table" from guava instead?
+
+
+    public final static class ControllerStorage {
+
+        private final Map<ControllerCoordinate, RpcServiceControllerImpl> map =
+                new HashMap<ControllerCoordinate, RpcServiceControllerImpl>();
+
+        public void storeController(
+                final ChannelHandlerContext ctx,
+                final long rpcIdx,
+                final RpcServiceControllerImpl controller) {
+            checkNotNull(ctx);
+            checkArgument(rpcIdx >= 0);
+            checkNotNull(controller);
+            map.put(new ControllerCoordinate(ctx, rpcIdx), controller);
+        }
+
+        public RpcServiceControllerImpl getController(
+                final ChannelHandlerContext ctx,
+                final long rpcIdx) {
+
+            final RpcServiceControllerImpl result = map.get(new ControllerCoordinate(ctx, rpcIdx));
+            return result;
+        }
+    }
+
+    // XXX This is actually a memory leak since nothing ever
+    //     gets deleted from this thing.   When an invocation's result
+    //     is returned, this structure should be cleaned up.
+    private final ControllerStorage controllerStorage = new ControllerStorage();
+
+
     public void execute(
             final RemoteExecutionContext dc,
             final ChannelHandlerContext ctx, // XXX Redundant? dc.getCtx or something
             final Object parameter) {
 
-        final Method method = mmap.get(dc.getMethodSignature());
+        final Runnable runnable = new Runnable() {
+            public void run() {
+                final Method method = mmap.get(dc.getMethodSignature());
+                // XXXX Add misc contexts.
+                final RpcServiceControllerImpl controller = new RpcServiceControllerImpl(dc);
 
-        // XXXX Add misc contexts.
-        final RpcController controller= new RpcServiceControllerImpl(dc); // XX Placeholder
+                controllerStorage.storeController(ctx, dc.getRpcIndex(), controller);
 
-        final RpcCallback<Message> callback =
-                new RpcCallback<Message>() {
-                    public void run(final Message response) {
-                        dc.returnResult(response);
-                    }
-                };
+                final RpcCallback<Message> callback =
+                        new RpcCallback<Message>() {
+                            public void run(final Message response) {
+                                controller.invokeCancelledCallback();
+                                dc.returnResult(response);
+                            }
+                        };
 
-        try {
-            method.invoke(implementation, controller, parameter, callback);
-        }
 
-        // XXX Swalloing exceptions is baaad, but for now that's what
-        //     we're doing.
-        catch (IllegalAccessException ex) {
-            log.log(Level.SEVERE, null, ex);
-        }
-        catch (IllegalArgumentException ex) {
-            log.log(Level.SEVERE, null, ex);
-        }
-        catch (InvocationTargetException ex) {
-            log.log(Level.SEVERE, null, ex);
-        }
+                try {
+                    method.invoke(implementation, controller, parameter, callback);
+                }
+                // XXX Swalloing exceptions is baaad, but for now that's what
+                //     we're doing.
+                catch (IllegalAccessException ex) {
+                    log.log(Level.SEVERE, null, ex);
+                }
+                catch (IllegalArgumentException ex) {
+                    log.log(Level.SEVERE, null, ex);
+                }
+                catch (InvocationTargetException ex) {
+                    log.log(Level.SEVERE, null, ex);
+                }
+            }
+        };
+
+        threadPool.submit(runnable);
+    }
+
+    public void startCancel(final ChannelHandlerContext ctx, final long rpcIndex) {
+        // XXX Bogus error handling
+        controllerStorage.getController(ctx, rpcIndex).startCancel();
     }
 }

@@ -1,6 +1,7 @@
 package no.rmz.blobee.rpc;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkArgument;
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcController;
 
@@ -10,6 +11,8 @@ public final class RpcClientControllerImpl implements RpcController {
     private boolean cancelled = false;
     private String reason = "";
     private final Object monitor = new Object();
+    private RpcClient rpcClient;
+    private long rpcIndex;
 
     public RpcClientControllerImpl() {
     }
@@ -33,11 +36,10 @@ public final class RpcClientControllerImpl implements RpcController {
     public void startCancel() {
         synchronized (monitor) {
             cancelled = true;
+            if (rpcClient != null) {
+                rpcClient.cancelInvocation(rpcIndex);
+            }
         }
-        // The cancellation needs to be sent to the
-        // message scheduler and/or ove the wire to the
-        // running service.
-        throw new UnsupportedOperationException("Cancellation not fully supported yet");
     }
 
     public void setFailed(final String reason) {
@@ -56,5 +58,31 @@ public final class RpcClientControllerImpl implements RpcController {
 
     public void notifyOnCancel(RpcCallback<Object> callback) {
         throw new UnsupportedOperationException("notifyOnCancel callback not supported on client side");
+    }
+
+    private RpcClientSideInvocation invocation;
+
+    void bindToInvocation(final RpcClientSideInvocation invocation) {
+        checkNotNull(invocation);
+        synchronized (monitor) {
+            if (this.invocation != null) {
+                throw new IllegalStateException("invocation was non null");
+            }
+            this.invocation = invocation;
+        }
+    }
+
+
+
+    void setClientAndIndex(final RpcClient rpcClient, final long rpcIndex) {
+        checkNotNull(rpcClient);
+        checkArgument(rpcIndex >= 0);
+        synchronized (monitor) {
+            if (this.rpcClient != null) {
+                throw new IllegalArgumentException("rpcClient is already set");
+            }
+            this.rpcClient = rpcClient;
+            this.rpcIndex = rpcIndex;
+        }
     }
 }

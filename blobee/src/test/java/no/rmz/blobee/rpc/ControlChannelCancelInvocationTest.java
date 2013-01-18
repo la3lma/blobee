@@ -11,12 +11,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import no.rmz.blobee.serviceimpls.SampleServerImpl;
-import no.rmz.blobee.rpc.RpcClient;
-import no.rmz.blobee.rpc.RpcExecutionService;
-import no.rmz.blobee.rpc.RpcExecutionServiceImpl;
-import no.rmz.blobee.rpc.RpcMessageListener;
-import no.rmz.blobee.rpc.RpcSetup;
 import no.rmz.blobeeprototest.api.proto.Testservice;
 import no.rmz.testtools.Net;
 import no.rmz.testtools.Receiver;
@@ -26,7 +20,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import static org.mockito.Mockito.*;
 import org.mockito.runners.MockitoJUnitRunner;
 
 /**
@@ -44,9 +37,37 @@ public final class ControlChannelCancelInvocationTest {
     private RpcChannel clientChannel;
     private Testservice.RpcParam request = Testservice.RpcParam.newBuilder().build();
     private RpcController clientController;
+    private final static String FAILED_TEXT = "The computation failed";
 
-     private final static String FAILED_TEXT = "The computation failed";
 
+    private static void waitForCondition(
+            final String description,
+            final Lock lock,
+            final Condition condition) {
+        try {
+            lock.lock();
+            log.log(Level.INFO, "Awaiting condition {0}", description);
+            condition.await();
+            log.log(Level.INFO, "Just finished waiting for condition {0}", description);
+        }
+        catch (InterruptedException ex) {
+            fail("Interrupted: " + ex);
+        }
+        finally {
+            lock.unlock();
+        }
+    }
+
+    private static void signalCondition(final String description, final Lock lock, final Condition condition) {
+        try {
+            lock.lock();
+            log.log(Level.INFO, "Signalling condition {0}", description);
+            condition.signal();
+        }
+        finally {
+            lock.unlock();
+        }
+    }
 
     /**
      * The service instance that we will use to communicate over the controller
@@ -58,7 +79,6 @@ public final class ControlChannelCancelInvocationTest {
         private final Testservice.RpcResult result =
                 Testservice.RpcResult.newBuilder().setReturnvalue(RETURN_VALUE).build();
 
-
         @Override
         public void invoke(
                 final RpcController controller,
@@ -66,8 +86,34 @@ public final class ControlChannelCancelInvocationTest {
                 final RpcCallback<Testservice.RpcResult> done) {
 
 
+            controller.notifyOnCancel(new RpcCallback<Object>() {
+                public void run(Object parameter) {
+                    if (controller.isCanceled()) {
+                        bh.setValue(true);
+                    }
+                    signalCondition("service:cancellationReceived", cancelLock, cancellationReceived);
+                }
+            });
+
+            signalCondition("service:remoteInvokeStarted", cancelLock, remoteInvokeStarted);
+            waitForCondition("service:cancellationSent", cancelLock, cancellationSent);
+
             controller.setFailed(FAILED_TEXT);
             done.run(result);
+        }
+    }
+    private BooleanHolder bh;
+
+    public final static class BooleanHolder {
+
+        private boolean value;
+
+        public void setValue(final boolean value) {
+            this.value = value;
+        }
+
+        public boolean getValue() {
+            return value;
         }
     }
     RpcMessageListener rpcMessageListener = new RpcMessageListener() {
@@ -77,19 +123,13 @@ public final class ControlChannelCancelInvocationTest {
             log.log(Level.INFO, "message = {0}", message);
         }
     };
-    private Lock lock;
-    private Condition resultReceived;
+    private Lock resultLock;
+    private Lock cancelLock;
+    private Condition resultReceivedCondition;
+    private Condition cancellationReceived;
+    private Condition remoteInvokeStarted;
+    private Condition cancellationSent;
     private RpcController servingController;
-
-    private void signalResultReceived() {
-        try {
-            lock.lock();
-            resultReceived.signal();
-        }
-        finally {
-            lock.unlock();
-        }
-    }
 
     @Before
     public void setUp() throws
@@ -99,8 +139,17 @@ public final class ControlChannelCancelInvocationTest {
             InvocationTargetException,
             IOException {
 
-        lock = new ReentrantLock();
-        resultReceived = lock.newCondition();
+        bh = new BooleanHolder();
+
+        // XXX Setting up the locks and conditions
+        resultLock = new ReentrantLock();
+        resultReceivedCondition = resultLock.newCondition();
+
+        cancelLock = new ReentrantLock();
+        cancellationReceived = cancelLock.newCondition();
+        cancellationSent = cancelLock.newCondition();
+        remoteInvokeStarted = cancelLock.newCondition();
+
         port = Net.getFreePort();
 
         final RpcExecutionService executionService;
@@ -116,8 +165,9 @@ public final class ControlChannelCancelInvocationTest {
         client.start();
 
         clientChannel = client.newClientRpcChannel();
-        clientController = client.newController(clientChannel);
+        clientController = client.newController();
     }
+
     @Mock
     Receiver<String> callbackResponse;
 
@@ -129,26 +179,44 @@ public final class ControlChannelCancelInvocationTest {
                 new RpcCallback<Testservice.RpcResult>() {
                     public void run(final Testservice.RpcResult response) {
                         callbackResponse.receive(response.getReturnvalue());
-                        signalResultReceived();
+                        signalCondition(
+                                "resultReceivedCondition",
+                                resultLock,
+                                resultReceivedCondition);
                     }
                 };
 
         final Testservice.RpcService myService = Testservice.RpcService.newStub(clientChannel);
-        myService.invoke(clientController, request, callback);
 
-        try {
-            lock.lock();
-            log.info("Awaiting result received.");
-            resultReceived.await();
-        }
+        final Runnable testRun = new Runnable() {
+            public void run() {
+                try {
+                    Thread.currentThread().sleep(1000);
+                }
+                catch (InterruptedException ex) {
+                    throw new RuntimeException("Interrupted while sleeping");
+                }
+                myService.invoke(clientController, request, callback);
+            }
+        };
 
-        finally {
-            lock.unlock();
-            log.info("unlocked, test passed");
-        }
+        new Thread(testRun).start();
 
-        verify(callbackResponse).receive(SampleServerImpl.RETURN_VALUE);
-        assertTrue(clientController.failed());
-        assertEquals(FAILED_TEXT, clientController.errorText());
+
+        // Signal that cancel is sent, then wait for
+        // the things to propagate to all the places they need to propagate
+        // to.
+        waitForCondition("main:remoteInvokeStarted", cancelLock, remoteInvokeStarted);
+        clientController.startCancel();
+        signalCondition("main:cancellationSent", cancelLock, cancellationSent);
+        waitForCondition("main:cancellationReceived", cancelLock, cancellationReceived);
+        waitForCondition("main:resultReceivedCondition", resultLock, resultReceivedCondition);
+
+        // Finally checking that all of our assumptions are valid,
+        // and if so pass the test.
+
+        // verify(callbackResponse).receive(SampleServerImpl.RETURN_VALUE);
+        assertFalse(bh.value);
+        // assertEquals(FAILED_TEXT, clientController.errorText());
     }
 }

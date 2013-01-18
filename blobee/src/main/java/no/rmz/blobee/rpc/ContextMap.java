@@ -1,5 +1,6 @@
 package no.rmz.blobee.rpc;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,6 +19,10 @@ public final class ContextMap {
     private Map<ChannelHandlerContext, RemoteExecutionContext>
             map = new ConcurrentHashMap<ChannelHandlerContext, RemoteExecutionContext>();
 
+    private Map<Long, RemoteExecutionContext>
+            mapByIndex = new ConcurrentHashMap<Long, RemoteExecutionContext>();
+
+
     public void put(final ChannelHandlerContext chc, final RemoteExecutionContext rec) {
         checkNotNull(chc);
         synchronized (chc) {
@@ -27,14 +32,23 @@ public final class ContextMap {
                         + map.get(chc) + "}, new ={" + rec + "}.");
             }
             map.put(chc, rec);
+            mapByIndex.put(rec.getRpcIndex(), rec);
         }
     }
 
     public RemoteExecutionContext remove(final ChannelHandlerContext chc) {
+        checkNotNull(chc);
+        mapByIndex.remove(map.get(chc).getRpcIndex());/// XXX Dangerous
         return map.remove(chc);
     }
 
     public RemoteExecutionContext get(final ChannelHandlerContext chc) {
+        checkNotNull(chc);
         return map.get(chc);
+    }
+
+    public RemoteExecutionContext getByIndex(final long rpcIndex) {
+        checkArgument(rpcIndex >= 0);
+        return mapByIndex.get(rpcIndex);
     }
 }

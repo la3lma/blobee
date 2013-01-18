@@ -8,7 +8,9 @@ import no.rmz.blobeeproto.api.proto.Rpc.RpcControl;
 
 public final class RpcServiceControllerImpl implements RpcController {
 
-    final RemoteExecutionContext executionContext;
+    private final RemoteExecutionContext executionContext;
+
+    private final Object monitor = new Object();
 
 
     RpcServiceControllerImpl(final RemoteExecutionContext dc) {
@@ -28,8 +30,38 @@ public final class RpcServiceControllerImpl implements RpcController {
        throw new UnsupportedOperationException("Not supported in server side RpcController");
     }
 
+
+    private RpcCallback<Object> callbackOnFailure;
+    public void notifyOnCancel(final RpcCallback<Object> callback) {
+        checkNotNull(callback);
+        synchronized (monitor) {
+            if (callbackOnFailure != null) {
+                throw new IllegalStateException("notifyOnCancel invoked more than once");
+            }
+            callbackOnFailure = callback;
+        }
+    }
+
+    private boolean startCancelInvokedAlready = false;
+    private boolean cancelled = false;
+
+
+    public void invokeCancelledCallback() {
+        synchronized (monitor) {
+            if (!startCancelInvokedAlready) {
+                startCancelInvokedAlready = true;
+                if (callbackOnFailure != null) {
+                    callbackOnFailure.run(null);
+                }
+            }
+        }
+    }
+
     public void startCancel() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        synchronized (monitor) {
+            cancelled = true;
+            invokeCancelledCallback();
+        }
     }
 
     public void setFailed(final String reason) {
@@ -45,11 +77,8 @@ public final class RpcServiceControllerImpl implements RpcController {
     }
 
     public boolean isCanceled() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void notifyOnCancel(final RpcCallback<Object> callback) {
-        checkNotNull(callback);
-        throw new UnsupportedOperationException("Not supported yet.");
+       synchronized (monitor) {
+           return cancelled;
+       }
     }
 }

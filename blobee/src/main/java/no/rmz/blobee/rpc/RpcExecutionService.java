@@ -12,4 +12,6 @@ public interface  RpcExecutionService {
 
      public Class getParameterType(final Rpc.MethodSignature sig);
 
+    public void startCancel(ChannelHandlerContext ctx, long rpcIndex);
+
 }

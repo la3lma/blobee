@@ -12,11 +12,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.rmz.blobee.serviceimpls.SampleServerImpl;
-import no.rmz.blobee.rpc.RpcClient;
-import no.rmz.blobee.rpc.RpcExecutionService;
-import no.rmz.blobee.rpc.RpcExecutionServiceImpl;
-import no.rmz.blobee.rpc.RpcMessageListener;
-import no.rmz.blobee.rpc.RpcSetup;
 import no.rmz.blobeeprototest.api.proto.Testservice;
 import no.rmz.testtools.Net;
 import no.rmz.testtools.Receiver;
@@ -87,7 +82,7 @@ public final class RpcPeerInvocationTest {
         client.start();
 
         clientChannel    = client.newClientRpcChannel();
-        clientController = client.newController(clientChannel);
+        clientController = client.newController();
     }
 
     @Mock

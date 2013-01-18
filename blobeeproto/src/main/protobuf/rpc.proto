@@ -27,6 +27,7 @@ enum MessageType {
         HEARTBEAT       = 3;
         SHUTDOWN        = 4;
         INVOCATION_FAILED = 5;
+        RPC_CANCEL      = 6;
 }
 
 enum StatusCode {

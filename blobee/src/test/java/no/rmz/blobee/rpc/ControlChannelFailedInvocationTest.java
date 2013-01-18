@@ -12,11 +12,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.rmz.blobee.serviceimpls.SampleServerImpl;
-import no.rmz.blobee.rpc.RpcClient;
-import no.rmz.blobee.rpc.RpcExecutionService;
-import no.rmz.blobee.rpc.RpcExecutionServiceImpl;
-import no.rmz.blobee.rpc.RpcMessageListener;
-import no.rmz.blobee.rpc.RpcSetup;
 import no.rmz.blobeeprototest.api.proto.Testservice;
 import no.rmz.testtools.Net;
 import no.rmz.testtools.Receiver;
@@ -108,13 +103,20 @@ public final class ControlChannelFailedInvocationTest {
 
         final RpcClient client = RpcSetup.setUpClient(HOST, port, executionService);
 
-        final RpcClient serversClient = client; // XXX This is an abomination
+        // XXX This is an abomination,  What is really needed is a
+        //     "server client" implementation that the -server- can use
+        //     when it has to behave as a client, either to call some other
+        //     service or to receive responses. This server-client should
+        //     simply reuse the connection of the server, and not have its
+        //     own connection to a remote server.  That should be it, but
+        //     it's not there yet :-/
+        final RpcClient serversClient = client;
         RpcSetup.setUpServer(port, executionService, serversClient, rpcMessageListener);
 
         client.start();
 
         clientChannel = client.newClientRpcChannel();
-        clientController = client.newController(clientChannel);
+        clientController = client.newController();
     }
     @Mock
     Receiver<String> callbackResponse;

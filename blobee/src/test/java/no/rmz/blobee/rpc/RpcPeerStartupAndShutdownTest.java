@@ -101,6 +101,10 @@ public final class RpcPeerStartupAndShutdownTest {
         public Class getParameterType(MethodSignature sig) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
+
+        public void startCancel(ChannelHandlerContext ctx, long rpcIndex) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
     };
 
     @Test
