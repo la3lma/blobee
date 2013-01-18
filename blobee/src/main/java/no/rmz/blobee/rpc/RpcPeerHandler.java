@@ -119,27 +119,37 @@ public final class RpcPeerHandler
             }
         }
 
+
+
         // Then parse it the regular way.
         if (message instanceof Rpc.RpcControl) {
-             log.info("Received control message:  " + message);
+            log.info("Received control message:  " + message);
             final Rpc.RpcControl msg = (Rpc.RpcControl) e.getMessage();
 
             final Rpc.MessageType messageType = msg.getMessageType();
-            if (messageType == Rpc.MessageType.HEARTBEAT) {
-                processHeartbeatMessage();
-            } else if (messageType == Rpc.MessageType.RPC_INVOCATION) {
-                processIncomingInvocationMessage(msg, ctx);
-            } else if (messageType == Rpc.MessageType.RPC_RETURNVALUE) {
-                processIncomingReturnValueMessage(msg, ctx);
-            } else if (messageType == Rpc.MessageType.SHUTDOWN) {
-                processChannelShutdownMessage(ctx);
-            } else if (messageType == Rpc.MessageType.INVOCATION_FAILED) {
-                processInvocationFailedMessage(msg);
-            } else if (messageType == Rpc.MessageType.RPC_CANCEL) {
-                processCancelMessage(msg, ctx);
-            } else {
-                nextMessageIsControl();
-                log.warning("Unknown type of control message: " + message);
+
+            switch (messageType) {
+                case HEARTBEAT:
+                    processHeartbeatMessage();
+                    break;
+                case RPC_INVOCATION:
+                    processIncomingInvocationMessage(msg, ctx);
+                    break;
+                case RPC_RETURNVALUE:
+                    processIncomingReturnValueMessage(msg, ctx);
+                    break;
+                case SHUTDOWN:
+                    processChannelShutdownMessage(ctx);
+                    break;
+                case INVOCATION_FAILED:
+                    processInvocationFailedMessage(msg);
+                    break;
+                case RPC_CANCEL:
+                    processCancelMessage(msg, ctx);
+                    break;
+                default:
+                    nextMessageIsControl();
+                    log.warning("Unknown type of control message: " + message);
             }
         } else {
             processPayloadMessage(message, ctx);
