@@ -92,6 +92,8 @@ public final class RpcPeerHandler
     public void channelConnected(
             final ChannelHandlerContext ctx,
             final ChannelStateEvent e) {
+        // XXX Check that there is no heartbeat monitor there
+        //     already, because if it is,  that is an error situation.
         this.heartbeatMonitor = new HeartbeatMonitor(e.getChannel());
     }
 
@@ -306,7 +308,6 @@ public final class RpcPeerHandler
     }
 
     private void processHeartbeatMessage() {
-        // XXX Heartbeats are just ignored.
         nextMessageIsControl();
         heartbeatMonitor.receiveHeartbeat();
     }
