@@ -39,13 +39,8 @@ public final class RpcPeerHandler
 
     private static final Logger log =
             Logger.getLogger(RpcPeerHandler.class.getName());
-    /**
-     * A constant used when sending heartbeats.
-     */
-    private static final Rpc.RpcControl HEARTBEAT =
-            Rpc.RpcControl.newBuilder()
-            .setMessageType(Rpc.MessageType.HEARTBEAT)
-            .build();
+
+
     private final DynamicProtobufDecoder protbufDecoder;
     /**
      * Used to listen in to incoming messages. Intended for debugging purposes.
@@ -91,11 +86,13 @@ public final class RpcPeerHandler
         }
     }
 
+    HeartbeatMonitor heartbeatMonitor;
+
     @Override
     public void channelConnected(
             final ChannelHandlerContext ctx,
             final ChannelStateEvent e) {
-        WireFactory.getWireForChannel(e.getChannel()).write(HEARTBEAT);
+        this.heartbeatMonitor = new HeartbeatMonitor(e.getChannel());
     }
 
 
@@ -106,7 +103,7 @@ public final class RpcPeerHandler
     @Override
     public void messageReceived(
             final ChannelHandlerContext ctx, final MessageEvent e) {
-        
+
         final Object message = e.getMessage();
 
         // First send the object to the listener, if we have one.
@@ -129,10 +126,10 @@ public final class RpcPeerHandler
                     processHeartbeatMessage();
                     break;
                 case RPC_INVOCATION:
-                    processIncomingInvocationMessage(msg, ctx);
+                    processInvocationMessage(msg, ctx);
                     break;
                 case RPC_RETURNVALUE:
-                    processIncomingReturnValueMessage(msg, ctx);
+                    processReturnValueMessage(msg, ctx);
                     break;
                 case SHUTDOWN:
                     processChannelShutdownMessage(ctx);
@@ -273,7 +270,7 @@ public final class RpcPeerHandler
         ctx.getChannel().close();
     }
 
-    private void processIncomingReturnValueMessage(final RpcControl msg, final ChannelHandlerContext ctx) throws IllegalStateException {
+    private void processReturnValueMessage(final RpcControl msg, final ChannelHandlerContext ctx) throws IllegalStateException {
         final MethodSignature methodSignature = msg.getMethodSignature();
         final long rpcIndex = msg.getRpcIndex();
         final MessageLite prototypeForReturnValue =
@@ -291,7 +288,7 @@ public final class RpcPeerHandler
                 RpcDirection.RETURNING));
     }
 
-    private void processIncomingInvocationMessage(final RpcControl msg, final ChannelHandlerContext ctx) throws IllegalStateException {
+    private void processInvocationMessage(final RpcControl msg, final ChannelHandlerContext ctx) throws IllegalStateException {
         final MethodSignature methodSignature = msg.getMethodSignature();
         final long rpcIndex = msg.getRpcIndex();
         final MessageLite prototypeForParameter =
@@ -311,5 +308,6 @@ public final class RpcPeerHandler
     private void processHeartbeatMessage() {
         // XXX Heartbeats are just ignored.
         nextMessageIsControl();
+        heartbeatMonitor.receiveHeartbeat();
     }
 }
