@@ -106,9 +106,8 @@ public final class RpcPeerHandler
     @Override
     public void messageReceived(
             final ChannelHandlerContext ctx, final MessageEvent e) {
+        
         final Object message = e.getMessage();
-
-        log.info("Received control message:  " + message);
 
         // First send the object to the listener, if we have one.
         // XXX This should probably be removed since it's  only ever used
@@ -119,13 +118,10 @@ public final class RpcPeerHandler
             }
         }
 
-
-
         // Then parse it the regular way.
         if (message instanceof Rpc.RpcControl) {
-            log.info("Received control message:  " + message);
-            final Rpc.RpcControl msg = (Rpc.RpcControl) e.getMessage();
 
+            final Rpc.RpcControl msg = (Rpc.RpcControl) e.getMessage();
             final Rpc.MessageType messageType = msg.getMessageType();
 
             switch (messageType) {
