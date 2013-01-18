@@ -155,6 +155,7 @@ public final class ControlChannelCancelInvocationTest {
             IOException {
 
         bh = new BooleanHolder();
+        bh.setValue(false);
 
         // XXX Setting up the locks and conditions
         resultLock = new ReentrantLock();
@@ -236,7 +237,7 @@ public final class ControlChannelCancelInvocationTest {
         // and if so pass the test.
 
         // verify(callbackResponse).receive(SampleServerImpl.RETURN_VALUE);
-        assertFalse(bh.value);
+        assertTrue(bh.value);
         // assertEquals(FAILED_TEXT, clientController.errorText());
     }
 }

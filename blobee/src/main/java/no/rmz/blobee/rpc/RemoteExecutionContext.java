@@ -75,7 +75,4 @@ public final class RemoteExecutionContext {
         controller.startCancel();
     }
 
-    public RpcServiceControllerImpl getController() {
-        return controller;
-    }
 }
