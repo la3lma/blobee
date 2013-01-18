@@ -36,7 +36,7 @@ import org.jboss.netty.handler.codec.oneone.OneToOneDecoder;
  *
  * XXX NOTE: These are the original comments from the ProtobufDecoder that this
  * class is based on, not comments that actually describes what this class does.
- * A new set of comments should be written.
+ * A new set of comments should be written (rmz).
  *
  * Decodes a received {@link ChannelBuffer} into a <a
  * href="http://code.google.com/p/protobuf/">Google Protocol Buffers</a>
