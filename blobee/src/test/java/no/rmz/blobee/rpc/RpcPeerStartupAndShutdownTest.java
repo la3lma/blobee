@@ -16,6 +16,7 @@
 package no.rmz.blobee.rpc;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.logging.Logger;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
@@ -72,7 +73,7 @@ public final class RpcPeerStartupAndShutdownTest {
             }
         };
 
-        final RpcClient rpcClient = RpcSetup.setUpClient(HOST, port, executor, ml);
+        final RpcClient rpcClient = RpcSetup.setUpClient(executor, ml);
         // XXX This is actually a bit bogus, since what the server
         //     needs is not a client that can connect to somewhere (in
         //     particular it doesn't need a client that can connect to itself
@@ -83,7 +84,7 @@ public final class RpcPeerStartupAndShutdownTest {
         //     work.
         RpcSetup.setUpServer(port, executor, rpcClient, ml);
 
-        rpcClient.start();
+        rpcClient.start(new InetSocketAddress(HOST, port));
         // Need some time to let the startup transient settle.
         sleepHalfASec();
 
@@ -138,7 +139,7 @@ public final class RpcPeerStartupAndShutdownTest {
             }
         };
 
-       final RpcClient rpcClient = RpcSetup.setUpClient(HOST, port, executor, ml);
+       final RpcClient rpcClient = RpcSetup.setUpClient(executor, ml);
         // XXX This is actually a bit bogus, since what the server
         //     needs is not a client that can connect to somewhere (in
         //     particular it doesn't need a client that can connect to itself
@@ -149,7 +150,7 @@ public final class RpcPeerStartupAndShutdownTest {
         //     work.
         RpcSetup.setUpServer(port, executor, rpcClient, ml);
 
-        rpcClient.start();
+        rpcClient.start(new InetSocketAddress(HOST, port));
         // Need some time to let the startup transient settle.
         sleepHalfASec();
 

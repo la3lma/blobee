@@ -59,19 +59,16 @@ public final class RpcSetup {
 
         // Bind and start to accept incoming connections.
         bootstrap.bind(new InetSocketAddress(port));
-
     }
 
+
+
     public static RpcClient setUpClient(
-            final String host,
-            final int port,
             final RpcExecutionService executor) {
-        return setUpClient(host, port, executor, null);
+        return setUpClient(executor, null);
     }
 
     public static RpcClient setUpClient(
-            final String host,
-            final int port,
             final RpcExecutionService executor,
             final RpcMessageListener listener) {
 
@@ -82,10 +79,10 @@ public final class RpcSetup {
                 Executors.newCachedThreadPool()));
 
         final int bufferSize = 1;
-        final RpcClient rpcClient = new RpcClient(bufferSize, host, port);
+        final RpcClient rpcClient = new RpcClient(bufferSize);
 
         final String name =
-                "client connected to server at host " + host + " port " + port;
+               "A client";
         final RpcPeerPipelineFactory clientPipelineFactory =
                 new RpcPeerPipelineFactory(name, executor,  rpcClient, listener);
         rpcClient.setClientPipelineFactory(clientPipelineFactory);

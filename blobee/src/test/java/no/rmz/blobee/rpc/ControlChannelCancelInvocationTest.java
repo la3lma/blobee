@@ -21,6 +21,7 @@ import com.google.protobuf.RpcController;
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.net.InetSocketAddress;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -175,12 +176,12 @@ public final class ControlChannelCancelInvocationTest {
                 new ServiceTestItem(),
                 Testservice.RpcService.Interface.class);
 
-        final RpcClient client = RpcSetup.setUpClient(HOST, port, executionService);
+        final RpcClient client = RpcSetup.setUpClient(executionService);
 
         final RpcClient serversClient = client; // XXX This is an abomination
         RpcSetup.setUpServer(port, executionService, serversClient, rpcMessageListener);
 
-        client.start();
+        client.start(new InetSocketAddress(HOST, port));
 
         clientChannel = client.newClientRpcChannel();
         clientController = client.newController();

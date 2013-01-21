@@ -21,6 +21,7 @@ import com.google.protobuf.RpcController;
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -29,11 +30,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.rmz.blobee.serviceimpls.SampleServerImpl;
 import no.rmz.blobee.serviceimpls.SampleServerImpl1;
-import no.rmz.blobee.rpc.RpcClient;
-import no.rmz.blobee.rpc.RpcExecutionService;
-import no.rmz.blobee.rpc.RpcExecutionServiceImpl;
-import no.rmz.blobee.rpc.RpcMessageListener;
-import no.rmz.blobee.rpc.RpcSetup;
 import no.rmz.blobeetestproto.api.proto.Tullball.RpcPar;
 import no.rmz.blobeetestproto.api.proto.Tullball.RpcRes;
 import no.rmz.blobeetestproto.api.proto.Tullball.RpcServ;
@@ -98,12 +94,12 @@ public final class RpcPeerInvocation1Test {
                 new SampleServerImpl1(),  // XXX No actual typechecking here!!
                 RpcServ.Interface.class);
 
-        final RpcClient client = RpcSetup.setUpClient(HOST, port, executionService);
+        final RpcClient client = RpcSetup.setUpClient(executionService);
 
         final RpcClient serversClient = client; // XXX This is an abomination
         RpcSetup.setUpServer(port, executionService, serversClient, rpcMessageListener);
 
-        client.start();
+        client.start(new InetSocketAddress(HOST, port));
 
         clientChannel    = client.newClientRpcChannel();
         clientController = client.newController();

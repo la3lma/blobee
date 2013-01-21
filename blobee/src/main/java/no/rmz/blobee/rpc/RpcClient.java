@@ -48,8 +48,7 @@ public final class RpcClient {
     private volatile boolean running = false;
     private final Map<Long, RpcClientSideInvocation> invocations =
             new TreeMap<Long, RpcClientSideInvocation>();
-    private final int port;
-    private final String host;
+   
     private long nextIndex;
     private Channel channel;
     private RpcPeerPipelineFactory clientPipelineFactory;
@@ -58,7 +57,7 @@ public final class RpcClient {
     private ClientBootstrap clientBootstrap;
     private final static int MAX_CAPACITY_FOR_INPUT_BUFFER = 10000;
 
-    void returnCall(final RemoteExecutionContext dc, final Message message) {
+    public void returnCall(final RemoteExecutionContext dc, final Message message) {
         synchronized (invocations) {
             final RpcClientSideInvocation invocation =
                     invocations.get(dc.getRpcIndex());
@@ -134,20 +133,15 @@ public final class RpcClient {
 
 
     public RpcClient(
-            final int capacity,
-            final String host,
-            final int port) {
+            final int capacity) {
 
         checkArgument(0 < capacity && capacity < MAX_CAPACITY_FOR_INPUT_BUFFER);
         this.capacity = capacity;
         this.incoming =
                 new ArrayBlockingQueue<RpcClientSideInvocation>(capacity);
-        checkArgument(0 < port &&  port < MAXIMUM_TCP_PORT_NUMBER);
-        this.port = port;
-        this.host = checkNotNull(host);
     }
 
-    public void setChannel(final Channel channel) {
+    private  void setChannel(final Channel channel) {
         synchronized (mutationMonitor) {
             if (this.channel != null) {
                 throw new IllegalStateException("Can't set channel since channel is already set");
@@ -167,15 +161,19 @@ public final class RpcClient {
         }
     }
 
-    void setBootstrap(final ClientBootstrap clientBootstrap) {
+    public void setBootstrap(final ClientBootstrap clientBootstrap) {
         if (this.clientBootstrap != null) {
             throw new IllegalStateException("Can't set clientBotstrap more than once");
         }
         this.clientBootstrap = checkNotNull(clientBootstrap);
     }
 
-    public void start() {
+    // XXX This stuff needs to be rewritten so it can work
+    //     without having to start its own ChannelFuture.  It should
+    //     be possible to graft the thing onto a server instance.
 
+    public void start(final InetSocketAddress socketAddress) {
+        checkNotNull(socketAddress);
         synchronized (runLock) {
             if (running) {
                 throw new IllegalStateException("Cannot start an already running RPC Client");
@@ -185,7 +183,7 @@ public final class RpcClient {
 
         // Start the connection attempt.
         final ChannelFuture future =
-                clientBootstrap.connect(new InetSocketAddress(host, port));
+                clientBootstrap.connect(socketAddress);
 
         setChannel(future.getChannel());
 
@@ -243,7 +241,7 @@ public final class RpcClient {
         return new RpcClientControllerImpl();
     }
 
-    void failInvocation(final long rpcIndex, final String errorMessage) {
+    public void failInvocation(final long rpcIndex, final String errorMessage) {
         checkNotNull(errorMessage);
         checkArgument(rpcIndex >= 0);
         final RpcClientSideInvocation invocation;
@@ -271,6 +269,5 @@ public final class RpcClient {
 
         WireFactory.getWireForChannel(channel)
                 .write(cancelRequest);
-
     }
 }

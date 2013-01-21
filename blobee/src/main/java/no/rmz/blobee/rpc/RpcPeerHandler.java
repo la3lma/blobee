@@ -59,11 +59,14 @@ public final class RpcPeerHandler
      * incoming responses to the callers.
      */
     private final RpcClient rpcClient;
+    
     /**
      * For each ChannelHandlerContext, this map keeps track of the
      * RemoteExecution context being processed.
      */
     private ContextMap contextMap = new ContextMap();
+
+    private HeartbeatMonitor heartbeatMonitor;
 
 
     final Map<Channel, Object> lockMap = new WeakHashMap<Channel, Object>();
@@ -85,8 +88,6 @@ public final class RpcPeerHandler
             this.listener = listener;
         }
     }
-
-    HeartbeatMonitor heartbeatMonitor;
 
     @Override
     public void channelConnected(
