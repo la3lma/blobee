@@ -62,7 +62,6 @@ public final class RpcSetup {
     }
 
 
-
     public static RpcClient setUpClient(
             final RpcExecutionService executor) {
         return setUpClient(executor, null);
@@ -72,23 +71,24 @@ public final class RpcSetup {
             final RpcExecutionService executor,
             final RpcMessageListener listener) {
 
-        // Configure the client.
-        final ClientBootstrap clientBootstrap = new ClientBootstrap(
-                new NioClientSocketChannelFactory(
-                Executors.newCachedThreadPool(),
-                Executors.newCachedThreadPool()));
 
         final int bufferSize = 1;
         final RpcClient rpcClient = new RpcClient(bufferSize);
 
+         // Configure the client.
+        final ClientBootstrap clientBootstrap = new ClientBootstrap(
+                new NioClientSocketChannelFactory(
+                Executors.newCachedThreadPool(),
+                Executors.newCachedThreadPool()));
         final String name =
                "A client";
         final RpcPeerPipelineFactory clientPipelineFactory =
                 new RpcPeerPipelineFactory(name, executor,  rpcClient, listener);
-        rpcClient.setClientPipelineFactory(clientPipelineFactory);
 
         clientBootstrap.setPipelineFactory(
                 clientPipelineFactory);
+
+        rpcClient.setClientPipelineFactory(clientPipelineFactory);
         rpcClient.setBootstrap(clientBootstrap);
 
         return rpcClient;
