@@ -36,7 +36,8 @@ public final class RpcPeerPipelineFactory implements ChannelPipelineFactory {
     private final String name;
 
     // XXX
-    private final WeakHashMap<ChannelPipeline, DynamicProtobufDecoder> decoderMap =
+    private final WeakHashMap<ChannelPipeline, DynamicProtobufDecoder>
+            decoderMap =
             new WeakHashMap<ChannelPipeline, DynamicProtobufDecoder>();
 
     /**
@@ -101,7 +102,7 @@ public final class RpcPeerPipelineFactory implements ChannelPipelineFactory {
         p.addLast("protobufEncoder", new ProtobufEncoder());
         final RpcPeerHandler handler =
                 new RpcPeerHandler(protbufDecoder, executionService, rpcClient);
-        
+
         if (listener != null) {
             handler.setListener(listener);
         }

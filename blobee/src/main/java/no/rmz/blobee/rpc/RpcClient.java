@@ -48,7 +48,7 @@ public final class RpcClient {
     private volatile boolean running = false;
     private final Map<Long, RpcClientSideInvocation> invocations =
             new TreeMap<Long, RpcClientSideInvocation>();
-   
+
     private long nextIndex;
     private Channel channel;
     private RpcPeerPipelineFactory clientPipelineFactory;
@@ -187,7 +187,11 @@ public final class RpcClient {
 
         setChannel(future.getChannel());
 
-        final Runnable runnable = new Runnable() {
+        // This runnable will start, then just wait until
+        // the channel stops, then the bootstrap will be instructed
+        // to reease external resources, and with that the client
+        // is completely halted.
+        final Runnable channelCleanup = new Runnable() {
             public void run() {
                 // Wait until the connection is closed or the connection attempt fails.
                 future.getChannel().getCloseFuture().awaitUninterruptibly();
@@ -197,11 +201,11 @@ public final class RpcClient {
             }
         };
 
-        final Thread thread = new Thread(runnable, "client cleaner");
+        final Thread thread = new Thread(channelCleanup, "client shutdown cleaner");
         thread.start();
 
         final Thread dispatcherThread =
-                new Thread(incomingDispatcher, "Incoming dispatcher");
+                new Thread(incomingDispatcher, "Incoming dispatcher for client");
         dispatcherThread.start();
     }
 

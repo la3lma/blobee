@@ -128,7 +128,8 @@ public final class RpcClientControllerImpl implements RpcClientController {
             if (this.rpcClient != null) {
                 throw new IllegalArgumentException("Controller is already in use, can't be reset");
             }
-            this.rpcClient = rpcClient;
+            this.rpcClient = checkNotNull(rpcClient);
+            checkArgument(rpcIndex >= 0);
             this.rpcIndex  = rpcIndex;
         }
     }

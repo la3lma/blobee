@@ -53,13 +53,16 @@ public final class RpcExecutionServiceImpl
             Logger.getLogger(RpcExecutionServiceImpl.class.getName());
 
 
-    final ExecutorService threadPool = Executors.newCachedThreadPool();
+    private final ExecutorService threadPool = Executors.newCachedThreadPool();
 
-    final Object implementation;
+    // XXX No longer final, but the design of this
+    //     field is in flux.  May in fact become a
+    //     map from interfaces to implementations.
+    private  Object implementation;
 
-    final Map<MethodSignature, Method> mmap;
-    final Map<MethodSignature, Class<?>> returnTypes;
-    final Map<MethodSignature, Class<?>> pmtypes;
+    private final Map<MethodSignature, Method> mmap;
+    private final Map<MethodSignature, Class<?>> returnTypes;
+    private final Map<MethodSignature, Class<?>> pmtypes;
 
     public Class getReturnType(final MethodSignature sig) {
         checkNotNull(sig);
@@ -71,12 +74,24 @@ public final class RpcExecutionServiceImpl
         return pmtypes.get(sig);
     }
 
-    public RpcExecutionServiceImpl(
-            final Object implementation, final Class ... interfaceClasses) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        this.implementation = checkNotNull(implementation);
+     public RpcExecutionServiceImpl() {
         mmap = new HashMap<MethodSignature, Method>();
         returnTypes = new HashMap<MethodSignature, Class<?>>();
         pmtypes = new HashMap<MethodSignature, Class<?>>();
+    }
+
+    public RpcExecutionServiceImpl(
+            final Object implementation, final Class ... interfaceClasses)
+            throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        this();
+        addImplementation(implementation, interfaceClasses);
+    }
+
+
+    private void addImplementation(
+            final Object implementation,
+            final Class[] interfaceClasses) throws SecurityException, IllegalStateException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, IllegalArgumentException {
+        this.implementation = checkNotNull(implementation);
 
         final Collection<Class> ifaces = new HashSet<Class>();
 

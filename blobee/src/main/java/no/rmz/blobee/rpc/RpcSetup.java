@@ -15,6 +15,7 @@
  */
 package no.rmz.blobee.rpc;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 import org.jboss.netty.bootstrap.ClientBootstrap;
@@ -22,6 +23,28 @@ import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 
+
+/**
+ * Setting up an RPC endpoint is about doing these three things:
+ *
+ *    o Make a client instance that can be used to send and
+ *      accept requests.
+ *    o Make a service instance that can be used to serve and
+ *      return requests.
+ *    o Either
+ *        - Either connect to a server accepting incoming connection and use
+ *          that connection to exchange RPC calls.
+ *        - Or  set up a server accepting incoming connections and use those
+ *          connections to serve incoming requests.
+ *
+ * So you see, there is a great deal of symmetry here.  A client is also
+ * a server and a server is also a client.   This symmetry is not currently
+ * reflected in the way we build the server and client instances, but
+ * it should.  There should be -very- little difference between the two.
+ *
+ * Perhaps the main construct should be an "RpcPeer" and then secondarily
+ * we should extract either a client or a server depending on our needs?
+ */
 public final class RpcSetup {
 
     /**
@@ -30,12 +53,36 @@ public final class RpcSetup {
     private RpcSetup() {
     }
 
-    public static void setUpServer(
-            final int port,
-            final RpcExecutionService executionService,
-            final RpcClient rpcClient) {
-        setUpServer(port, executionService, null);
+
+    public final static class Node {
+        final RpcExecutionService executionService;
+        final RpcClient rpcClient;
+
+        public Node(
+                final RpcExecutionService executionService,
+                final RpcClient rpcClient) {
+            this.executionService =  checkNotNull(executionService);
+            this.rpcClient = checkNotNull(rpcClient);
+        }
+
+        final RpcClient getClient () {
+            return rpcClient;
+        }
+
+
     }
+
+    // XXX This is what we are going to make now
+    public void newConnectingNode() {
+
+    }
+
+
+    public void newAcceptingNode() {
+
+    }
+
+
 
     public static void setUpServer(
             final int port,
