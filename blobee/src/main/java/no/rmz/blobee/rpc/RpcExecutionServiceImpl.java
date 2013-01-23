@@ -88,6 +88,8 @@ public final class RpcExecutionServiceImpl
     }
 
 
+    private Map<Class, Object> implementations = new HashMap<Class, Object>();
+
     private void addImplementation(
             final Object implementation,
             final Class[] interfaceClasses) throws SecurityException, IllegalStateException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, IllegalArgumentException {

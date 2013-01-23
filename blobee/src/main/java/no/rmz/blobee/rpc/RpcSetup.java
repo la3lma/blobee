@@ -72,18 +72,68 @@ public final class RpcSetup {
 
     }
 
+    final int bufferSize = 1; // XXX
+
     // XXX This is what we are going to make now
-    public void newConnectingNode() {
+    public Node newConnectingNode() {
 
+        final RpcClient rpcClient = new RpcClient(bufferSize);
+        final RpcExecutionService executor =
+                new RpcExecutionServiceImpl();
+
+        // Configure the client.
+        final ClientBootstrap clientBootstrap = new ClientBootstrap(
+                new NioClientSocketChannelFactory(
+                Executors.newCachedThreadPool(),
+                Executors.newCachedThreadPool()));
+        final String name =
+                "A client";
+        final RpcPeerPipelineFactory clientPipelineFactory =
+                new RpcPeerPipelineFactory(name, executor, rpcClient);
+
+        clientBootstrap.setPipelineFactory(
+                clientPipelineFactory);
+
+        rpcClient.setClientPipelineFactory(clientPipelineFactory);
+        rpcClient.setBootstrap(clientBootstrap);
+
+        return new Node(executor, rpcClient);
     }
 
 
-    public void newAcceptingNode() {
+    public void newAcceptingNode(final int port) {
 
+        final ServerBootstrap bootstrap = new ServerBootstrap(
+                new NioServerSocketChannelFactory(
+                Executors.newCachedThreadPool(),
+                Executors.newCachedThreadPool()));
+
+        final String name = "server at port " + port;
+
+        final RpcExecutionService executionService =
+                new RpcExecutionServiceImpl();
+
+        final RpcClient rpcClient = new RpcClient(bufferSize);
+
+        final RpcPeerPipelineFactory serverChannelPipelineFactory =
+                new RpcPeerPipelineFactory(
+                    "server accepting incoming connections at port ",
+                    executionService, rpcClient);
+
+        rpcClient.setClientPipelineFactory(serverChannelPipelineFactory);
+
+        // XXX Something missing to set channel for client.
+
+        // Set up the pipeline factory.
+        bootstrap.setPipelineFactory(serverChannelPipelineFactory);
+
+        // Bind and start to accept incoming connections.
+        bootstrap.bind(new InetSocketAddress(port));
     }
 
 
 
+    @Deprecated
     public static void setUpServer(
             final int port,
             final RpcExecutionService executionService,
@@ -109,11 +159,13 @@ public final class RpcSetup {
     }
 
 
+
     public static RpcClient setUpClient(
             final RpcExecutionService executor) {
         return setUpClient(executor, null);
     }
 
+     @Deprecated
     public static RpcClient setUpClient(
             final RpcExecutionService executor,
             final RpcMessageListener listener) {

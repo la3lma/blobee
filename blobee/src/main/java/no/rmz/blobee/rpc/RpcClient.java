@@ -1,20 +1,18 @@
 /**
- * Copyright 2013  Bjørn Remseth (la3lma@gmail.com)
+ * Copyright 2013 Bjørn Remseth (la3lma@gmail.com)
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
-
-
 package no.rmz.blobee.rpc;
 
 import no.rmz.blobee.controllers.RpcClientControllerImpl;
@@ -48,7 +46,6 @@ public final class RpcClient {
     private volatile boolean running = false;
     private final Map<Long, RpcClientSideInvocation> invocations =
             new TreeMap<Long, RpcClientSideInvocation>();
-
     private long nextIndex;
     private Channel channel;
     private RpcPeerPipelineFactory clientPipelineFactory;
@@ -73,7 +70,6 @@ public final class RpcClient {
             invocation.getController().setActive(false);
         }
     }
-
     final Runnable incomingDispatcher = new Runnable() {
         public void run() {
             while (running) {
@@ -131,7 +127,6 @@ public final class RpcClient {
         }
     }
 
-
     public RpcClient(
             final int capacity) {
 
@@ -141,7 +136,7 @@ public final class RpcClient {
                 new ArrayBlockingQueue<RpcClientSideInvocation>(capacity);
     }
 
-    private  void setChannel(final Channel channel) {
+    public void setChannel(final Channel channel) {
         synchronized (mutationMonitor) {
             if (this.channel != null) {
                 throw new IllegalStateException("Can't set channel since channel is already set");
@@ -171,42 +166,45 @@ public final class RpcClient {
     // XXX This stuff needs to be rewritten so it can work
     //     without having to start its own ChannelFuture.  It should
     //     be possible to graft the thing onto a server instance.
-
     public void start(final InetSocketAddress socketAddress) {
         checkNotNull(socketAddress);
         synchronized (runLock) {
             if (running) {
                 throw new IllegalStateException("Cannot start an already running RPC Client");
             }
-            running = true;
+            // Start the connection attempt.
+            final ChannelFuture future =
+                    clientBootstrap.connect(socketAddress);
+            start(future.getChannel());
         }
+    }
 
-        // Start the connection attempt.
-        final ChannelFuture future =
-                clientBootstrap.connect(socketAddress);
+    public void start(final Channel channel) {
+        synchronized (runLock) {
+            setChannel(channel);
 
-        setChannel(future.getChannel());
+            // This runnable will start, then just wait until
+            // the channel stops, then the bootstrap will be instructed
+            // to reease external resources, and with that the client
+            // is completely halted.
+            final Runnable channelCleanup = new Runnable() {
+                public void run() {
+                    // Wait until the connection is closed or the connection attempt fails.
+                    channel.getCloseFuture().awaitUninterruptibly();
 
-        // This runnable will start, then just wait until
-        // the channel stops, then the bootstrap will be instructed
-        // to reease external resources, and with that the client
-        // is completely halted.
-        final Runnable channelCleanup = new Runnable() {
-            public void run() {
-                // Wait until the connection is closed or the connection attempt fails.
-                future.getChannel().getCloseFuture().awaitUninterruptibly();
+                    // Shut down thread pools to exit.
+                    clientBootstrap.releaseExternalResources();
+                }
+            };
 
-                // Shut down thread pools to exit.
-                clientBootstrap.releaseExternalResources();
-            }
-        };
+            running = true;
+            final Thread thread = new Thread(channelCleanup, "client shutdown cleaner");
+            thread.start();
 
-        final Thread thread = new Thread(channelCleanup, "client shutdown cleaner");
-        thread.start();
-
-        final Thread dispatcherThread =
-                new Thread(incomingDispatcher, "Incoming dispatcher for client");
-        dispatcherThread.start();
+            final Thread dispatcherThread =
+                    new Thread(incomingDispatcher, "Incoming dispatcher for client");
+            dispatcherThread.start();
+        }
     }
 
     public RpcChannel newClientRpcChannel() {
@@ -225,7 +223,7 @@ public final class RpcClient {
                 checkNotNull(done);
 
                 // Binding the controller to this invocation.
-                if (controller instanceof  RpcClientController) {
+                if (controller instanceof RpcClientController) {
                     final RpcClientController ctrl = (RpcClientController) controller;
                     if (ctrl.isActive()) {
                         throw new IllegalStateException("Activating already active controller");
@@ -255,7 +253,6 @@ public final class RpcClient {
         checkNotNull(invocation);
         invocation.getController().setFailed(errorMessage);
     }
-
 
     public void cancelInvocation(final long rpcIndex) {
         checkArgument(rpcIndex >= 0);
