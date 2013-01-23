@@ -180,6 +180,7 @@ public final class RpcClient {
     }
 
     public void start(final Channel channel) {
+        checkNotNull(channel);
         synchronized (runLock) {
             setChannel(channel);
 
@@ -226,7 +227,7 @@ public final class RpcClient {
                 if (controller instanceof RpcClientController) {
                     final RpcClientController ctrl = (RpcClientController) controller;
                     if (ctrl.isActive()) {
-                        throw new IllegalStateException("Activating already active controller");
+                        throw new IllegalStateException("Attempt to activate already active controller");
                     } else {
                         ctrl.setActive(running);
                     }

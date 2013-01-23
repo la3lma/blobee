@@ -19,6 +19,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.Message;
 import com.google.protobuf.MessageLite;
 import java.lang.reflect.Method;
+import java.net.SocketAddress;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
@@ -59,7 +60,7 @@ public final class RpcPeerHandler
      * incoming responses to the callers.
      */
     private final RpcClient rpcClient;
-    
+
     /**
      * For each ChannelHandlerContext, this map keeps track of the
      * RemoteExecution context being processed.
@@ -96,6 +97,22 @@ public final class RpcPeerHandler
         // XXX Check that there is no heartbeat monitor there
         //     already, because if it is,  that is an error situation.
         this.heartbeatMonitor = new HeartbeatMonitor(e.getChannel());
+        registerChannel(ctx.getChannel());
+    }
+
+    // For clients there will only be only client, but for servers
+    // there will (paradoxically :-) be many clients.
+
+    private void registerChannel(final Channel channel) {
+        checkNotNull(channel);
+    }
+
+    // Stopgap solution to ensure that the client we use is
+    // actually the one that is associated with the channel in
+    // question.   Must be extended asap.
+    private RpcClient getRpcChannel(final Channel channel) {
+        checkNotNull(channel);
+        return rpcClient;
     }
 
 
@@ -138,7 +155,7 @@ public final class RpcPeerHandler
                     processChannelShutdownMessage(ctx);
                     break;
                 case INVOCATION_FAILED:
-                    processInvocationFailedMessage(msg);
+                    processInvocationFailedMessage(ctx.getChannel(), msg);
                     break;
                 case RPC_CANCEL:
                     processCancelMessage(msg, ctx);
@@ -234,6 +251,8 @@ public final class RpcPeerHandler
         }
     }
 
+
+
     private void processPayloadMessage(final Object message, final ChannelHandlerContext ctx) throws IllegalStateException {
         nextMessageIsControl();
         log.info("Received payload message:  " + message);
@@ -248,24 +267,28 @@ public final class RpcPeerHandler
             executionService.execute(dc, ctx, message);
         } else if (dc.getDirection() == RpcDirection.RETURNING) {
             final Message msg = (Message) message;
-            rpcClient.returnCall(dc, msg);
+            getRpcChannel(ctx.getChannel()).returnCall(dc, msg);
         } else {
             throw new IllegalStateException("Unknown RpcDirection = " + dc.getDirection());
         }
         contextMap.remove(ctx);
     }
 
-    private void processCancelMessage(final RpcControl msg, final ChannelHandlerContext ctx) {
+    private void processCancelMessage(
+            final RpcControl msg,
+            final ChannelHandlerContext ctx) {
         nextMessageIsControl();
         final long   rpcIndex = msg.getRpcIndex();
         executionService.startCancel(ctx, rpcIndex);
     }
 
-    private void processInvocationFailedMessage(final RpcControl msg) {
+    private void processInvocationFailedMessage(final Channel channel, final RpcControl msg) {
+        checkNotNull(channel);
+        checkNotNull(msg);
         nextMessageIsControl();
         final String errorMessage = msg.getFailed();
         final long   rpcIndex = msg.getRpcIndex();
-        rpcClient.failInvocation(rpcIndex, errorMessage);
+        getRpcChannel(channel).failInvocation(rpcIndex, errorMessage);
     }
 
     private void processChannelShutdownMessage(final ChannelHandlerContext ctx) {
@@ -273,7 +296,9 @@ public final class RpcPeerHandler
         ctx.getChannel().close();
     }
 
-    private void processReturnValueMessage(final RpcControl msg, final ChannelHandlerContext ctx) throws IllegalStateException {
+    private void processReturnValueMessage(
+            final RpcControl msg,
+            final ChannelHandlerContext ctx) throws IllegalStateException {
         final MethodSignature methodSignature = msg.getMethodSignature();
         final long rpcIndex = msg.getRpcIndex();
         final MessageLite prototypeForReturnValue =
