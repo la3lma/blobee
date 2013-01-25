@@ -64,9 +64,16 @@ public final class RpcExecutionServiceImpl
     private final Map<MethodSignature, Class<?>> returnTypes;
     private final Map<MethodSignature, Class<?>> pmtypes;
 
+
     public Class getReturnType(final MethodSignature sig) {
+        // Preconditions
         checkNotNull(sig);
-        return returnTypes.get(sig);
+        checkArgument(!returnTypes.isEmpty());
+        final Class<?> result = returnTypes.get(sig);
+
+        // Postcondition
+        checkNotNull(result);
+        return result;
     }
 
      public Class getParameterType(final MethodSignature sig) {

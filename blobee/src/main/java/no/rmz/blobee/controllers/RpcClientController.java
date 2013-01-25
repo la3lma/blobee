@@ -1,7 +1,7 @@
 package no.rmz.blobee.controllers;
 
 import com.google.protobuf.RpcController;
-import no.rmz.blobee.rpc.RpcClient;
+import no.rmz.blobee.rpc.RpcClientImpl;
 import no.rmz.blobee.rpc.RpcClientSideInvocation;
 
 
@@ -15,5 +15,5 @@ public interface RpcClientController extends RpcController {
 
     void bindToInvocation(final RpcClientSideInvocation invocation);
 
-    void setClientAndIndex(final RpcClient rpcClient, final long rpcIndex);
+    void setClientAndIndex(final RpcClientImpl rpcClient, final long rpcIndex);
 }

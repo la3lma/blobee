@@ -73,7 +73,7 @@ public final class RpcPeerStartupAndShutdownTest {
             }
         };
 
-        final RpcClient rpcClient = RpcSetup.setUpClient(executor, ml);
+        final RpcClientImpl rpcClient = RpcSetup.setUpClient(executor, ml);
         // XXX This is actually a bit bogus, since what the server
         //     needs is not a client that can connect to somewhere (in
         //     particular it doesn't need a client that can connect to itself
@@ -139,7 +139,7 @@ public final class RpcPeerStartupAndShutdownTest {
             }
         };
 
-       final RpcClient rpcClient = RpcSetup.setUpClient(executor, ml);
+       final RpcClientImpl rpcClient = RpcSetup.setUpClient(executor, ml);
         // XXX This is actually a bit bogus, since what the server
         //     needs is not a client that can connect to somewhere (in
         //     particular it doesn't need a client that can connect to itself

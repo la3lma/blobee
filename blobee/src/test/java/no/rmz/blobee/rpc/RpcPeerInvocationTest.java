@@ -90,15 +90,19 @@ public final class RpcPeerInvocationTest {
                 new SampleServerImpl(),
                 Testservice.RpcService.Interface.class);
 
-        final RpcClient client = RpcSetup.setUpClient(executionService);
 
-        final RpcClient serversClient = client; // XXX This is an abomination
-        RpcSetup.setUpServer(port, executionService, serversClient, rpcMessageListener);
+        // final RpcClientImpl client = RpcSetup.setUpClient(executionService);
 
-        client.start(new InetSocketAddress(HOST, port));
+        // final RpcClientImpl serversClient = client; // XXX This is an abomination
+        // client.start(new InetSocketAddress(HOST, port));
+        final RpcClient rpcclient =
+                RpcSetup.newConnectingNode(executionService, (new InetSocketAddress(HOST, port)));
+        RpcSetup.setUpServer(port, executionService, rpcclient, rpcMessageListener);
 
-        clientChannel    = client.newClientRpcChannel();
-        clientController = client.newController();
+        rpcclient.start();
+
+        clientChannel    = rpcclient.newClientRpcChannel();
+        clientController = rpcclient.newController();
     }
 
     @Mock

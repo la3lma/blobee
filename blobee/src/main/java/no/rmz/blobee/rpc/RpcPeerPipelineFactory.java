@@ -79,7 +79,9 @@ public final class RpcPeerPipelineFactory implements ChannelPipelineFactory {
         this.listener = listener;
     }
 
-    public void putNextPrototype(final ChannelPipeline pipeline, final MessageLite prototype) {
+    public void putNextPrototype(
+            final ChannelPipeline pipeline,
+            final MessageLite prototype) {
         if (decoderMap.containsKey(pipeline)) {
             decoderMap.get(pipeline).putNextPrototype(prototype.getDefaultInstanceForType());
         } else {

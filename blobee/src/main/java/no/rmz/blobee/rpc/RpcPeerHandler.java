@@ -19,7 +19,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.Message;
 import com.google.protobuf.MessageLite;
 import java.lang.reflect.Method;
-import java.net.SocketAddress;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
@@ -105,7 +104,7 @@ public final class RpcPeerHandler
 
     private void registerChannel(final Channel channel) {
         checkNotNull(channel);
-    }
+        }
 
     // Stopgap solution to ensure that the client we use is
     // actually the one that is associated with the channel in

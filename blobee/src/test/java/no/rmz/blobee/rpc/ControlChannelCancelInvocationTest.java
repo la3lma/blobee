@@ -176,9 +176,9 @@ public final class ControlChannelCancelInvocationTest {
                 new ServiceTestItem(),
                 Testservice.RpcService.Interface.class);
 
-        final RpcClient client = RpcSetup.setUpClient(executionService);
+        final RpcClientImpl client = RpcSetup.setUpClient(executionService);
 
-        final RpcClient serversClient = client; // XXX This is an abomination
+        final RpcClientImpl serversClient = client; // XXX This is an abomination
         RpcSetup.setUpServer(port, executionService, serversClient, rpcMessageListener);
 
         client.start(new InetSocketAddress(HOST, port));

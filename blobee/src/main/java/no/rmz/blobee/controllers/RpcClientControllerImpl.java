@@ -19,7 +19,7 @@ package no.rmz.blobee.controllers;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.RpcCallback;
-import no.rmz.blobee.rpc.RpcClient;
+import no.rmz.blobee.rpc.RpcClientImpl;
 import no.rmz.blobee.rpc.RpcClientSideInvocation;
 
 public final class RpcClientControllerImpl implements RpcClientController {
@@ -28,7 +28,7 @@ public final class RpcClientControllerImpl implements RpcClientController {
     private boolean cancelled = false;
     private String reason = "";
     private final Object monitor = new Object();
-    private RpcClient rpcClient;
+    private RpcClientImpl rpcClient;
     private long rpcIndex = -1;
     private boolean active = false;
 
@@ -120,7 +120,7 @@ public final class RpcClientControllerImpl implements RpcClientController {
 
 
     @Override
-    public void setClientAndIndex(final RpcClient rpcClient, final long rpcIndex) {
+    public void setClientAndIndex(final RpcClientImpl rpcClient, final long rpcIndex) {
         checkNotNull(rpcClient);
         checkArgument(rpcIndex >= 0);
         synchronized (monitor) {

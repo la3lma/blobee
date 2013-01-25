@@ -117,7 +117,7 @@ public final class ControlChannelFailedInvocationTest {
                 new ServiceTestItem(),
                 Testservice.RpcService.Interface.class);
 
-        final RpcClient client = RpcSetup.setUpClient(executionService);
+        final RpcClientImpl client = RpcSetup.setUpClient(executionService);
 
         // XXX This is an abomination,  What is really needed is a
         //     "server client" implementation that the -server- can use
@@ -126,7 +126,7 @@ public final class ControlChannelFailedInvocationTest {
         //     simply reuse the connection of the server, and not have its
         //     own connection to a remote server.  That should be it, but
         //     it's not there yet :-/
-        final RpcClient serversClient = client;
+        final RpcClientImpl serversClient = client;
         RpcSetup.setUpServer(port, executionService, serversClient, rpcMessageListener);
 
         client.start(new InetSocketAddress(HOST, port));

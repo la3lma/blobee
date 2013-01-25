@@ -94,9 +94,9 @@ public final class RpcPeerInvocation1Test {
                 new SampleServerImpl1(),  // XXX No actual typechecking here!!
                 RpcServ.Interface.class);
 
-        final RpcClient client = RpcSetup.setUpClient(executionService);
+        final RpcClientImpl client = RpcSetup.setUpClient(executionService);
 
-        final RpcClient serversClient = client; // XXX This is an abomination
+        final RpcClientImpl serversClient = client; // XXX This is an abomination
         RpcSetup.setUpServer(port, executionService, serversClient, rpcMessageListener);
 
         client.start(new InetSocketAddress(HOST, port));

@@ -20,6 +20,7 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.bootstrap.ServerBootstrap;
+import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 
@@ -53,54 +54,86 @@ public final class RpcSetup {
     private RpcSetup() {
     }
 
-
     public final static class Node {
+
         final RpcExecutionService executionService;
-        final RpcClient rpcClient;
+        final RpcClientFactory rcf;
 
-        public Node(
-                final RpcExecutionService executionService,
-                final RpcClient rpcClient) {
-            this.executionService =  checkNotNull(executionService);
-            this.rpcClient = checkNotNull(rpcClient);
+        private Node(final RpcExecutionService executor,
+                     final RpcClientFactory rcf) {
+            this.executionService = checkNotNull(executor);
+            this.rcf = checkNotNull(rcf);
         }
 
-        final RpcClient getClient () {
-            return rpcClient;
+        final RpcClientImpl getClient(final Channel channel) {
+            checkNotNull(channel);
+            return rcf.getClientFor(channel);
         }
-
-
     }
 
     final int bufferSize = 1; // XXX
 
-    // XXX This is what we are going to make now
-    public Node newConnectingNode() {
 
-        final RpcClient rpcClient = new RpcClient(bufferSize);
+    public final static class SingeltonClientFactory implements RpcClientFactory {
+
+        private final Object monitor = new Object();
+
+        private final RpcClient rpcClient;
+        private Channel channel;
+
+        public SingeltonClientFactory(final RpcClient rpcClient) {
+            this.rpcClient = checkNotNull(rpcClient);
+        }
+
+
+        public RpcClientImpl getClientFor(final Channel channel) {
+            synchronized (monitor) {
+                if (this.channel == null) {
+                    this.channel = channel;
+                } if (channel != this.channel) {
+                    throw new IllegalStateException(
+                            "Attempt to get client for more than one channel "
+                            + channel);
+                } else {
+                    return rpcClient;
+                }
+            }
+        }
+    }
+
+    // XXX Next step: Make sure this implementation works!
+    public static RpcClient newConnectingNode(RpcExecutionService executor, final InetSocketAddress socketAddress) {
+        checkNotNull(socketAddress);
+
+/*
         final RpcExecutionService executor =
                 new RpcExecutionServiceImpl();
-
+*/
         // Configure the client.
         final ClientBootstrap clientBootstrap = new ClientBootstrap(
                 new NioClientSocketChannelFactory(
                 Executors.newCachedThreadPool(),
                 Executors.newCachedThreadPool()));
+
+        final RpcClient rpcClient =
+                new ConnectingRpcClientImpl(clientBootstrap, socketAddress);
+
+
         final String name =
                 "A client";
+
+        final RpcClientFactory rcf = new SingeltonClientFactory(rpcClient);
+
         final RpcPeerPipelineFactory clientPipelineFactory =
                 new RpcPeerPipelineFactory(name, executor, rpcClient);
 
-        clientBootstrap.setPipelineFactory(
-                clientPipelineFactory);
-
-        rpcClient.setClientPipelineFactory(clientPipelineFactory);
-        rpcClient.setBootstrap(clientBootstrap);
-
-        return new Node(executor, rpcClient);
+        clientBootstrap.setPipelineFactory(clientPipelineFactory);
+        return rpcClient;
+//        return new Node(executor, rcf);
     }
 
 
+    // XXX If this works, that's just a lucky break.
     public void newAcceptingNode(final int port) {
 
         final ServerBootstrap bootstrap = new ServerBootstrap(
@@ -113,14 +146,14 @@ public final class RpcSetup {
         final RpcExecutionService executionService =
                 new RpcExecutionServiceImpl();
 
-        final RpcClient rpcClient = new RpcClient(bufferSize);
+        // XXX This is completely wrong, this should be an
+        //     RpcClientFactory
+        final RpcClientImpl rpcClient = new RpcClientImpl(bufferSize);
 
         final RpcPeerPipelineFactory serverChannelPipelineFactory =
                 new RpcPeerPipelineFactory(
                     "server accepting incoming connections at port ",
                     executionService, rpcClient);
-
-        rpcClient.setClientPipelineFactory(serverChannelPipelineFactory);
 
         // XXX Something missing to set channel for client.
 
@@ -160,19 +193,19 @@ public final class RpcSetup {
 
 
 
-    public static RpcClient setUpClient(
+    public static RpcClientImpl setUpClient(
             final RpcExecutionService executor) {
         return setUpClient(executor, null);
     }
 
-     @Deprecated
+    @Deprecated
     public static RpcClient setUpClient(
             final RpcExecutionService executor,
             final RpcMessageListener listener) {
 
 
         final int bufferSize = 1;
-        final RpcClient rpcClient = new RpcClient(bufferSize);
+        final RpcClientImpl rpcClient = new RpcClientImpl(bufferSize);
 
          // Configure the client.
         final ClientBootstrap clientBootstrap = new ClientBootstrap(
@@ -187,8 +220,8 @@ public final class RpcSetup {
         clientBootstrap.setPipelineFactory(
                 clientPipelineFactory);
 
-        rpcClient.setClientPipelineFactory(clientPipelineFactory);
-        rpcClient.setBootstrap(clientBootstrap);
+        // rpcClient.setClientPipelineFactory(clientPipelineFactory);
+       //  rpcClient.setBootstrap(clientBootstrap);
 
         return rpcClient;
     }
