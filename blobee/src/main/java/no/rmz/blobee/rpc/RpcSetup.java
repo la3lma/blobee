@@ -101,8 +101,7 @@ public final class RpcSetup {
             final InetSocketAddress socketAddress) {
 
         checkNotNull(socketAddress);
-        // checkNotNull(executor);
-
+        
         final RpcExecutionService executor =
                 new RpcExecutionServiceImpl("Client execution service");
 
@@ -116,7 +115,7 @@ public final class RpcSetup {
                 new ConnectingRpcClientImpl(clientBootstrap, socketAddress);
 
         final String name =
-                "A client";
+                "RPC client connecting to " + socketAddress.toString();
 
         final RpcClientFactory rcf = new SingeltonClientFactory(rpcClient);
 
@@ -127,10 +126,15 @@ public final class RpcSetup {
         return rpcClient;
     }
 
+
     public static void newServer(
-            final int port,
+            final InetSocketAddress socket,
             final RpcExecutionService executionService,
             final RpcMessageListener listener) {
+
+        checkNotNull(socket);
+        checkNotNull(executionService);
+        checkNotNull(listener);
 
         final RpcClientImpl rpcClient = new RpcClientImpl(DEFAULT_BUFFER_SIZE);
 
@@ -139,7 +143,7 @@ public final class RpcSetup {
                 Executors.newCachedThreadPool(),
                 Executors.newCachedThreadPool()));
 
-        final String name = "Server at port " + port;
+        final String name = "RPC Server at " + socket.toString();
 
         final RpcPeerPipelineFactory serverChannelPipelineFactory =
                 new RpcPeerPipelineFactory(
@@ -152,6 +156,14 @@ public final class RpcSetup {
         bootstrap.setPipelineFactory(serverChannelPipelineFactory);
 
         // Bind and start to accept incoming connections.
-        bootstrap.bind(new InetSocketAddress(port));
+        bootstrap.bind(socket);
+    }
+
+    // XXX Eventually, stop using this.
+    public static void newServer(
+            final int port,
+            final RpcExecutionService executionService,
+            final RpcMessageListener listener) {
+        newServer(new InetSocketAddress(port), executionService, listener);
     }
 }
