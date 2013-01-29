@@ -77,7 +77,7 @@ public final class RpcPeerStartupAndShutdownTest {
             }
         };
 
-        final RpcClient rpcClient = RpcSetup.newConnectingNode(
+        final RpcClient rpcClient = RpcSetup.newClient(
                 new InetSocketAddress(HOST, port));
         // XXX This is actually a bit bogus, since what the server
         //     needs is not a client that can connect to somewhere (in
@@ -147,7 +147,7 @@ public final class RpcPeerStartupAndShutdownTest {
             }
         };
 
-       final RpcClient rpcClient = RpcSetup.newConnectingNode(new InetSocketAddress(HOST, port));
+       final RpcClient rpcClient = RpcSetup.newClient(new InetSocketAddress(HOST, port));
         // XXX This is actually a bit bogus, since what the server
         //     needs is not a client that can connect to somewhere (in
         //     particular it doesn't need a client that can connect to itself
