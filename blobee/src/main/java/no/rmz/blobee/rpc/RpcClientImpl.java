@@ -258,8 +258,8 @@ public final class RpcClientImpl implements RpcClient {
                 .write(cancelRequest);
     }
 
-    public void start() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public RpcClient start() {
+        return this;
     }
 
 
@@ -269,8 +269,7 @@ public final class RpcClientImpl implements RpcClient {
     }
 
 
-
-    public void addProtobuferRpcInterface(final Object instance) {
+    public RpcClient addProtobuferRpcInterface(final Object instance) {
 
         if (! (instance instanceof  com.google.protobuf.Service)) {
             throw new IllegalArgumentException("Expected a class extending com.google.protobuf.Service");
@@ -283,12 +282,11 @@ public final class RpcClientImpl implements RpcClient {
         final List<MethodDescriptor> methods = descriptor.getMethods();
         for (final MethodDescriptor md : methods) {
             try {
-                final String fullName = md.getFullName();
 
                 final Message inputType = TypeExctractor.getReqestPrototype(service, md);
                 final Message outputType = TypeExctractor.getResponsePrototype(service, md);
 
-                // THe lines above were made in desperation snce I couldn1t get
+                // The lines above were made in desperation snce I couldn1t get
                 // these two lines to work.  If I made some stupid mistake,
                 // and someone can get the two lines below to work, I can
                 // remove the entire TypeExtractor class and be very happy
@@ -304,6 +302,8 @@ public final class RpcClientImpl implements RpcClient {
                 Logger.getLogger(RpcClientImpl.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+
+        return this;
     }
 
 

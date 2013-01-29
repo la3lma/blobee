@@ -26,9 +26,9 @@ public final class ConnectingRpcClientImpl implements RpcClient {
     //     without having to start its own ChannelFuture.  It should
     //     be possible to graft the thing onto a server instance.
     @Override
-    public void start() {
+    public RpcClient start() {
         checkNotNull(socketAddress);
-        // XXX Synchronize with  rpcCLient
+
         // Start the connection attempt.
         final ChannelFuture future = clientBootstrap.connect(socketAddress);
         rpcClient.start(future.getChannel(), new ChannelShutdownCleaner() {
@@ -37,6 +37,7 @@ public final class ConnectingRpcClientImpl implements RpcClient {
                 clientBootstrap.releaseExternalResources();
             }
         });
+        return this;
     }
 
     public void cancelInvocation(final long rpcIndex) {
@@ -59,12 +60,12 @@ public final class ConnectingRpcClientImpl implements RpcClient {
         rpcClient.returnCall(dc, message);
     }
 
-    public void addProtobuferRpcInterface(final Object instance) {
-        checkNotNull(instance);
-        rpcClient.addProtobuferRpcInterface(instance);
-    }
 
     public MethodSignatureResolver getResolver() {
        return rpcClient.getResolver();
+    }
+
+    public RpcClient addProtobuferRpcInterface(final Object instance) {
+        return rpcClient.addProtobuferRpcInterface(instance);
     }
 }
