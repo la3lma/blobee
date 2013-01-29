@@ -16,11 +16,8 @@
 package no.rmz.blobee.rpc;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.Channel;
@@ -71,38 +68,6 @@ public final class RpcSetup {
         }
     }
 
-    public final static class SingeltonClientFactory implements RpcClientFactory {
-
-        private final Object monitor = new Object();
-        private final RpcClient rpcClient;
-        private Channel channel;
-
-        public SingeltonClientFactory(final RpcClient rpcClient) {
-            this.rpcClient = checkNotNull(rpcClient);
-        }
-
-        public RpcClient getClientFor(final Channel channel) {
-            synchronized (monitor) {
-                if (this.channel == null) {
-                    this.channel = channel;
-                }
-                if (channel != this.channel) {
-                    throw new IllegalStateException(
-                            "Attempt to get client for more than one channel "
-                            + channel);
-                } else {
-                    return rpcClient;
-                }
-            }
-        }
-
-        // XXX This is cheating.  It won't work
-        //     for anything but singeltons.
-        public MethodSignatureResolver getResolver() {
-            return rpcClient.getResolver();
-        }
-    }
-
     public static RpcClient newClient(
             final InetSocketAddress socketAddress) {
 
@@ -142,8 +107,6 @@ public final class RpcSetup {
         checkNotNull(executionService);
         checkNotNull(listener);
 
-        final RpcClientImpl rpcClient = new RpcClientImpl(DEFAULT_BUFFER_SIZE);
-
         final ServerBootstrap bootstrap = new ServerBootstrap(
                 new NioServerSocketChannelFactory(
                 Executors.newCachedThreadPool(),
@@ -155,7 +118,7 @@ public final class RpcSetup {
                 new RpcPeerPipelineFactory(
                 "server accepting incoming connections at port ",
                 executionService,
-                new SingeltonClientFactory(rpcClient), // XXX Shouldn't be a singelton, but there you are
+                new MultiChannelClientFactory(), // XXX Shouldn't be a singelton, but there you are
                 listener);
 
         // Set up the pipeline factory.

@@ -133,13 +133,13 @@ public final class RpcExecutionServiceImpl
                         interfaceMethod.getTypeParameters();
 
                 final String name = interfaceMethod.getName();
-                
+
 
                 final Descriptors.MethodDescriptor descriptor;
                 descriptor = ServiceAnnotationMapper.getMethodDescriptor(
                         implementation.getClass(), name);
                 final MethodSignature methodSignature =
-                        MethodMap.getMethodSignatureFromMethodDescriptor(descriptor);
+                        ResolverImpl.getMethodSignatureFromMethodDescriptor(descriptor);
 
                 final  Method implementationMethod = findMethod(name, implementation.getClass());
                 if (implementationMethod == null) {

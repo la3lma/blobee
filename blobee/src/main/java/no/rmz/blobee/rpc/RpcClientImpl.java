@@ -17,18 +17,13 @@ package no.rmz.blobee.rpc;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import com.google.protobuf.DescriptorProtos.DescriptorProto;
-import com.google.protobuf.DescriptorProtos.MessageOptions;
-import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.MethodDescriptor;
 import com.google.protobuf.Descriptors.ServiceDescriptor;
 import com.google.protobuf.Message;
-import com.google.protobuf.MessageLite;
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcChannel;
 import com.google.protobuf.RpcController;
 import com.google.protobuf.Service;
-import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -41,13 +36,9 @@ import no.rmz.blobee.controllers.RpcClientControllerImpl;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
 import no.rmz.blobeeproto.api.proto.Rpc.RpcControl;
-import no.rmz.blobeeprototest.api.proto.Testservice;
-import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelFuture;
 
-// XXX TODO   Separate out the parts that
-//            handles the connects, bootstraps etc.
+
 public final class RpcClientImpl implements RpcClient {
 
     private static final Logger log = Logger.getLogger(RpcClientImpl.class.getName());
@@ -65,7 +56,7 @@ public final class RpcClientImpl implements RpcClient {
     private final static int MAX_CAPACITY_FOR_INPUT_BUFFER = 10000;
 
 
-
+    private final MethodSignatureResolver resolver;
 
     @Override
     public void returnCall(
@@ -146,11 +137,16 @@ public final class RpcClientImpl implements RpcClient {
 
     public RpcClientImpl(
             final int capacity) {
+        this(capacity, new ResolverImpl());
+    }
+
+    public RpcClientImpl(final int capacity, final MethodSignatureResolver resolver ) {
 
         checkArgument(0 < capacity && capacity < MAX_CAPACITY_FOR_INPUT_BUFFER);
         this.capacity = capacity;
         this.incoming =
                 new ArrayBlockingQueue<RpcClientSideInvocation>(capacity);
+         this.resolver = checkNotNull(resolver);
     }
 
     public void setChannel(final Channel channel) {
@@ -269,11 +265,10 @@ public final class RpcClientImpl implements RpcClient {
 
 
     public MethodSignatureResolver getResolver() {
-        return mm;
+        return resolver;
     }
 
-    // XXX This is a hack must be generalized.
-    private final MethodMap mm = new MethodMap();
+
 
     public void addProtobuferRpcInterface(final Object instance) {
 
@@ -323,7 +318,7 @@ public final class RpcClientImpl implements RpcClient {
                 // final MessageLite outputType = md.getOutputType().toProto().getDefaultInstance();
                 // final MessageLite outputType = md.getOutputType().toProto().getDefaultInstance();
 
-                mm.addTypes(md, inputType, outputType);
+                resolver.addTypes(md, inputType, outputType);
             }
             // use cpbufAbstractClass.getResponsePrototype , just need to have
             //     the method indexes and that is probably also something we can

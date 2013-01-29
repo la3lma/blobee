@@ -26,7 +26,7 @@ import java.util.Map;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
 
-public final class MethodMap implements MethodSignatureResolver{
+public final class ResolverImpl implements MethodSignatureResolver{
 
     private final Map<MethodDescriptor, Function<Message, Message>> methodsByMethodDescriptor =
             new HashMap<MethodDescriptor, Function<Message, Message>>();
@@ -40,7 +40,7 @@ public final class MethodMap implements MethodSignatureResolver{
     private final Map<MethodSignature, MessageLite>  outputTypes = new HashMap<MethodSignature, MessageLite>();
     private final Map<MethodSignature, MethodDescriptor> sigToDesc = new HashMap<MethodSignature, MethodDescriptor>();
 
-    public MethodMap() {
+    public ResolverImpl() {
     }
 
     public MessageLite getPrototypeForParameter(final MethodSignature methodSignature) {
@@ -54,7 +54,7 @@ public final class MethodMap implements MethodSignatureResolver{
     }
 
 
-    void addTypes(final MethodDescriptor md, MessageLite inputType, MessageLite outputType) {
+    public void addTypes(final MethodDescriptor md, MessageLite inputType, MessageLite outputType) {
         final MethodSignature ms = getMethodSignatureFromMethodDescriptor(md);
         inputTypes.put(ms, inputType);
         outputTypes.put(ms, outputType);

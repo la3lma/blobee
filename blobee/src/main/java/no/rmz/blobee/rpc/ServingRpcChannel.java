@@ -31,9 +31,9 @@ import no.rmz.blobee.controllers.RpcClientControllerImpl;
  * mind about the various details involved in making an RPC library.
  */
 public final class ServingRpcChannel implements RpcChannel {
-    final MethodMap methodMap;
+    final ResolverImpl methodMap;
 
-    public ServingRpcChannel(final MethodMap methodMap) {
+    public ServingRpcChannel(final ResolverImpl methodMap) {
         this.methodMap = checkNotNull(methodMap);
     }
 
