@@ -134,13 +134,18 @@ public final class ControlChannelCancelInvocationTest {
             return value;
         }
     }
-    RpcMessageListener rpcMessageListener = new RpcMessageListener() {
+
+
+    private final RpcMessageListener rpcMessageListener =
+            new RpcMessageListener() {
         public void receiveMessage(
                 final Object message,
                 final ChannelHandlerContext ctx) {
             log.log(Level.INFO, "message = {0}", message);
         }
     };
+
+
     private Lock resultLock;
     private Lock cancelLock;
     private Condition resultReceivedCondition;
@@ -178,6 +183,7 @@ public final class ControlChannelCancelInvocationTest {
                 Testservice.RpcService.Interface.class);
 
         final RpcClient client = RpcSetup.newConnectingNode(new InetSocketAddress(HOST, port));
+        client.addProtobuferRpcInterface(Testservice.RpcService.newReflectiveService(null));
 
         final RpcClient serversClient = client; // XXX This is an abomination
         RpcSetup.setUpServer(port, executionService, serversClient, rpcMessageListener);
@@ -191,7 +197,7 @@ public final class ControlChannelCancelInvocationTest {
     @Mock
     Receiver<String> callbackResponse;
 
-    @Test(timeout=10000)
+    @Test // (timeout=10000)
     @SuppressWarnings("WA_AWAIT_NOT_IN_LOOP")
     public void testRpcInvocation() throws InterruptedException {
 
@@ -206,7 +212,8 @@ public final class ControlChannelCancelInvocationTest {
                     }
                 };
 
-        final Testservice.RpcService myService = Testservice.RpcService.newStub(clientChannel);
+        final Testservice.RpcService myService =
+                Testservice.RpcService.newStub(clientChannel);
 
         final Runnable testRun = new Runnable() {
             public void run() {

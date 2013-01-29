@@ -119,6 +119,7 @@ public final class ControlChannelFailedInvocationTest {
                 Testservice.RpcService.Interface.class);
 
         final RpcClient client = RpcSetup.newConnectingNode(new InetSocketAddress(HOST, port));
+        client.addProtobuferRpcInterface(Testservice.RpcService.newReflectiveService(null));
 
         // XXX This is an abomination,  What is really needed is a
         //     "server client" implementation that the -server- can use
