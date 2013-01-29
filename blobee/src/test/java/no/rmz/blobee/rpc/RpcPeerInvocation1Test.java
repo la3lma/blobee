@@ -93,10 +93,10 @@ public final class RpcPeerInvocation1Test {
 
         final RpcClient rpcclient =
                 RpcSetup.newClient(new InetSocketAddress(HOST, port));
-  
+
         final Service bax = RpcServ.newReflectiveService(null);
         rpcclient.addProtobuferRpcInterface(bax);
-        RpcSetup.setUpServer(port, executionService, rpcMessageListener);
+        RpcSetup.newServer(port, executionService, rpcMessageListener);
 
         rpcclient.start();
 

@@ -127,59 +127,7 @@ public final class RpcSetup {
         return rpcClient;
     }
 
-    @Deprecated
-    public void newAcceptingNode(
-            final int port,
-            final Object implementation,
-            final Class serviceInterface) {
-        try {
-            final ServerBootstrap bootstrap = new ServerBootstrap(
-                    new NioServerSocketChannelFactory(
-                    Executors.newCachedThreadPool(),
-                    Executors.newCachedThreadPool()));
-
-            final String name = "server at port " + port;
-
-            final RpcExecutionService executionService =
-                    new RpcExecutionServiceImpl(
-                    "Execution service for " + this.toString(),
-                    implementation,
-                    serviceInterface);
-
-            // XXX This is completely wrong, this should be an
-            //     RpcClientFactory
-            final RpcClientImpl rpcClient = new RpcClientImpl(DEFAULT_BUFFER_SIZE);
-
-            final RpcPeerPipelineFactory serverChannelPipelineFactory =
-                    new RpcPeerPipelineFactory(
-                    "server accepting incoming connections at port ",
-                    executionService, rpcClient.getResolver(), rpcClient);
-
-            // XXX Something missing to set channel for client.
-
-            // XXX Something missing to set channel for client.
-            bootstrap.setPipelineFactory(serverChannelPipelineFactory);
-
-            // Bind and start to accept incoming connections.
-            bootstrap.bind(new InetSocketAddress(port));
-        }
-        // XXX This is obviously not what we want.
-        catch (NoSuchMethodException ex) {
-            Logger.getLogger(RpcSetup.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        catch (IllegalAccessException ex) {
-            Logger.getLogger(RpcSetup.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        catch (IllegalArgumentException ex) {
-            Logger.getLogger(RpcSetup.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        catch (InvocationTargetException ex) {
-            Logger.getLogger(RpcSetup.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
-
-    public static void setUpServer(
+    public static void newServer(
             final int port,
             final RpcExecutionService executionService,
             final RpcMessageListener listener) {
@@ -197,7 +145,8 @@ public final class RpcSetup {
                 new RpcPeerPipelineFactory(
                 "server accepting incoming connections at port ", executionService,
                 rpcClient.getResolver(),
-                rpcClient, listener);
+                rpcClient,
+                listener);
 
         // Set up the pipeline factory.
         bootstrap.setPipelineFactory(serverChannelPipelineFactory);
@@ -205,5 +154,4 @@ public final class RpcSetup {
         // Bind and start to accept incoming connections.
         bootstrap.bind(new InetSocketAddress(port));
     }
-
 }
