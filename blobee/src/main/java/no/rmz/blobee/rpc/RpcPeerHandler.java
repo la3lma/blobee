@@ -58,7 +58,7 @@ public final class RpcPeerHandler
      * A client used to receive requests for RPC invocations, and also to return
      * incoming responses to the callers.
      */
-    private final RpcClient rpcClient;
+    private final RpcClientFactory rcf;
 
     /**
      * For each ChannelHandlerContext, this map keeps track of the
@@ -76,12 +76,12 @@ public final class RpcPeerHandler
             final DynamicProtobufDecoder protbufDecoder,
             final MethodSignatureResolver clientResolver,
             final RpcExecutionService executionService,
-            final RpcClient rpcClient) {
+            final RpcClientFactory rcf) {
 
         this.clientResolver = checkNotNull(clientResolver); // XXXX This is where the work starts
         this.protbufDecoder = checkNotNull(protbufDecoder);
         this.executionService = checkNotNull(executionService);
-        this.rpcClient = checkNotNull(rpcClient);
+        this.rcf = checkNotNull(rcf);
     }
 
     public void setListener(final RpcMessageListener listener) {
@@ -112,7 +112,7 @@ public final class RpcPeerHandler
     // question.   Must be extended asap.
     private RpcClient getRpcChannel(final Channel channel) {
         checkNotNull(channel);
-        return rpcClient;
+        return rcf.getClientFor(channel);
     }
 
 

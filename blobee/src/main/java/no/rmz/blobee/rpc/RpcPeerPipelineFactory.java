@@ -61,8 +61,28 @@ public final class RpcPeerPipelineFactory implements ChannelPipelineFactory {
      * peer at the other end of the wire when it has processed
      * the request.
      */
-    private final RpcClient rpcClient;
+    private final RpcClientFactory rcf;
 
+
+    public RpcPeerPipelineFactory(
+            final String name,
+            final RpcExecutionService executor,
+            final RpcClientFactory rcf) {
+        this.name = checkNotNull(name);
+        this.executionService = checkNotNull(executor);
+        this.rcf = checkNotNull(rcf);
+        this.clientResolver = rcf.getResolver();
+    }
+
+    public RpcPeerPipelineFactory(
+            final String name,
+            final RpcExecutionService executor,
+            final RpcClientFactory rcf,
+            final RpcMessageListener listener) {
+        this(name, executor, rcf);
+        this.listener = listener;
+    }
+    /*
     public RpcPeerPipelineFactory(
             final String name,
             final RpcExecutionService executionService,
@@ -82,7 +102,7 @@ public final class RpcPeerPipelineFactory implements ChannelPipelineFactory {
         this.clientResolver = checkNotNull(clienResolver);
         this.rpcClient = checkNotNull(rpcClient);
         this.listener = listener;
-    }
+    }*/
 
     public void putNextPrototype(
             final ChannelPipeline pipeline,
@@ -112,12 +132,12 @@ public final class RpcPeerPipelineFactory implements ChannelPipelineFactory {
                     protbufDecoder,
                     clientResolver,
                     executionService,
-                    rpcClient);
+                    rcf);
 
         if (listener != null) {
             handler.setListener(listener);
         }
-        
+
         p.addLast("handler", handler);
 
         // The first message to receive is always a control message,

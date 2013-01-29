@@ -95,13 +95,19 @@ public final class RpcSetup {
                 }
             }
         }
+
+        // XXX This is cheating.  It won't work
+        //     for anything but singeltons.
+        public MethodSignatureResolver getResolver() {
+            return rpcClient.getResolver();
+        }
     }
 
     public static RpcClient newClient(
             final InetSocketAddress socketAddress) {
 
         checkNotNull(socketAddress);
-        
+
         final RpcExecutionService executor =
                 new RpcExecutionServiceImpl("Client execution service");
 
@@ -120,7 +126,7 @@ public final class RpcSetup {
         final RpcClientFactory rcf = new SingeltonClientFactory(rpcClient);
 
         final RpcPeerPipelineFactory clientPipelineFactory =
-                new RpcPeerPipelineFactory(name, executor, rpcClient.getResolver(), rpcClient);
+                new RpcPeerPipelineFactory(name, executor, rcf);
 
         clientBootstrap.setPipelineFactory(clientPipelineFactory);
         return rpcClient;
@@ -147,9 +153,9 @@ public final class RpcSetup {
 
         final RpcPeerPipelineFactory serverChannelPipelineFactory =
                 new RpcPeerPipelineFactory(
-                "server accepting incoming connections at port ", executionService,
-                rpcClient.getResolver(),
-                rpcClient,
+                "server accepting incoming connections at port ",
+                executionService,
+                new SingeltonClientFactory(rpcClient), // XXX Shouldn't be a singelton, but there you are
                 listener);
 
         // Set up the pipeline factory.
