@@ -114,10 +114,11 @@ public final class ControlChannelFailedInvocationTest {
 
         final RpcExecutionService executionService;
         executionService = new RpcExecutionServiceImpl(
+                "Test service for class " + this.getClass().getName(),
                 new ServiceTestItem(),
                 Testservice.RpcService.Interface.class);
 
-        final RpcClientImpl client = RpcSetup.setUpClient(executionService);
+        final RpcClient client = RpcSetup.newConnectingNode(new InetSocketAddress(HOST, port));
 
         // XXX This is an abomination,  What is really needed is a
         //     "server client" implementation that the -server- can use
@@ -126,10 +127,11 @@ public final class ControlChannelFailedInvocationTest {
         //     simply reuse the connection of the server, and not have its
         //     own connection to a remote server.  That should be it, but
         //     it's not there yet :-/
-        final RpcClientImpl serversClient = client;
-        RpcSetup.setUpServer(port, executionService, serversClient, rpcMessageListener);
 
-        client.start(new InetSocketAddress(HOST, port));
+        // XXXX this is completely bogus
+        RpcSetup.setUpServer(port, executionService, client, rpcMessageListener);
+
+        client.start();
 
         clientChannel = client.newClientRpcChannel();
         clientController = client.newController();
@@ -137,7 +139,7 @@ public final class ControlChannelFailedInvocationTest {
     @Mock
     Receiver<String> callbackResponse;
 
-    @Test
+    @Test(timeout=10000)
     @SuppressWarnings("WA_AWAIT_NOT_IN_LOOP")
     public void testRpcInvocation() throws InterruptedException {
 

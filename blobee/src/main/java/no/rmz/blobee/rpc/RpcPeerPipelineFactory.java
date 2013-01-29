@@ -74,7 +74,7 @@ public final class RpcPeerPipelineFactory implements ChannelPipelineFactory {
     protected RpcPeerPipelineFactory(
             final String name,
             final RpcExecutionService executionService,
-            final  MethodSignatureResolver clienResolver,
+            final MethodSignatureResolver clienResolver,
             final RpcClient rpcClient,
             final RpcMessageListener listener) {
         this.name = checkNotNull(name);

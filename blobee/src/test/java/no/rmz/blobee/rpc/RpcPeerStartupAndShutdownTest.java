@@ -56,7 +56,7 @@ public final class RpcPeerStartupAndShutdownTest {
     @Mock
     Receiver<Rpc.RpcControl> serverControlReceiver;
 
-    @Test
+    @Test(timeout=10000)
     public void testTransmissionOfHeartbeatsAtStartup() {
 
         final RpcMessageListener ml = new RpcMessageListener() {
@@ -73,7 +73,8 @@ public final class RpcPeerStartupAndShutdownTest {
             }
         };
 
-        final RpcClientImpl rpcClient = RpcSetup.setUpClient(executor, ml);
+        final RpcClient rpcClient = RpcSetup.newConnectingNode(
+                new InetSocketAddress(HOST, port));
         // XXX This is actually a bit bogus, since what the server
         //     needs is not a client that can connect to somewhere (in
         //     particular it doesn't need a client that can connect to itself
@@ -84,7 +85,7 @@ public final class RpcPeerStartupAndShutdownTest {
         //     work.
         RpcSetup.setUpServer(port, executor, rpcClient, ml);
 
-        rpcClient.start(new InetSocketAddress(HOST, port));
+        rpcClient.start();
         // Need some time to let the startup transient settle.
         sleepHalfASec();
 
@@ -118,7 +119,7 @@ public final class RpcPeerStartupAndShutdownTest {
         }
     };
 
-    @Test
+    @Test(timeout=10000)
     public void testReactionToShutdown() {
 
         final RpcMessageListener ml = new RpcMessageListener() {
@@ -139,7 +140,7 @@ public final class RpcPeerStartupAndShutdownTest {
             }
         };
 
-       final RpcClientImpl rpcClient = RpcSetup.setUpClient(executor, ml);
+       final RpcClient rpcClient = RpcSetup.newConnectingNode(new InetSocketAddress(HOST, port));
         // XXX This is actually a bit bogus, since what the server
         //     needs is not a client that can connect to somewhere (in
         //     particular it doesn't need a client that can connect to itself
@@ -150,7 +151,7 @@ public final class RpcPeerStartupAndShutdownTest {
         //     work.
         RpcSetup.setUpServer(port, executor, rpcClient, ml);
 
-        rpcClient.start(new InetSocketAddress(HOST, port));
+        rpcClient.start();
         // Need some time to let the startup transient settle.
         sleepHalfASec();
 

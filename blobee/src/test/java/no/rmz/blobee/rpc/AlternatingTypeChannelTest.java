@@ -274,7 +274,7 @@ public final class AlternatingTypeChannelTest {
         clientBootstrap.releaseExternalResources();
     }
 
-    @Test
+    @Test(timeout=10000)
     public void testTransmission() {
         setUpServer();
         setUpClient();

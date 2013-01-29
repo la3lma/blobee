@@ -16,8 +16,11 @@
 package no.rmz.blobee.rpc;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.Channel;
@@ -65,7 +68,7 @@ public final class RpcSetup {
             this.rcf = checkNotNull(rcf);
         }
 
-        final RpcClientImpl getClient(final Channel channel) {
+        final RpcClient getClient(final Channel channel) {
             checkNotNull(channel);
             return rcf.getClientFor(channel);
         }
@@ -86,7 +89,7 @@ public final class RpcSetup {
         }
 
 
-        public RpcClientImpl getClientFor(final Channel channel) {
+        public RpcClient getClientFor(final Channel channel) {
             synchronized (monitor) {
                 if (this.channel == null) {
                     this.channel = channel;
@@ -103,7 +106,6 @@ public final class RpcSetup {
 
     // XXX Next step: Make sure this implementation works!
     public static RpcClient newConnectingNode(
-            final RpcExecutionService exzecutor,
             final InetSocketAddress socketAddress) {
 
         checkNotNull(socketAddress);
@@ -137,34 +139,55 @@ public final class RpcSetup {
 
 
     // XXX If this works, that's just a lucky break.
-    public void newAcceptingNode(final int port) {
+    public void newAcceptingNode(
+            final int port,
+            final Object implementation,
+            final Class serviceInterface) {
+        try {
+            final ServerBootstrap bootstrap = new ServerBootstrap(
+                    new NioServerSocketChannelFactory(
+                    Executors.newCachedThreadPool(),
+                    Executors.newCachedThreadPool()));
 
-        final ServerBootstrap bootstrap = new ServerBootstrap(
-                new NioServerSocketChannelFactory(
-                Executors.newCachedThreadPool(),
-                Executors.newCachedThreadPool()));
+            final String name = "server at port " + port;
 
-        final String name = "server at port " + port;
+            final RpcExecutionService executionService =
+                    new RpcExecutionServiceImpl(
+                        "Execution service for " + this.toString(),
+                        implementation,
+                        serviceInterface);
 
-        final RpcExecutionService executionService =
-                new RpcExecutionServiceImpl();
+            // XXX This is completely wrong, this should be an
+            //     RpcClientFactory
+            final RpcClientImpl rpcClient = new RpcClientImpl(bufferSize);
 
-        // XXX This is completely wrong, this should be an
-        //     RpcClientFactory
-        final RpcClientImpl rpcClient = new RpcClientImpl(bufferSize);
+            final RpcPeerPipelineFactory serverChannelPipelineFactory =
+                    new RpcPeerPipelineFactory(
+                        "server accepting incoming connections at port ",
+                        executionService, rpcClient.getResolver(), rpcClient);
 
-        final RpcPeerPipelineFactory serverChannelPipelineFactory =
-                new RpcPeerPipelineFactory(
-                    "server accepting incoming connections at port ",
-                    executionService, XXXresolver, rpcClient);
+            // XXX Something missing to set channel for client.
 
-        // XXX Something missing to set channel for client.
+            // XXX Something missing to set channel for client.
+            bootstrap.setPipelineFactory(serverChannelPipelineFactory);
 
-        // Set up the pipeline factory.
-        bootstrap.setPipelineFactory(serverChannelPipelineFactory);
+            // Bind and start to accept incoming connections.
+            bootstrap.bind(new InetSocketAddress(port));
+        }
 
-        // Bind and start to accept incoming connections.
-        bootstrap.bind(new InetSocketAddress(port));
+        // XXX This is obviously not what we want.
+        catch (NoSuchMethodException ex) {
+            Logger.getLogger(RpcSetup.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        catch (IllegalAccessException ex) {
+            Logger.getLogger(RpcSetup.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        catch (IllegalArgumentException ex) {
+            Logger.getLogger(RpcSetup.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        catch (InvocationTargetException ex) {
+            Logger.getLogger(RpcSetup.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
 
@@ -198,7 +221,8 @@ public final class RpcSetup {
 
 
 
-    public static RpcClientImpl setUpClient(
+    @Deprecated
+    public static RpcClient setUpClient(
             final RpcExecutionService executor) {
         return setUpClient(executor, null);
     }
@@ -220,7 +244,7 @@ public final class RpcSetup {
         final String name =
                "A client";
         final RpcPeerPipelineFactory clientPipelineFactory =
-                new RpcPeerPipelineFactory(name, executor,  rpcClient, listener);
+                new RpcPeerPipelineFactory(name, executor, rpcClient.getResolver(), rpcClient, listener);
 
         clientBootstrap.setPipelineFactory(
                 clientPipelineFactory);

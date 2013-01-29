@@ -30,8 +30,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.rmz.blobee.serviceimpls.SampleServerImpl;
 import no.rmz.blobeeprototest.api.proto.Testservice;
-import no.rmz.blobeeprototest.api.proto.Testservice.RpcParam;
-import no.rmz.blobeeprototest.api.proto.Testservice.RpcResult;
 import no.rmz.testtools.Net;
 import no.rmz.testtools.Receiver;
 import org.jboss.netty.channel.ChannelHandlerContext;
@@ -94,10 +92,8 @@ public final class RpcPeerInvocationTest {
                 new SampleServerImpl(),
                 Testservice.RpcService.Interface.class);
 
-
-
         final RpcClient rpcclient =
-                RpcSetup.newConnectingNode(executionService, (new InetSocketAddress(HOST, port)));
+                RpcSetup.newConnectingNode(new InetSocketAddress(HOST, port));
         final SampleServerImpl foo = new SampleServerImpl();
         final Service bax = Testservice.RpcService.newReflectiveService(null);
         rpcclient.addProtobuferRpcInterface(bax);
@@ -112,7 +108,7 @@ public final class RpcPeerInvocationTest {
     @Mock
     Receiver<String> callbackResponse;
 
-    @Test
+    @Test(timeout=10000)
     @SuppressWarnings("WA_AWAIT_NOT_IN_LOOP")
     public void testRpcInvocation() throws InterruptedException {
 

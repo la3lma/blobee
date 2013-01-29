@@ -173,15 +173,16 @@ public final class ControlChannelCancelInvocationTest {
 
         final RpcExecutionService executionService;
         executionService = new RpcExecutionServiceImpl(
+                "Test service in class " + this.getClass().getName(),
                 new ServiceTestItem(),
                 Testservice.RpcService.Interface.class);
 
-        final RpcClientImpl client = RpcSetup.setUpClient(executionService);
+        final RpcClient client = RpcSetup.newConnectingNode(new InetSocketAddress(HOST, port));
 
-        final RpcClientImpl serversClient = client; // XXX This is an abomination
+        final RpcClient serversClient = client; // XXX This is an abomination
         RpcSetup.setUpServer(port, executionService, serversClient, rpcMessageListener);
 
-        client.start(new InetSocketAddress(HOST, port));
+        client.start();
 
         clientChannel = client.newClientRpcChannel();
         clientController = client.newController();
@@ -190,7 +191,7 @@ public final class ControlChannelCancelInvocationTest {
     @Mock
     Receiver<String> callbackResponse;
 
-    @Test
+    @Test(timeout=10000)
     @SuppressWarnings("WA_AWAIT_NOT_IN_LOOP")
     public void testRpcInvocation() throws InterruptedException {
 

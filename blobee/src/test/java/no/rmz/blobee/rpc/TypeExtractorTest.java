@@ -29,7 +29,7 @@ public final class TypeExtractorTest {
     private static final Logger log = Logger.getLogger(
             no.rmz.blobee.rpc.TypeExtractorTest.class.getName());
 
-    @Test
+    @Test(timeout=10000)
     public void determineMethodTypesTest() throws MethodTypeException {
 
         final com.google.protobuf.Service service =  new SampleServerImpl();

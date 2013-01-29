@@ -306,7 +306,7 @@ public final class RpcClientImpl implements RpcClient {
         //  are upcasting to the most specific type we can to see if that
         //  helps when getting the input/output types, but it seems that
         //  is not happening.  What should I do?
-        final Testservice.RpcService service = (Testservice.RpcService) instance;
+        final Service service = (Service) instance;
 
 
         final ServiceDescriptor descriptor = service.getDescriptorForType();
