@@ -99,11 +99,9 @@ public final class RpcPeerInvocationTest {
         final RpcClient rpcclient =
                 RpcSetup.newClient(new InetSocketAddress(HOST, port));
 
-
         // XXX prefer rpcclient.addProtobuferRpcInterface(Testservice.RpcService.class)
         //     and something similar for the server setup
-        rpcclient.addProtobuferRpcInterface(bax);
-        rpcclient.start();
+        rpcclient.addProtobuferRpcInterface(bax).start();
 
         clientChannel    = rpcclient.newClientRpcChannel();
         clientController = rpcclient.newController();
