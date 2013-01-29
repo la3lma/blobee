@@ -272,35 +272,10 @@ public final class RpcClientImpl implements RpcClient {
 
     public void addProtobuferRpcInterface(final Object instance) {
 
-            // final Class pbufAbstractClass) {
-
-        /*
-        checkNotNull(pbufAbstractClass);
-        final Object instance;
-        try {
-            instance = pbufAbstractClass.newInstance();
-        }
-
-        catch (InstantiationException ex) {
-            throw new IllegalArgumentException("Expected a class extending com.google.protobuf.Service", ex);
-        }
-        catch (IllegalAccessException ex) {
-           throw new IllegalArgumentException("Expected a class extending com.google.protobuf.Service", ex);
-        }  * */
         if (! (instance instanceof  com.google.protobuf.Service)) {
             throw new IllegalArgumentException("Expected a class extending com.google.protobuf.Service");
         }
 
-
-/*
-        com.google.protobuf.Service service = (com.google.protobuf.Service) instance;
-        ServiceDescriptor descriptor = service.getDescriptorForType();
-        final List<MethodDescriptor> methods = descriptor.getMethods();
-*/
-        /// I'm jst trying to shortcut the generics to ensure that we
-        //  are upcasting to the most specific type we can to see if that
-        //  helps when getting the input/output types, but it seems that
-        //  is not happening.  What should I do?
         final Service service = (Service) instance;
 
 
@@ -309,45 +284,26 @@ public final class RpcClientImpl implements RpcClient {
         for (final MethodDescriptor md : methods) {
             try {
                 final String fullName = md.getFullName();
-                // XXX Why do I only get completely useless types from these
-                //     two queries.  The results are in no way useful for
-                //     deserialization.  It seeems I just can't get the proper
-                //     types out of the Google code.  But why?
+
                 final Message inputType = TypeExctractor.getReqestPrototype(service, md);
                 final Message outputType = TypeExctractor.getResponsePrototype(service, md);
+
+                // THe lines above were made in desperation snce I couldn1t get
+                // these two lines to work.  If I made some stupid mistake,
+                // and someone can get the two lines below to work, I can
+                // remove the entire TypeExtractor class and be very happy
+                // about that :-)
                 // final MessageLite outputType = md.getOutputType().toProto().getDefaultInstance();
-                // final MessageLite outputType = md.getOutputType().toProto().getDefaultInstance();
+                // final MessageLite inputType = md.getInputType().toProto().getDefaultInstance();
 
                 resolver.addTypes(md, inputType, outputType);
             }
-            // use cpbufAbstractClass.getResponsePrototype , just need to have
-            //     the method indexes and that is probably also something we can
-            //     extract from the class.
-            // XXX Traverse the pbufAbstractClass looking for
-            //     abstract methods, they will be implementing
-            //     the RPC interface, and that is what we need to implement
-            //     and map types for.  Extract types and add it to a
-            //     structure that can be used for type lookup.
+
             catch (MethodTypeException ex) {
                 /// XXXX Something  more severe should happen here
                 Logger.getLogger(RpcClientImpl.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-
-
-
-
-
-
-        // use cpbufAbstractClass.getResponsePrototype , just need to have
-        //     the method indexes and that is probably also something we can
-        //     extract from the class.
-
-        // XXX Traverse the pbufAbstractClass looking for
-        //     abstract methods, they will be implementing
-        //     the RPC interface, and that is what we need to implement
-        //     and map types for.  Extract types and add it to a
-        //     structure that can be used for type lookup.
     }
 
 
