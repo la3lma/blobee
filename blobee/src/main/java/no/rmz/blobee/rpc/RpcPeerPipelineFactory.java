@@ -53,6 +53,8 @@ public final class RpcPeerPipelineFactory implements ChannelPipelineFactory {
      */
     private final RpcExecutionService executionService;
 
+    private final MethodSignatureResolver clientResolver;
+
     /**
      * An endpoint that can accept incoming requests for remote
      * procedure calls, and that can receive answers from our
@@ -64,17 +66,20 @@ public final class RpcPeerPipelineFactory implements ChannelPipelineFactory {
     public RpcPeerPipelineFactory(
             final String name,
             final RpcExecutionService executionService,
+            final  MethodSignatureResolver clienResolver,
             final RpcClient rpcClient) {
-        this(name, executionService, rpcClient, null);
+        this(name, executionService, clienResolver, rpcClient, null);
     }
 
     protected RpcPeerPipelineFactory(
             final String name,
             final RpcExecutionService executionService,
+            final  MethodSignatureResolver clienResolver,
             final RpcClient rpcClient,
             final RpcMessageListener listener) {
         this.name = checkNotNull(name);
         this.executionService = checkNotNull(executionService);
+        this.clientResolver = checkNotNull(clienResolver);
         this.rpcClient = checkNotNull(rpcClient);
         this.listener = listener;
     }
@@ -103,7 +108,9 @@ public final class RpcPeerPipelineFactory implements ChannelPipelineFactory {
         p.addLast("frameEncoder", new ProtobufVarint32LengthFieldPrepender());
         p.addLast("protobufEncoder", new ProtobufEncoder());
         final RpcPeerHandler handler =
-                new RpcPeerHandler(protbufDecoder, executionService, rpcClient);
+                new RpcPeerHandler(protbufDecoder,
+                clientResolver,
+                executionService, rpcClient);
 
         if (listener != null) {
             handler.setListener(listener);

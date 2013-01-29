@@ -13,7 +13,8 @@ public final class ConnectingRpcClientImpl implements RpcClient {
     private final ClientBootstrap clientBootstrap;
     final InetSocketAddress socketAddress;
 
-    public ConnectingRpcClientImpl(final ClientBootstrap clientBootstrap,
+    public ConnectingRpcClientImpl(
+            final ClientBootstrap clientBootstrap,
             final InetSocketAddress socketAddress) {
         this.rpcClient = new RpcClientImpl(4711); // XXX BOGUS
         this.socketAddress = checkNotNull(socketAddress);
@@ -58,4 +59,12 @@ public final class ConnectingRpcClientImpl implements RpcClient {
         rpcClient.returnCall(dc, message);
     }
 
+    public void addProtobuferRpcInterface(final Object instance) {
+        checkNotNull(instance);
+        rpcClient.addProtobuferRpcInterface(instance);
+    }
+
+    public MethodSignatureResolver getResolver() {
+       return rpcClient.getResolver();
+    }
 }

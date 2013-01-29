@@ -81,23 +81,35 @@ public final class RpcExecutionServiceImpl
         return pmtypes.get(sig);
     }
 
-     public RpcExecutionServiceImpl() {
+     final String name;
+
+     public RpcExecutionServiceImpl(final String name) {
+        this.name = checkNotNull(name);
         mmap = new HashMap<MethodSignature, Method>();
         returnTypes = new HashMap<MethodSignature, Class<?>>();
         pmtypes = new HashMap<MethodSignature, Class<?>>();
     }
 
     public RpcExecutionServiceImpl(
+            final String name,
             final Object implementation, final Class ... interfaceClasses)
-            throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        this();
+            throws
+               NoSuchMethodException,
+               IllegalAccessException,
+               IllegalArgumentException,
+               InvocationTargetException {
+        this(name);
         addImplementation(implementation, interfaceClasses);
     }
 
 
     private Map<Class, Object> implementations = new HashMap<Class, Object>();
 
-    private void addImplementation(
+    // XXXX Refactor this to get the
+    //      prototype definitions from the input and output types of a method, and
+    //      make those methods public static.  Then use them to implement getPrototypeForClass
+    //      in RpcPeerHandler.
+    private  void addImplementation(
             final Object implementation,
             final Class[] interfaceClasses) throws SecurityException, IllegalStateException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, IllegalArgumentException {
         this.implementation = checkNotNull(implementation);
@@ -119,47 +131,55 @@ public final class RpcExecutionServiceImpl
             for (final Method interfaceMethod : iface.getMethods()) {
                 final TypeVariable<Method>[] typeParameters =
                         interfaceMethod.getTypeParameters();
-                // final Class<?> returnType = interfaceMethod.getReturnType();
+
                 final String name = interfaceMethod.getName();
-                // final String className = iface.getClass().getName();
+                
 
                 final Descriptors.MethodDescriptor descriptor;
                 descriptor = ServiceAnnotationMapper.getMethodDescriptor(
-                        implementation.getClass(),
-                        name.substring(0, 1).toUpperCase()+ // XXX FUCKING UGLY
-                        name.substring(1)
-                        );
+                        implementation.getClass(), name);
                 final MethodSignature methodSignature =
                         MethodMap.getMethodSignatureFromMethodDescriptor(descriptor);
 
-                boolean foundMethod = false;
-                for (final Method implementationMethod: implementation.getClass().getMethods()) {
-                    if (implementationMethod.getName().equals(name)) {
-                         mmap.put(methodSignature, implementationMethod);
-
-                         final Class<?>[] parameterTypes = implementationMethod.getParameterTypes();
-                         final Class pmtype = parameterTypes[1];
-
-                         // Now calculate the return type:
-                         // First we get the type of the RpcCallback
-                         final Type rpcCallbackType = interfaceMethod.getGenericParameterTypes()[2];
-                         ParameterizedType ptype = (ParameterizedType)rpcCallbackType;
-                         Type[] actualTypeArguments = ptype.getActualTypeArguments();
-                         Type typeOfReturnvalue = actualTypeArguments[0];
-
-                         returnTypes.put(methodSignature, (Class)typeOfReturnvalue);
-                         pmtypes.put(methodSignature, pmtype);
-                         foundMethod = true;
-                         break;
-                    }
-                }
-                if (!foundMethod) {
+                final  Method implementationMethod = findMethod(name, implementation.getClass());
+                if (implementationMethod == null) {
                     throw new IllegalStateException("Unknown method " + name);
                 }
+
+                mmap.put(methodSignature, implementationMethod);
+
+                // XXX I need to grok this
+                final Class<?>[] parameterTypes = implementationMethod.getParameterTypes();
+                final Class pmtype = parameterTypes[1];
+                final Type typeOfReturnvalue = extractCallbackParamType(interfaceMethod);
+
+                returnTypes.put(methodSignature, (Class) typeOfReturnvalue);
+                pmtypes.put(methodSignature, pmtype);
             }
         }
     }
 
+    private static Type extractCallbackParamType(final Method interfaceMethod) {
+        checkNotNull(interfaceMethod);
+        // Now calculate the return type:
+        // First we get the type of the RpcCallback
+        final Type rpcCallbackType = interfaceMethod.getGenericParameterTypes()[2];
+        final ParameterizedType ptype = (ParameterizedType) rpcCallbackType;
+        final Type[] actualTypeArguments = ptype.getActualTypeArguments();
+        final Type typeOfReturnvalue = actualTypeArguments[0];
+        return typeOfReturnvalue;
+    }
+
+
+    // XXX Linear search.  I'm sure there is a better way.
+    private Method findMethod(final String name, final Class clazz) {
+        for (final Method method: clazz.getMethods()) {
+                    if (method.getName().equals(name)) {
+                        return method;
+                    }
+        }
+        return null;
+    }
 
 
     public final static class ControllerCoordinate {

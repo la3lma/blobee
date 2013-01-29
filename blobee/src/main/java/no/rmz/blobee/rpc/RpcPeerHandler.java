@@ -72,12 +72,13 @@ public final class RpcPeerHandler
     final Map<Channel, Object> lockMap = new WeakHashMap<Channel, Object>();
 
 
-
     protected RpcPeerHandler(
             final DynamicProtobufDecoder protbufDecoder,
+            final MethodSignatureResolver clientResolver,
             final RpcExecutionService executionService,
             final RpcClient rpcClient) {
 
+        this.clientResolver = checkNotNull(clientResolver); // XXXX This is where the work starts
         this.protbufDecoder = checkNotNull(protbufDecoder);
         this.executionService = checkNotNull(executionService);
         this.rpcClient = checkNotNull(rpcClient);
@@ -199,6 +200,8 @@ public final class RpcPeerHandler
         throw new RuntimeException("Couldn't find getDefaultIntance method for class " + theClass);
     }
 
+
+    // XXX The executor service should also be a resolver
     private MessageLite getPrototypeForParameter(final MethodSignature methodSignature) {
         checkNotNull(methodSignature);
         final Class parameterType = executionService.getParameterType(methodSignature);
@@ -206,11 +209,12 @@ public final class RpcPeerHandler
         return getPrototypeForMessageClass(parameterType);
     }
 
+
+   private final MethodSignatureResolver clientResolver;  // XXX For the client
+
     private MessageLite getPrototypeForReturnValue(final MethodSignature methodSignature) {
         checkNotNull(methodSignature);
-        final Class parameterType = executionService.getReturnType(methodSignature);
-        checkNotNull(parameterType);
-        return getPrototypeForMessageClass(parameterType);
+        return clientResolver.getPrototypeForReturnValue(methodSignature);
     }
 
     public void sendControlMessage(
@@ -302,6 +306,7 @@ public final class RpcPeerHandler
         final long rpcIndex = msg.getRpcIndex();
         final MessageLite prototypeForReturnValue =
                 getPrototypeForReturnValue(methodSignature);
+        checkNotNull(prototypeForReturnValue);
         protbufDecoder.putNextPrototype(prototypeForReturnValue);
 
         // XXX Perhaps make an abstraction that requires the value to

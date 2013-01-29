@@ -17,4 +17,8 @@ public interface RpcClient {
     void returnCall(final RemoteExecutionContext dc, final Message message);
 
     void start();
+
+    void addProtobuferRpcInterface(final Object instance);
+
+    MethodSignatureResolver getResolver();
 }

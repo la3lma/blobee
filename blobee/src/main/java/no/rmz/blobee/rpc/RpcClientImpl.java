@@ -17,22 +17,31 @@ package no.rmz.blobee.rpc;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import com.google.protobuf.DescriptorProtos.DescriptorProto;
+import com.google.protobuf.DescriptorProtos.MessageOptions;
+import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.MethodDescriptor;
+import com.google.protobuf.Descriptors.ServiceDescriptor;
 import com.google.protobuf.Message;
+import com.google.protobuf.MessageLite;
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcChannel;
 import com.google.protobuf.RpcController;
+import com.google.protobuf.Service;
 import java.net.InetSocketAddress;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.rmz.blobee.controllers.RpcClientController;
 import no.rmz.blobee.controllers.RpcClientControllerImpl;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
 import no.rmz.blobeeproto.api.proto.Rpc.RpcControl;
+import no.rmz.blobeeprototest.api.proto.Testservice;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFuture;
@@ -50,10 +59,11 @@ public final class RpcClientImpl implements RpcClient {
             new TreeMap<Long, RpcClientSideInvocation>();
     private long nextIndex;
     private Channel channel;
-   
+
     private final Object mutationMonitor = new Object();
     private final Object runLock = new Object();
     private final static int MAX_CAPACITY_FOR_INPUT_BUFFER = 10000;
+
 
 
 
@@ -67,10 +77,10 @@ public final class RpcClientImpl implements RpcClient {
             if (invocation == null) {
                 throw new IllegalStateException("Couldn't find call stub for invocation " + dc);
             }
-
             // Deliver the result then disable the controller
             // so it can be reused.
-            invocation.getDone().run(message);
+            final RpcCallback<Message> done = invocation.getDone();
+            done.run(message);
             final RpcClientController ctl = invocation.getController();
             invocations.remove(ctl.getIndex());
             invocation.getController().setActive(false);
@@ -251,4 +261,99 @@ public final class RpcClientImpl implements RpcClient {
         WireFactory.getWireForChannel(channel)
                 .write(cancelRequest);
     }
+
+    public void start() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+
+
+    public MethodSignatureResolver getResolver() {
+        return mm;
+    }
+
+    // XXX This is a hack must be generalized.
+    private final MethodMap mm = new MethodMap();
+
+    public void addProtobuferRpcInterface(final Object instance) {
+
+            // final Class pbufAbstractClass) {
+
+        /*
+        checkNotNull(pbufAbstractClass);
+        final Object instance;
+        try {
+            instance = pbufAbstractClass.newInstance();
+        }
+
+        catch (InstantiationException ex) {
+            throw new IllegalArgumentException("Expected a class extending com.google.protobuf.Service", ex);
+        }
+        catch (IllegalAccessException ex) {
+           throw new IllegalArgumentException("Expected a class extending com.google.protobuf.Service", ex);
+        }  * */
+        if (! (instance instanceof  com.google.protobuf.Service)) {
+            throw new IllegalArgumentException("Expected a class extending com.google.protobuf.Service");
+        }
+
+
+/*
+        com.google.protobuf.Service service = (com.google.protobuf.Service) instance;
+        ServiceDescriptor descriptor = service.getDescriptorForType();
+        final List<MethodDescriptor> methods = descriptor.getMethods();
+*/
+        /// I'm jst trying to shortcut the generics to ensure that we
+        //  are upcasting to the most specific type we can to see if that
+        //  helps when getting the input/output types, but it seems that
+        //  is not happening.  What should I do?
+        final Testservice.RpcService service = (Testservice.RpcService) instance;
+
+
+        final ServiceDescriptor descriptor = service.getDescriptorForType();
+        final List<MethodDescriptor> methods = descriptor.getMethods();
+        for (final MethodDescriptor md : methods) {
+            try {
+                final String fullName = md.getFullName();
+                // XXX Why do I only get completely useless types from these
+                //     two queries.  The results are in no way useful for
+                //     deserialization.  It seeems I just can't get the proper
+                //     types out of the Google code.  But why?
+                final Message inputType = TypeExctractor.getReqestPrototype(service, md);
+                final Message outputType = TypeExctractor.getResponsePrototype(service, md);
+                // final MessageLite outputType = md.getOutputType().toProto().getDefaultInstance();
+                // final MessageLite outputType = md.getOutputType().toProto().getDefaultInstance();
+
+                mm.addTypes(md, inputType, outputType);
+            }
+            // use cpbufAbstractClass.getResponsePrototype , just need to have
+            //     the method indexes and that is probably also something we can
+            //     extract from the class.
+            // XXX Traverse the pbufAbstractClass looking for
+            //     abstract methods, they will be implementing
+            //     the RPC interface, and that is what we need to implement
+            //     and map types for.  Extract types and add it to a
+            //     structure that can be used for type lookup.
+            catch (MethodTypeException ex) {
+                /// XXXX Something  more severe should happen here
+                Logger.getLogger(RpcClientImpl.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+
+
+
+
+
+        // use cpbufAbstractClass.getResponsePrototype , just need to have
+        //     the method indexes and that is probably also something we can
+        //     extract from the class.
+
+        // XXX Traverse the pbufAbstractClass looking for
+        //     abstract methods, they will be implementing
+        //     the RPC interface, and that is what we need to implement
+        //     and map types for.  Extract types and add it to a
+        //     structure that can be used for type lookup.
+    }
+
+
 }

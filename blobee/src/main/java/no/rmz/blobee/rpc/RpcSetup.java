@@ -102,13 +102,16 @@ public final class RpcSetup {
     }
 
     // XXX Next step: Make sure this implementation works!
-    public static RpcClient newConnectingNode(RpcExecutionService executor, final InetSocketAddress socketAddress) {
-        checkNotNull(socketAddress);
+    public static RpcClient newConnectingNode(
+            final RpcExecutionService exzecutor,
+            final InetSocketAddress socketAddress) {
 
-/*
+        checkNotNull(socketAddress);
+        // checkNotNull(executor);
+
         final RpcExecutionService executor =
-                new RpcExecutionServiceImpl();
-*/
+                new RpcExecutionServiceImpl("Client execution service");
+
         // Configure the client.
         final ClientBootstrap clientBootstrap = new ClientBootstrap(
                 new NioClientSocketChannelFactory(
@@ -125,7 +128,7 @@ public final class RpcSetup {
         final RpcClientFactory rcf = new SingeltonClientFactory(rpcClient);
 
         final RpcPeerPipelineFactory clientPipelineFactory =
-                new RpcPeerPipelineFactory(name, executor, rpcClient);
+                new RpcPeerPipelineFactory(name,  executor, rpcClient.getResolver(), rpcClient);
 
         clientBootstrap.setPipelineFactory(clientPipelineFactory);
         return rpcClient;
@@ -153,7 +156,7 @@ public final class RpcSetup {
         final RpcPeerPipelineFactory serverChannelPipelineFactory =
                 new RpcPeerPipelineFactory(
                     "server accepting incoming connections at port ",
-                    executionService, rpcClient);
+                    executionService, XXXresolver, rpcClient);
 
         // XXX Something missing to set channel for client.
 
@@ -182,7 +185,9 @@ public final class RpcSetup {
 
         final RpcPeerPipelineFactory serverChannelPipelineFactory =
                 new RpcPeerPipelineFactory(
-                "server accepting incoming connections at port ", executionService, rpcClient, listener);
+                "server accepting incoming connections at port ", executionService,
+                rpcClient.getResolver(),
+                rpcClient, listener);
 
         // Set up the pipeline factory.
         bootstrap.setPipelineFactory(serverChannelPipelineFactory);

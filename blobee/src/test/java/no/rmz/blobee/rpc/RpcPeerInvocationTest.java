@@ -18,6 +18,7 @@ package no.rmz.blobee.rpc;
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcChannel;
 import com.google.protobuf.RpcController;
+import com.google.protobuf.Service;
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -29,6 +30,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.rmz.blobee.serviceimpls.SampleServerImpl;
 import no.rmz.blobeeprototest.api.proto.Testservice;
+import no.rmz.blobeeprototest.api.proto.Testservice.RpcParam;
+import no.rmz.blobeeprototest.api.proto.Testservice.RpcResult;
 import no.rmz.testtools.Net;
 import no.rmz.testtools.Receiver;
 import org.jboss.netty.channel.ChannelHandlerContext;
@@ -87,16 +90,17 @@ public final class RpcPeerInvocationTest {
 
         final RpcExecutionService executionService;
         executionService = new RpcExecutionServiceImpl(
+                "Server execution service",
                 new SampleServerImpl(),
                 Testservice.RpcService.Interface.class);
 
 
-        // final RpcClientImpl client = RpcSetup.setUpClient(executionService);
 
-        // final RpcClientImpl serversClient = client; // XXX This is an abomination
-        // client.start(new InetSocketAddress(HOST, port));
         final RpcClient rpcclient =
                 RpcSetup.newConnectingNode(executionService, (new InetSocketAddress(HOST, port)));
+        final SampleServerImpl foo = new SampleServerImpl();
+        final Service bax = Testservice.RpcService.newReflectiveService(null);
+        rpcclient.addProtobuferRpcInterface(bax);
         RpcSetup.setUpServer(port, executionService, rpcclient, rpcMessageListener);
 
         rpcclient.start();
