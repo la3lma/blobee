@@ -130,7 +130,7 @@ public final class ControlChannelFailedInvocationTest {
         //     it's not there yet :-/
 
         // XXXX this is completely bogus
-        RpcSetup.setUpServer(port, executionService, client, rpcMessageListener);
+        RpcSetup.setUpServer(port, executionService,  rpcMessageListener);
 
         client.start();
 

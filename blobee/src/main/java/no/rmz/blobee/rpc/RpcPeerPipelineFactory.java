@@ -108,13 +108,16 @@ public final class RpcPeerPipelineFactory implements ChannelPipelineFactory {
         p.addLast("frameEncoder", new ProtobufVarint32LengthFieldPrepender());
         p.addLast("protobufEncoder", new ProtobufEncoder());
         final RpcPeerHandler handler =
-                new RpcPeerHandler(protbufDecoder,
-                clientResolver,
-                executionService, rpcClient);
+                new RpcPeerHandler(
+                    protbufDecoder,
+                    clientResolver,
+                    executionService,
+                    rpcClient);
 
         if (listener != null) {
             handler.setListener(listener);
         }
+        
         p.addLast("handler", handler);
 
         // The first message to receive is always a control message,

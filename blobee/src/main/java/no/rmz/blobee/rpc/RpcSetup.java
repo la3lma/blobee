@@ -127,7 +127,7 @@ public final class RpcSetup {
         return rpcClient;
     }
 
-    // XXX If this works, that's just a lucky break.
+    @Deprecated
     public void newAcceptingNode(
             final int port,
             final Object implementation,
@@ -178,19 +178,20 @@ public final class RpcSetup {
         }
     }
 
-    @Deprecated
+
     public static void setUpServer(
             final int port,
             final RpcExecutionService executionService,
-            final RpcClient rpcClient,
             final RpcMessageListener listener) {
+
+        final RpcClientImpl rpcClient = new RpcClientImpl(DEFAULT_BUFFER_SIZE);
 
         final ServerBootstrap bootstrap = new ServerBootstrap(
                 new NioServerSocketChannelFactory(
                 Executors.newCachedThreadPool(),
                 Executors.newCachedThreadPool()));
 
-        final String name = "server at port " + port;
+        final String name = "Server at port " + port;
 
         final RpcPeerPipelineFactory serverChannelPipelineFactory =
                 new RpcPeerPipelineFactory(

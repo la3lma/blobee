@@ -87,7 +87,7 @@ public final class RpcPeerStartupAndShutdownTest {
         //     a client, but something that I've not abstracted out yet.
         //     Nonetheless, in the present test environment, this should
         //     work.
-        RpcSetup.setUpServer(port, executor, rpcClient, ml);
+        RpcSetup.setUpServer(port, executor, ml);
 
         rpcClient.start();
         // Need some time to let the startup transient settle.
@@ -147,16 +147,9 @@ public final class RpcPeerStartupAndShutdownTest {
             }
         };
 
-       final RpcClient rpcClient = RpcSetup.newClient(new InetSocketAddress(HOST, port));
-        // XXX This is actually a bit bogus, since what the server
-        //     needs is not a client that can connect to somewhere (in
-        //     particular it doesn't need a client that can connect to itself
-        //     as we're setting it up to do here), but it does need somewhere
-        //     to send returning RPC invocations to, and that's not strictly
-        //     a client, but something that I've not abstracted out yet.
-        //     Nonetheless, in the present test environment, this should
-        //     work.
-        RpcSetup.setUpServer(port, executor, rpcClient, ml);
+        final RpcClient rpcClient = RpcSetup.newClient(new InetSocketAddress(HOST, port));
+
+        RpcSetup.setUpServer(port, executor, ml);
 
         rpcClient.start();
         // Need some time to let the startup transient settle.
