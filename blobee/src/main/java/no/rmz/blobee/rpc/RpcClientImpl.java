@@ -24,6 +24,8 @@ import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcChannel;
 import com.google.protobuf.RpcController;
 import com.google.protobuf.Service;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -36,6 +38,7 @@ import no.rmz.blobee.controllers.RpcClientControllerImpl;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
 import no.rmz.blobeeproto.api.proto.Rpc.RpcControl;
+import no.rmz.blobeeprototest.api.proto.Testservice;
 import org.jboss.netty.channel.Channel;
 
 
@@ -302,6 +305,40 @@ public final class RpcClientImpl implements RpcClient {
                 Logger.getLogger(RpcClientImpl.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+
+        return this;
+    }
+
+    public RpcClient addProtobuferRpcInterface(final Class serviceDefinition) {
+        checkNotNull(serviceDefinition);
+
+        Method newReflectiveService = null;
+        for (final Method m : serviceDefinition.getMethods()) {
+            if (m.getName().equals("newReflectiveService")) {
+                newReflectiveService = m;
+                break;
+            }
+        }
+
+        if (newReflectiveService == null) {
+            throw new IllegalStateException(
+                    "class " + serviceDefinition + " is not a service defining class");
+        }
+        final Object instance;
+        try {
+            instance = newReflectiveService.invoke(null, (Object) null);
+        }
+        catch (IllegalAccessException ex) {
+            throw new RuntimeException(ex);
+        }
+        catch (IllegalArgumentException ex) {
+            throw new RuntimeException(ex);
+        }
+        catch (InvocationTargetException ex) {
+            throw new RuntimeException(ex);
+        }
+
+        addProtobuferRpcInterface(instance);
 
         return this;
     }
