@@ -19,8 +19,8 @@ public interface RpcClient {
     RpcClient start();
 
     RpcClient addProtobuferRpcInterface(final Object instance);
-    
-    RpcClient addProtobuferRpcInterface(final Class serviceInterface);
+
+    RpcClient addService(final Class serviceInterface);
 
     MethodSignatureResolver getResolver();
 }
