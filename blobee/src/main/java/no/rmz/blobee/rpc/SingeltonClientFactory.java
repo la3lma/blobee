@@ -29,4 +29,12 @@ public final class SingeltonClientFactory implements RpcClientFactory {
         return rpcClient.getResolver();
     }
 
+    public void removeClientFor(final Channel channel) {
+        synchronized (monitor) {
+            checkNotNull(channel);
+            if (channel == this.channel) {
+                this.channel = null;
+            }
+        }
+    }
 }

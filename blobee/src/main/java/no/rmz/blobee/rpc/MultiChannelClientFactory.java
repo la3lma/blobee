@@ -8,11 +8,9 @@ import org.jboss.netty.channel.Channel;
 public final class MultiChannelClientFactory implements RpcClientFactory {
 
     private final static int DEFAULT_QUEUE_LENGTH = 1; // XXX SHould be larger.
-
     private final Object monitor = new Object();
     private Channel channel;
     private final MethodSignatureResolver resolver;
-
     private Map<Channel, RpcClient> channelClientMap;
 
     public MultiChannelClientFactory() {
@@ -21,22 +19,21 @@ public final class MultiChannelClientFactory implements RpcClientFactory {
     }
 
     public RpcClient getClientFor(final Channel channel) {
+        checkNotNull(channel);
         synchronized (monitor) {
-           if (channelClientMap.containsKey(channel)) {
-               return channelClientMap.get(channel);
-           } else {
-               final RpcClient result =
-                       new RpcClientImpl(DEFAULT_QUEUE_LENGTH, resolver);
-               channelClientMap.put(channel, result);
-               return result;
-           }
+            if (channelClientMap.containsKey(channel)) {
+                return channelClientMap.get(channel);
+            } else {
+                final RpcClient result =
+                        new RpcClientImpl(RpcSetup.DEFAULT_BUFFER_SIZE, resolver);
+                channelClientMap.put(channel, result);
+                return result;
+            }
         }
     }
 
-    // XXX When a channel is shut down we should nuke the
-    //     corresponding client, but right now that isn't done
-
     public void removeClientFor(final Channel channel) {
+        checkNotNull(channel);
         synchronized (monitor) {
             if (channelClientMap.containsKey(channel)) {
                 channelClientMap.remove(channel);

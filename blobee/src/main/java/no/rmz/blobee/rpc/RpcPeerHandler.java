@@ -177,9 +177,14 @@ public final class RpcPeerHandler
     }
 
     @Override
-    public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
+    public void channelClosed(
+            final ChannelHandlerContext ctx,
+            final ChannelStateEvent e) throws Exception {
+        checkNotNull(ctx);
+        checkNotNull(e);
         log.log(Level.INFO, "Channel closed");
         super.channelClosed(ctx, e);
+        rcf.removeClientFor(ctx.getChannel());
     }
 
     private MessageLite getPrototypeForMessageClass(final Class theClass) {

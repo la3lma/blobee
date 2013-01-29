@@ -43,7 +43,7 @@ import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
  */
 public final class RpcSetup {
 
-    private final static int DEFAULT_BUFFER_SIZE = 1;
+    public final static int DEFAULT_BUFFER_SIZE = 1;
 
     /**
      * Utility class, no public constructor for you!
