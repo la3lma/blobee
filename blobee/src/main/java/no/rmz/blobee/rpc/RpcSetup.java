@@ -128,4 +128,9 @@ public final class RpcSetup {
         return new RpcServerImpl(inetSocketAddress, rpcMessageListener);
     }
 
+    // XXX This may actually be the version we want!
+    public static RpcServerImpl nyServer(
+            final InetSocketAddress inetSocketAddress) {
+        return nyServer(inetSocketAddress, null);
+    }
 }
