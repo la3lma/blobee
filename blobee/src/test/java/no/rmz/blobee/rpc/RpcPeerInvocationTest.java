@@ -91,8 +91,9 @@ public final class RpcPeerInvocationTest {
 
 
         final RpcServer rpcServer =
-                new RpcServerImpl(new InetSocketAddress(HOST, port),
-                rpcMessageListener)
+                RpcSetup.nyServer(
+                    new InetSocketAddress(HOST, port),
+                    rpcMessageListener)
                 .addImplementation(
                     new SampleServerImpl(),
                     Testservice.RpcService.Interface.class)

@@ -43,6 +43,7 @@ public final class RpcSetup {
 
     public final static int DEFAULT_BUFFER_SIZE = 1;
 
+
     /**
      * Utility class, no public constructor for you!
      */
@@ -117,4 +118,14 @@ public final class RpcSetup {
             final RpcMessageListener listener) {
         return newServer(new InetSocketAddress(port), executionService, listener);
     }
+
+    // XXX This may actually be the version we want!
+    public static RpcServerImpl nyServer(
+            final InetSocketAddress inetSocketAddress,
+            final RpcMessageListener rpcMessageListener) {
+        checkNotNull(rpcMessageListener);
+        checkNotNull(inetSocketAddress);
+        return new RpcServerImpl(inetSocketAddress, rpcMessageListener);
+    }
+
 }
