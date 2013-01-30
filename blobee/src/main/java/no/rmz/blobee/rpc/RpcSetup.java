@@ -116,10 +116,10 @@ public final class RpcSetup {
 
         final RpcPeerPipelineFactory serverChannelPipelineFactory =
                 new RpcPeerPipelineFactory(
-                "server accepting incoming connections at port ",
-                executionService,
-                new MultiChannelClientFactory(), // XXX Shouldn't be a singelton, but there you are
-                listener);
+                  name,
+                  executionService,
+                  new MultiChannelClientFactory(),
+                  listener);
 
         // Set up the pipeline factory.
         bootstrap.setPipelineFactory(serverChannelPipelineFactory);
