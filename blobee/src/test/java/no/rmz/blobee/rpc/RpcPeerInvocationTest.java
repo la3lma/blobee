@@ -18,7 +18,6 @@ package no.rmz.blobee.rpc;
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcChannel;
 import com.google.protobuf.RpcController;
-import com.google.protobuf.Service;
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;

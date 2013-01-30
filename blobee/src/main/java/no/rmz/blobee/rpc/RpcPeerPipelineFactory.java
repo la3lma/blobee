@@ -82,27 +82,7 @@ public final class RpcPeerPipelineFactory implements ChannelPipelineFactory {
         this(name, executor, rcf);
         this.listener = listener;
     }
-    /*
-    public RpcPeerPipelineFactory(
-            final String name,
-            final RpcExecutionService executionService,
-            final  MethodSignatureResolver clienResolver,
-            final RpcClient rpcClient) {
-        this(name, executionService, clienResolver, rpcClient, null);
-    }
-
-    protected RpcPeerPipelineFactory(
-            final String name,
-            final RpcExecutionService executionService,
-            final MethodSignatureResolver clienResolver,
-            final RpcClient rpcClient,
-            final RpcMessageListener listener) {
-        this.name = checkNotNull(name);
-        this.executionService = checkNotNull(executionService);
-        this.clientResolver = checkNotNull(clienResolver);
-        this.rpcClient = checkNotNull(rpcClient);
-        this.listener = listener;
-    }*/
+  
 
     public void putNextPrototype(
             final ChannelPipeline pipeline,

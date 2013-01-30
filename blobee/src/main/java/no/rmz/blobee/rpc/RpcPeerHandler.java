@@ -263,8 +263,7 @@ public final class RpcPeerHandler
 
     private void processPayloadMessage(final Object message, final ChannelHandlerContext ctx) throws IllegalStateException {
         nextMessageIsControl();
-        log.info("Received payload message:  " + message);
-
+        
         final RemoteExecutionContext dc = contextMap.get(ctx);
 
         if (dc == null) {

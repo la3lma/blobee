@@ -123,7 +123,6 @@ public final class RpcSetup {
     public static RpcServerImpl nyServer(
             final InetSocketAddress inetSocketAddress,
             final RpcMessageListener rpcMessageListener) {
-        checkNotNull(rpcMessageListener);
         checkNotNull(inetSocketAddress);
         return new RpcServerImpl(inetSocketAddress, rpcMessageListener);
     }

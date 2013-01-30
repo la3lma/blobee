@@ -1,10 +1,11 @@
-package no.rmz.blobee.rpc;
+package no.rmz.blobee.protobuf;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.Descriptors.MethodDescriptor;
 import com.google.protobuf.Message;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import no.rmz.blobee.rpc.MethodTypeException;
 import no.rmz.blobee.rpc.MethodTypeException;
 
 public final class TypeExctractor {

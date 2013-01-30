@@ -29,7 +29,7 @@ public final class RpcServerImpl implements RpcServer {
             final RpcMessageListener listener) {
         this.socket = checkNotNull(socket);
         this.executionService = checkNotNull(executionService);
-        this.listener = checkNotNull(listener);
+        this.listener = listener; // XXX Nullable
         this.bootstrap = new ServerBootstrap(new NioServerSocketChannelFactory(Executors.newCachedThreadPool(), Executors.newCachedThreadPool()));
         final String name = "RPC Server at " + socket.toString();
         final RpcPeerPipelineFactory serverChannelPipelineFactory = new RpcPeerPipelineFactory(name, executionService, new MultiChannelClientFactory(), listener);
