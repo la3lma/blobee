@@ -19,10 +19,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 import org.jboss.netty.bootstrap.ClientBootstrap;
-import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
-import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 
 /**
  * Setting up an RPC endpoint is about doing these three things:
@@ -97,8 +95,7 @@ public final class RpcSetup {
         return rpcClient;
     }
 
-
-    public static void newServer(
+    public static RpcServer newServer(
             final InetSocketAddress socket,
             final RpcExecutionService executionService,
             final RpcMessageListener listener) {
@@ -107,32 +104,17 @@ public final class RpcSetup {
         checkNotNull(executionService);
         checkNotNull(listener);
 
-        final ServerBootstrap bootstrap = new ServerBootstrap(
-                new NioServerSocketChannelFactory(
-                Executors.newCachedThreadPool(),
-                Executors.newCachedThreadPool()));
-
-        final String name = "RPC Server at " + socket.toString();
-
-        final RpcPeerPipelineFactory serverChannelPipelineFactory =
-                new RpcPeerPipelineFactory(
-                  name,
-                  executionService,
-                  new MultiChannelClientFactory(),
-                  listener);
-
-        // Set up the pipeline factory.
-        bootstrap.setPipelineFactory(serverChannelPipelineFactory);
-
-        // Bind and start to accept incoming connections.
-        bootstrap.bind(socket);
+        final RpcServer server =
+                new RpcServerImpl(socket, executionService, listener);
+        server.start();
+        return server;
     }
 
     // XXX Eventually, stop using this.
-    public static void newServer(
+    public static RpcServer newServer(
             final int port,
             final RpcExecutionService executionService,
             final RpcMessageListener listener) {
-        newServer(new InetSocketAddress(port), executionService, listener);
+        return newServer(new InetSocketAddress(port), executionService, listener);
     }
 }
