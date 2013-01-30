@@ -49,7 +49,7 @@ public final class RpcServerImpl implements RpcServer {
      * @param iface
      * @return
      */
-    public RpcServer addService(final Service service, final Class iface) {
+    public RpcServer addImplementation(final Service service, final Class iface) {
         checkNotNull(service);
         checkNotNull(iface);
         try {

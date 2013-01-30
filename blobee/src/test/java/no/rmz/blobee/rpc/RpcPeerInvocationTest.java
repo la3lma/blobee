@@ -93,7 +93,7 @@ public final class RpcPeerInvocationTest {
         final RpcServer rpcServer =
                 new RpcServerImpl(new InetSocketAddress(HOST, port),
                 rpcMessageListener)
-                .addService(
+                .addImplementation(
                     new SampleServerImpl(),
                     Testservice.RpcService.Interface.class)
                 .start();
@@ -101,7 +101,7 @@ public final class RpcPeerInvocationTest {
         final RpcClient rpcclient =
            RpcSetup
                 .newClient(new InetSocketAddress(HOST, port))
-                .addService(Testservice.RpcService.class)
+                .addInterface(Testservice.RpcService.class)
                 .start();
 
         clientChannel    = rpcclient.newClientRpcChannel();

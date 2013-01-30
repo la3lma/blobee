@@ -70,8 +70,8 @@ public final class ConnectingRpcClientImpl implements RpcClient {
          return this;
     }
 
-    public RpcClient addService(final Class serviceInterface) {
-         rpcClient.addService(serviceInterface);
+    public RpcClient addInterface(final Class serviceInterface) {
+         rpcClient.addInterface(serviceInterface);
          return this;
     }
 }

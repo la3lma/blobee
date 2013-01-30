@@ -20,7 +20,7 @@ public interface RpcClient {
 
     RpcClient addProtobuferRpcInterface(final Object instance);
 
-    RpcClient addService(final Class serviceInterface);
+    RpcClient addInterface(final Class serviceInterface);
 
     MethodSignatureResolver getResolver();
 }

@@ -309,7 +309,7 @@ public final class RpcClientImpl implements RpcClient {
         return this;
     }
 
-    public RpcClient addService(final Class serviceDefinition) {
+    public RpcClient addInterface(final Class serviceDefinition) {
         checkNotNull(serviceDefinition);
 
         Method newReflectiveService = null;
