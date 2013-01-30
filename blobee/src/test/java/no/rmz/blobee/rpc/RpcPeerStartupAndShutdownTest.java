@@ -17,6 +17,7 @@ package no.rmz.blobee.rpc;
 
 import com.google.protobuf.Message;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
 import java.util.logging.Logger;
 import no.rmz.blobeeproto.api.proto.Rpc;
@@ -119,6 +120,10 @@ public final class RpcPeerStartupAndShutdownTest {
         }
 
         public void startCancel(ChannelHandlerContext ctx, long rpcIndex) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void addImplementation(Object implementation, Class interfaceClass) throws SecurityException, IllegalStateException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, IllegalArgumentException, ExecutionServiceException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
     };

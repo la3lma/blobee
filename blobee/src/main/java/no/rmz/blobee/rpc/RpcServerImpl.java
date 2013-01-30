@@ -1,19 +1,32 @@
 package no.rmz.blobee.rpc;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import com.google.protobuf.Service;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
+import no.rmz.blobeeprototest.api.proto.Testservice;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 
-
 public final class RpcServerImpl implements RpcServer {
+
     final InetSocketAddress socket;
     final RpcExecutionService executionService;
     final RpcMessageListener listener;
     final ServerBootstrap bootstrap;
 
-    public RpcServerImpl(final InetSocketAddress socket, final RpcExecutionService executionService, final RpcMessageListener listener) {
+    public RpcServerImpl(
+            final InetSocketAddress socket,
+            final RpcMessageListener listener) {
+        this(socket,
+             new RpcExecutionServiceImpl("Execution service for server listening on " + socket.toString()),
+             listener);
+    }
+
+       public RpcServerImpl(
+            final InetSocketAddress socket,
+            final RpcExecutionService executionService,
+            final RpcMessageListener listener) {
         this.socket = checkNotNull(socket);
         this.executionService = checkNotNull(executionService);
         this.listener = checkNotNull(listener);
@@ -29,4 +42,22 @@ public final class RpcServerImpl implements RpcServer {
         bootstrap.bind(socket);
         return this;
     }
+
+    /**
+     * Add a service to the server.
+     * @param service
+     * @param iface
+     * @return
+     */
+    public RpcServer addService(final Service service, final Class iface) {
+        checkNotNull(service);
+        checkNotNull(iface);
+        try {
+            executionService.addImplementation(service, iface);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex); // XXX
+        }
+        return this;
+    }
+
 }

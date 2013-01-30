@@ -80,19 +80,23 @@ public final class RpcPeerInvocationTest {
             IllegalAccessException,
             IllegalArgumentException,
             InvocationTargetException,
-            IOException {
+            IOException,
+            SecurityException,
+            IllegalStateException,
+            ExecutionServiceException {
 
         lock = new ReentrantLock();
         resultReceived = lock.newCondition();
         port = Net.getFreePort();
 
-        final RpcExecutionService executionService;
-        executionService = new RpcExecutionServiceImpl(
-                "Server execution service",
-                new SampleServerImpl(),
-                Testservice.RpcService.Interface.class);
 
-        RpcSetup.newServer(port, executionService, rpcMessageListener);
+        final RpcServer rpcServer =
+                new RpcServerImpl(new InetSocketAddress(HOST, port),
+                rpcMessageListener)
+                .addService(
+                    new SampleServerImpl(),
+                    Testservice.RpcService.Interface.class)
+                .start();
 
         final RpcClient rpcclient =
            RpcSetup

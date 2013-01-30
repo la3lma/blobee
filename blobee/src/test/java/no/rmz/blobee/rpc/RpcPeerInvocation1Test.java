@@ -79,7 +79,10 @@ public final class RpcPeerInvocation1Test {
             IllegalAccessException,
             IllegalArgumentException,
             InvocationTargetException,
-            IOException {
+            IOException,
+            SecurityException,
+            IllegalStateException,
+            ExecutionServiceException {
 
         lock = new ReentrantLock();
         resultReceived = lock.newCondition();

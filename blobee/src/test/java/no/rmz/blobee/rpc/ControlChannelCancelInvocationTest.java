@@ -160,7 +160,10 @@ public final class ControlChannelCancelInvocationTest {
             IllegalAccessException,
             IllegalArgumentException,
             InvocationTargetException,
-            IOException {
+            IOException,
+            SecurityException,
+            IllegalStateException,
+            ExecutionServiceException {
 
         bh = new BooleanHolder();
         bh.setValue(false);

@@ -106,7 +106,10 @@ public final class ControlChannelFailedInvocationTest {
             IllegalAccessException,
             IllegalArgumentException,
             InvocationTargetException,
-            IOException {
+            IOException,
+            SecurityException,
+            IllegalStateException,
+            ExecutionServiceException {
 
         lock = new ReentrantLock();
         resultReceived = lock.newCondition();

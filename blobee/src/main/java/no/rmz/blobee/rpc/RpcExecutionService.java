@@ -15,16 +15,22 @@
  */
 package no.rmz.blobee.rpc;
 
+import java.lang.reflect.InvocationTargetException;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import org.jboss.netty.channel.ChannelHandlerContext;
 
 public interface RpcExecutionService {
 
-    public void execute(RemoteExecutionContext dc, ChannelHandlerContext ctx, Object message);
-
     public Class getReturnType(final Rpc.MethodSignature sig);
 
     public Class getParameterType(final Rpc.MethodSignature sig);
 
+    public void execute(RemoteExecutionContext dc, ChannelHandlerContext ctx, Object message);
+
     public void startCancel(ChannelHandlerContext ctx, long rpcIndex);
+
+    public  void addImplementation(
+            final Object implementation,
+            final Class interfaceClass) throws SecurityException, IllegalStateException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, IllegalArgumentException, ExecutionServiceException;
+
 }

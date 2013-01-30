@@ -63,6 +63,11 @@ public final class RpcExecutionServiceImpl
     private final Map<MethodSignature, Method> mmap;
     private final Map<MethodSignature, Class<?>> returnTypes;
     private final Map<MethodSignature, Class<?>> pmtypes;
+    private Map<Class, Object> implementations = new HashMap<Class, Object>();
+    // XXX This is actually a memory leak since nothing ever
+    //     gets deleted from this thing.   When an invocation's result
+    //     is returned, this structure should be cleaned up.
+    private final ControllerStorage controllerStorage = new ControllerStorage();
 
 
     public Class getReturnType(final MethodSignature sig) {
@@ -97,27 +102,44 @@ public final class RpcExecutionServiceImpl
                NoSuchMethodException,
                IllegalAccessException,
                IllegalArgumentException,
-               InvocationTargetException {
+               InvocationTargetException,
+               SecurityException,
+               IllegalStateException,
+               ExecutionServiceException {
         this(name);
         addImplementation(implementation, interfaceClasses);
     }
 
 
-    private Map<Class, Object> implementations = new HashMap<Class, Object>();
+     public  void addImplementation(
+            final Object implementation,
+            final Class interfaceClasses) throws SecurityException,
+            IllegalStateException, InvocationTargetException, NoSuchMethodException,
+            IllegalAccessException, IllegalArgumentException, ExecutionServiceException {
+
+         addImplementation(implementation, new Class[]{interfaceClasses});
+     }
+
 
     // XXXX Refactor this to get the
     //      prototype definitions from the input and output types of a method, and
     //      make those methods public static.  Then use them to implement getPrototypeForClass
     //      in RpcPeerHandler.
-    private  void addImplementation(
+    public  void addImplementation(
             final Object implementation,
-            final Class[] interfaceClasses) throws SecurityException, IllegalStateException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, IllegalArgumentException {
+            final Class[] interfaceClasses) throws SecurityException, IllegalStateException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, IllegalArgumentException, ExecutionServiceException {
         this.implementation = checkNotNull(implementation);
 
         final Collection<Class> ifaces = new HashSet<Class>();
 
         for (final Class i: implementation.getClass().getClasses()) {
             ifaces.add(i);
+        }
+
+        for (final Class ic: interfaceClasses) {
+            if (implementations.containsKey(ic)) {
+                throw new ExecutionServiceException("Interface " + ic + " already has an implementation");
+            }
         }
 
         log.info("The interfaces are " + ifaces);
@@ -237,10 +259,6 @@ public final class RpcExecutionServiceImpl
         }
     }
 
-    // XXX This is actually a memory leak since nothing ever
-    //     gets deleted from this thing.   When an invocation's result
-    //     is returned, this structure should be cleaned up.
-    private final ControllerStorage controllerStorage = new ControllerStorage();
 
 
     public void execute(
