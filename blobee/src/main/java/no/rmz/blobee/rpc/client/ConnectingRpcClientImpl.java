@@ -1,10 +1,16 @@
-package no.rmz.blobee.rpc;
+package no.rmz.blobee.rpc.client;
 
+import no.rmz.blobee.rpc.client.MethodSignatureResolver;
+import no.rmz.blobee.rpc.client.RpcClientSideInvocationListener;
+import no.rmz.blobee.rpc.client.RpcClient;
+import no.rmz.blobee.rpc.client.RpcClientImpl;
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.Message;
 import com.google.protobuf.RpcChannel;
 import com.google.protobuf.RpcController;
 import java.net.InetSocketAddress;
+import no.rmz.blobee.rpc.peer.RemoteExecutionContext;
+import no.rmz.blobee.rpc.RpcSetup;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.ChannelFuture;
 

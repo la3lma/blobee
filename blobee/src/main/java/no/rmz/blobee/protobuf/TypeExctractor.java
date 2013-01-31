@@ -5,8 +5,6 @@ import com.google.protobuf.Descriptors.MethodDescriptor;
 import com.google.protobuf.Message;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import no.rmz.blobee.rpc.MethodTypeException;
-import no.rmz.blobee.rpc.MethodTypeException;
 
 public final class TypeExctractor {
     public static final String GET_RESPONSE_PROTOTYPE_METHODNAME = "getResponsePrototype";

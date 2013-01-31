@@ -1,8 +1,12 @@
-package no.rmz.blobee.rpc;
+package no.rmz.blobee.rpc.client;
 
+import no.rmz.blobee.rpc.client.RpcClientFactory;
+import no.rmz.blobee.rpc.client.RpcClient;
+import no.rmz.blobee.rpc.client.RpcClientImpl;
 import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.Map;
 import java.util.WeakHashMap;
+import no.rmz.blobee.rpc.RpcSetup;
 import org.jboss.netty.channel.Channel;
 
 public final class MultiChannelClientFactory implements RpcClientFactory {

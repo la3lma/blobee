@@ -13,8 +13,10 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package no.rmz.blobee.rpc;
+package no.rmz.blobee.rpc.peer;
 
+import no.rmz.blobee.rpc.client.RpcClientFactory;
+import no.rmz.blobee.rpc.client.RpcClient;
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.Message;
 import com.google.protobuf.MessageLite;
@@ -24,6 +26,8 @@ import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.rmz.blobee.protobuf.DynamicProtobufDecoder;
+import no.rmz.blobee.rpc.client.MethodSignatureResolver;
+import no.rmz.blobee.rpc.server.RpcExecutionService;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
 import no.rmz.blobeeproto.api.proto.Rpc.RpcControl;
@@ -232,7 +236,7 @@ public final class RpcPeerHandler
                 .write(control);
     }
 
-    void returnResult(final RemoteExecutionContext context, final Message result) {
+    public void returnResult(final RemoteExecutionContext context, final Message result) {
 
         final Rpc.RpcControl invocationControl =
                 Rpc.RpcControl.newBuilder()

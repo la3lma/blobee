@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package no.rmz.blobee.rpc;
+package no.rmz.blobee.rpc.server;
 
 import com.google.common.base.Function;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -25,6 +25,7 @@ import com.google.protobuf.RpcChannel;
 import com.google.protobuf.RpcController;
 import com.google.protobuf.ServiceException;
 import no.rmz.blobee.controllers.RpcClientControllerImpl;
+import no.rmz.blobee.rpc.client.ResolverImpl;
 
 /**
  * Experimental implementation of an RpcChannel. Used as a vehicle to wrap my

@@ -17,7 +17,7 @@ package no.rmz.blobee.controllers;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.RpcCallback;
-import no.rmz.blobee.rpc.RemoteExecutionContext;
+import no.rmz.blobee.rpc.peer.RemoteExecutionContext;
 import no.rmz.blobeeproto.api.proto.Rpc.MessageType;
 import no.rmz.blobeeproto.api.proto.Rpc.RpcControl;
 

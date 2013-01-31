@@ -13,12 +13,15 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package no.rmz.blobee.rpc;
+package no.rmz.blobee.rpc.peer;
 
+import no.rmz.blobee.rpc.client.RpcClientFactory;
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.MessageLite;
 import java.util.WeakHashMap;
 import no.rmz.blobee.protobuf.DynamicProtobufDecoder;
+import no.rmz.blobee.rpc.client.MethodSignatureResolver;
+import no.rmz.blobee.rpc.server.RpcExecutionService;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
@@ -82,7 +85,7 @@ public final class RpcPeerPipelineFactory implements ChannelPipelineFactory {
         this(name, executor, rcf);
         this.listener = listener;
     }
-  
+
 
     public void putNextPrototype(
             final ChannelPipeline pipeline,

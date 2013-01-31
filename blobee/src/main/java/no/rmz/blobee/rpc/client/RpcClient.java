@@ -1,8 +1,9 @@
-package no.rmz.blobee.rpc;
+package no.rmz.blobee.rpc.client;
 
 import com.google.protobuf.Message;
 import com.google.protobuf.RpcChannel;
 import com.google.protobuf.RpcController;
+import no.rmz.blobee.rpc.peer.RemoteExecutionContext;
 
 public interface RpcClient {
 

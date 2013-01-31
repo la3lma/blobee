@@ -13,11 +13,20 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package no.rmz.blobee.rpc;
+package no.rmz.blobee.rpc.peer;
 
-public final class RpcExecutionException extends Exception {
+/**
+ * Enum used to denote the direction an RPC is going.
+ */
+public enum RpcDirection {
+    /**
+     * An RPC call that is returning with a result from a previous
+     * invocation.
+     */
+    RETURNING,
 
-    public RpcExecutionException(final Throwable ex) {
-        super(ex);
-    }
+    /**
+     * A new RPC call that expects to be first evaluated and then returned.
+     */
+    INVOKING
 }

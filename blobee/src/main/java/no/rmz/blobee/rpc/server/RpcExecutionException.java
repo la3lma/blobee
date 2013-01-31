@@ -13,15 +13,11 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+package no.rmz.blobee.rpc.server;
 
-package no.rmz.blobee.rpc;
+public final class RpcExecutionException extends Exception {
 
-import com.google.protobuf.Message;
-
-public interface MessageWire {
-
-    public void write(Message msg1, Message msg2);
-
-    public void write(Message msg1);
-
+    public RpcExecutionException(final Throwable ex) {
+        super(ex);
+    }
 }

@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package no.rmz.blobee.rpc;
+package no.rmz.blobee.rpc.client;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.Descriptors.MethodDescriptor;

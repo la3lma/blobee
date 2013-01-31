@@ -15,6 +15,7 @@
  */
 package no.rmz.blobee.rpc;
 
+import no.rmz.blobee.protobuf.MethodTypeException;
 import no.rmz.blobee.protobuf.TypeExctractor;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;

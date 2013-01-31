@@ -1,31 +1,28 @@
 package no.rmz.blobee.rpc;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import com.google.protobuf.Message;
+import no.rmz.blobee.rpc.server.ExecutionServiceException;
+import no.rmz.blobee.rpc.server.RpcServer;
+import no.rmz.blobee.rpc.client.RpcClient;
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcChannel;
 import com.google.protobuf.RpcController;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
-import java.util.Map;
 import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import no.rmz.blobeeprototest.api.proto.Testservice;
 import no.rmz.blobeeprototest.api.proto.Testservice.RpcResult;
 import no.rmz.testtools.Net;
-import org.jboss.netty.channel.ChannelHandlerContext;
 import org.junit.Before;
 import org.junit.Test;
 
 
 public class ReallySimplePerformanceTest {
 
-    final int ROUNDTRIPS = 400000;
+    private final static int ROUNDTRIPS = 2000000;
 
     private static final Logger log = Logger.getLogger(
             no.rmz.blobee.rpc.RpcPeerInvocationTest.class.getName());
@@ -108,10 +105,17 @@ public class ReallySimplePerformanceTest {
             myService.invoke(clientController, request, callback);
         }
 
-        final double expectedTime = 0.025 * ROUNDTRIPS * 12;
+        final int marginFactor = 2;
+
+        final double expectedTime = 0.025 * ROUNDTRIPS *marginFactor;
 
         final long expectedMillis = (long) expectedTime;
-        log.info("This shouldn't take more than " + expectedMillis + " millis");
+        log.info("This shouldn't take more than "
+                + expectedMillis
+                + " millis (margin factor = "
+                + marginFactor
+                + ")");
+
 
         latch.await((long) expectedTime, TimeUnit.MILLISECONDS);
         final long endTime = System.currentTimeMillis();

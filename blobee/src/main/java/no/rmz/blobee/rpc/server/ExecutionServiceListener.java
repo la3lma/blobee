@@ -1,4 +1,4 @@
-package no.rmz.blobee.rpc;
+package no.rmz.blobee.rpc.server;
 
 import com.google.protobuf.Message;
 import com.google.protobuf.RpcCallback;

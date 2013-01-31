@@ -13,12 +13,15 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package no.rmz.blobee.rpc;
 
-import org.jboss.netty.channel.ChannelHandlerContext;
+package no.rmz.blobee.rpc.peer;
 
-public interface RpcMessageListener {
+import com.google.protobuf.Message;
 
-    public void receiveMessage(Object message, ChannelHandlerContext ctx);
+public interface MessageWire {
+
+    public void write(Message msg1, Message msg2);
+
+    public void write(Message msg1);
 
 }

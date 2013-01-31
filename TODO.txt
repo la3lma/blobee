@@ -1,13 +1,16 @@
 MAKE THE BASICS WORK
 =====================
 
-o Implement unit test for e "reset" mechanism for the Controller objects.
-
-o Get someone else to use the API and offer feedback.
+o Get a handle on the memory leak that makes the thing
+  freak out when it handles large amounts of messags.
 
 o Make a pretty client API.
 
-o Make control messages flow for the controller object.
+o Make some nice examples 
+   - Get rid of some of the ugly ones.
+
+o Get someone else to use the API and offer feedback.
+
 
 o Make another test that is a bit more complex to 
   make sure the implementation is actually minimally
@@ -32,6 +35,10 @@ The purpose of this discussion is to determine their
 impact on the current, minimal API design.
 
 o Discuss possible extensions with someone.  Some possibilities are:
+
+    o A listener interface that lets an application have
+      a handle on which users/connections etc. is talking to
+      it at any time.
 
     o Collect statistics (usage, timing).
 

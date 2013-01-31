@@ -13,9 +13,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package no.rmz.blobee.rpc;
+package no.rmz.blobee.rpc.server;
 
 import java.lang.reflect.InvocationTargetException;
+import no.rmz.blobee.rpc.peer.RemoteExecutionContext;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import org.jboss.netty.channel.ChannelHandlerContext;
 

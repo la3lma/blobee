@@ -1,4 +1,4 @@
-package no.rmz.blobee.rpc;
+package no.rmz.blobee.rpc.client;
 
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.MessageLite;

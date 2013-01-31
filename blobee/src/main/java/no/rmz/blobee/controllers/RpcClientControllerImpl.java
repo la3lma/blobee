@@ -19,8 +19,8 @@ package no.rmz.blobee.controllers;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.RpcCallback;
-import no.rmz.blobee.rpc.RpcClientImpl;
-import no.rmz.blobee.rpc.RpcClientSideInvocation;
+import no.rmz.blobee.rpc.client.RpcClientImpl;
+import no.rmz.blobee.rpc.client.RpcClientSideInvocation;
 
 public final class RpcClientControllerImpl implements RpcClientController {
 

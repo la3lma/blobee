@@ -1,4 +1,4 @@
-package no.rmz.blobee.rpc;
+package no.rmz.blobee.rpc.client;
 
 import org.jboss.netty.channel.Channel;
 

@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package no.rmz.blobee.rpc;
+package no.rmz.blobee.rpc.client;
 
 import com.google.common.base.Function;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -23,6 +23,7 @@ import com.google.protobuf.Message;
 import com.google.protobuf.MessageLite;
 import java.util.HashMap;
 import java.util.Map;
+import no.rmz.blobee.rpc.client.MethodSignatureResolver;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
 

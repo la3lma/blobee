@@ -14,12 +14,13 @@
  *  limitations under the License.
  */
 
-package no.rmz.blobee.rpc;
+package no.rmz.blobee.rpc.peer;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.Message;
 import no.rmz.blobee.controllers.RpcServiceController;
 import no.rmz.blobee.controllers.RpcServiceControllerImpl;
+import no.rmz.blobee.rpc.peer.RpcPeerHandler;
 import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
 import no.rmz.blobeeproto.api.proto.Rpc.RpcControl;
 import org.jboss.netty.channel.ChannelHandlerContext;

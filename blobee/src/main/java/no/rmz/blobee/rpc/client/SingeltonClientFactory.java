@@ -1,5 +1,8 @@
-package no.rmz.blobee.rpc;
+package no.rmz.blobee.rpc.client;
 
+import no.rmz.blobee.rpc.client.MethodSignatureResolver;
+import no.rmz.blobee.rpc.client.RpcClientFactory;
+import no.rmz.blobee.rpc.client.RpcClient;
 import static com.google.common.base.Preconditions.checkNotNull;
 import org.jboss.netty.channel.Channel;
 
