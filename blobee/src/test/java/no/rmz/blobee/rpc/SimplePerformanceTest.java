@@ -184,7 +184,7 @@ public class SimplePerformanceTest {
         //     get all the way around, or they are dropped on the way
         //     in.  Is there any pattern to this?
 
-        final double expectedTime = 0.28 * ROUNDTRIPS * 2;
+        final double expectedTime = 0.025 * ROUNDTRIPS * 12;
 
         final long expectedMillis = (long) expectedTime;
         log.info("This shouldn't take more than " + expectedMillis + " millis");

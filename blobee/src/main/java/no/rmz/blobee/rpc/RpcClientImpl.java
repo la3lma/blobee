@@ -225,6 +225,7 @@ public final class RpcClientImpl implements RpcClient {
                 final RpcClientSideInvocation invocation =
                         new RpcClientSideInvocation(method, controller, request, responsePrototype, done);
 
+                // XXX
                 // Busy-wait to add to in-queue
                 for (int i = 0; i < 200; i++) { /// XXXX bogus
 
