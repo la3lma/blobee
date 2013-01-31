@@ -16,7 +16,7 @@ public final class ConnectingRpcClientImpl implements RpcClient {
     public ConnectingRpcClientImpl(
             final ClientBootstrap clientBootstrap,
             final InetSocketAddress socketAddress) {
-        this.rpcClient = new RpcClientImpl(4711); // XXX BOGUS
+        this.rpcClient = new RpcClientImpl(RpcSetup.DEFAULT_BUFFER_SIZE);
         this.socketAddress = checkNotNull(socketAddress);
         // XXX BOGUS
         this.clientBootstrap = checkNotNull(clientBootstrap);
@@ -73,5 +73,10 @@ public final class ConnectingRpcClientImpl implements RpcClient {
     public RpcClient addInterface(final Class serviceInterface) {
          rpcClient.addInterface(serviceInterface);
          return this;
+    }
+
+    public RpcClient addInvocationListener(final RpcClientSideInvocationListener listener) {
+        rpcClient.addInvocationListener(listener);
+        return this;
     }
 }

@@ -120,20 +120,22 @@ public final class RpcPeerHandler
         protbufDecoder.putNextPrototype(Rpc.RpcControl.getDefaultInstance());
     }
 
+
+    public void runListener(final ChannelHandlerContext ctx, Object message) {
+        synchronized (listenerLock) {
+            if (listener != null) {
+                listener.receiveMessage(message, ctx);
+            }
+        }
+    }
     @Override
     public void messageReceived(
             final ChannelHandlerContext ctx, final MessageEvent e) {
 
         final Object message = e.getMessage();
 
-        // First send the object to the listener, if we have one.
-        // XXX This should probably be removed since it's  only ever used
-        //     for testing and debugging.
-        synchronized (listenerLock) {
-            if (listener != null) {
-                listener.receiveMessage(message, ctx);
-            }
-        }
+        // Run listener, if any (only for debugging).
+        runListener(ctx, message);
 
         // Then parse it the regular way.
         if (message instanceof Rpc.RpcControl) {
@@ -263,7 +265,7 @@ public final class RpcPeerHandler
 
     private void processPayloadMessage(final Object message, final ChannelHandlerContext ctx) throws IllegalStateException {
         nextMessageIsControl();
-        
+
         final RemoteExecutionContext dc = contextMap.get(ctx);
 
         if (dc == null) {

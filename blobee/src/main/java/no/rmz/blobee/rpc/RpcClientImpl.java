@@ -15,7 +15,6 @@
  */
 package no.rmz.blobee.rpc;
 
-import no.rmz.blobee.protobuf.TypeExctractor;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.Descriptors.MethodDescriptor;
@@ -36,10 +35,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.rmz.blobee.controllers.RpcClientController;
 import no.rmz.blobee.controllers.RpcClientControllerImpl;
+import no.rmz.blobee.protobuf.TypeExctractor;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
 import no.rmz.blobeeproto.api.proto.Rpc.RpcControl;
-import no.rmz.blobeeprototest.api.proto.Testservice;
 import org.jboss.netty.channel.Channel;
 
 
@@ -98,6 +97,10 @@ public final class RpcClientImpl implements RpcClient {
             // sending it over the wire, just forget about it.
             if (invocation.getController().isCanceled()) {
                 return;
+            }
+
+            if (listener != null) {
+                listener.listenToInvocation(invocation);
             }
 
             final Long currentIndex = nextIndex++;
@@ -221,7 +224,21 @@ public final class RpcClientImpl implements RpcClient {
 
                 final RpcClientSideInvocation invocation =
                         new RpcClientSideInvocation(method, controller, request, responsePrototype, done);
-                incoming.add(invocation);
+
+                // Busy-wait to add to in-queue
+                for (int i = 0; i < 200; i++) { /// XXXX bogus
+
+                    if (incoming.offer(invocation)) {
+                        return;
+                    }
+                    try {
+                        Thread.sleep(20);
+                    }
+                    catch (InterruptedException ex) {
+                        // Ignore interruption
+                    }
+                }
+                throw new RuntimeException("Couldn't add to queue");
             }
         };
     }
@@ -263,6 +280,14 @@ public final class RpcClientImpl implements RpcClient {
     }
 
     public RpcClient start() {
+        return this;
+    }
+
+    private RpcClientSideInvocationListener listener;
+
+    public RpcClient addInvocationListener(final RpcClientSideInvocationListener listener) {
+        checkNotNull(listener);
+        this.listener = listener;
         return this;
     }
 
@@ -343,6 +368,4 @@ public final class RpcClientImpl implements RpcClient {
 
         return this;
     }
-
-
 }

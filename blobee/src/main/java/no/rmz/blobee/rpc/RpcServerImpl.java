@@ -19,11 +19,22 @@ public final class RpcServerImpl implements RpcServer {
             final InetSocketAddress socket,
             final RpcMessageListener listener) {
         this(socket,
-             new RpcExecutionServiceImpl("Execution service for server listening on " + socket.toString()),
-             listener);
+                new RpcExecutionServiceImpl("Execution service for server listening on " + socket.toString()),
+                listener);
     }
 
-       public RpcServerImpl(
+     public RpcServerImpl(
+            final InetSocketAddress socket,
+            final RpcMessageListener listener,
+            final ExecutionServiceListener esListener) {
+        this(socket,
+                new RpcExecutionServiceImpl(
+                    "Execution service for server listening on " + socket.toString(),
+                    esListener),
+                listener);
+    }
+
+    public RpcServerImpl(
             final InetSocketAddress socket,
             final RpcExecutionService executionService,
             final RpcMessageListener listener) {
@@ -45,6 +56,7 @@ public final class RpcServerImpl implements RpcServer {
 
     /**
      * Add a service to the server.
+     *
      * @param service
      * @param iface
      * @return
@@ -54,10 +66,10 @@ public final class RpcServerImpl implements RpcServer {
         checkNotNull(iface);
         try {
             executionService.addImplementation(service, iface);
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             throw new RuntimeException(ex); // XXX
         }
         return this;
     }
-
 }

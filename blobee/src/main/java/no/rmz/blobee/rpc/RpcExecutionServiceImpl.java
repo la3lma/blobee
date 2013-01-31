@@ -1,26 +1,28 @@
 /**
- * Copyright 2013  Bjørn Remseth (la3lma@gmail.com)
+ * Copyright 2013 Bjørn Remseth (la3lma@gmail.com)
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 package no.rmz.blobee.rpc;
 
 import com.google.common.base.Objects;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import com.google.common.util.concurrent.UncaughtExceptionHandlers;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
 import com.google.protobuf.RpcCallback;
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
@@ -30,8 +32,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.rmz.blobee.controllers.RpcServiceController;
@@ -39,27 +43,33 @@ import no.rmz.blobee.controllers.RpcServiceControllerImpl;
 import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
 import org.jboss.netty.channel.ChannelHandlerContext;
 
-
 /**
- * The implementation object implements one or more intefaces
- * each of those interfaces present methods that can be
- * served through
+ * The implementation object implements one or more intefaces each of those
+ * interfaces present methods that can be served through
  */
 public final class RpcExecutionServiceImpl
-    implements RpcExecutionService {
-
+        implements RpcExecutionService {
 
     private final static Logger log =
             Logger.getLogger(RpcExecutionServiceImpl.class.getName());
+    private final static UncaughtExceptionHandler EXCEPTION_HANDLER = new UncaughtExceptionHandler() {
+        public void uncaughtException(final Thread t, final Throwable e) {
+            log.log(Level.SEVERE, "Uncaught exception in thrad " + t, e);
+        }
+    };
+    private final ExecutorService threadPool = Executors.newCachedThreadPool(
+            new ThreadFactory() {
+                public Thread newThread(Runnable r) {
 
-
-    private final ExecutorService threadPool = Executors.newCachedThreadPool();
-
+                    final Thread thread = new Thread(r, "Executor thread for RpcExecutionServiceImpl");
+                    thread.setUncaughtExceptionHandler(EXCEPTION_HANDLER);
+                    return thread;
+                }
+            }); // XXX Just a  number
     // XXX No longer final, but the design of this
     //     field is in flux.  May in fact become a
     //     map from interfaces to implementations.
-    private  Object implementation;
-
+    private Object implementation;
     private final Map<MethodSignature, Method> mmap;
     private final Map<MethodSignature, Class<?>> returnTypes;
     private final Map<MethodSignature, Class<?>> pmtypes;
@@ -68,7 +78,6 @@ public final class RpcExecutionServiceImpl
     //     gets deleted from this thing.   When an invocation's result
     //     is returned, this structure should be cleaned up.
     private final ControllerStorage controllerStorage = new ControllerStorage();
-
 
     public Class getReturnType(final MethodSignature sig) {
         // Preconditions
@@ -81,62 +90,66 @@ public final class RpcExecutionServiceImpl
         return result;
     }
 
-     public Class getParameterType(final MethodSignature sig) {
+    public Class getParameterType(final MethodSignature sig) {
         checkNotNull(sig);
         return pmtypes.get(sig);
     }
+    final String name;
 
-     final String name;
+    public RpcExecutionServiceImpl(final String name) {
+        this(name, null);
+    }
+    private final ExecutionServiceListener listener;
 
-     public RpcExecutionServiceImpl(final String name) {
+    public RpcExecutionServiceImpl(final String name, ExecutionServiceListener listener) {
         this.name = checkNotNull(name);
         mmap = new HashMap<MethodSignature, Method>();
         returnTypes = new HashMap<MethodSignature, Class<?>>();
         pmtypes = new HashMap<MethodSignature, Class<?>>();
+        this.listener = listener;
     }
 
+    @Deprecated
     public RpcExecutionServiceImpl(
             final String name,
-            final Object implementation, final Class ... interfaceClasses)
+            final Object implementation, final Class... interfaceClasses)
             throws
-               NoSuchMethodException,
-               IllegalAccessException,
-               IllegalArgumentException,
-               InvocationTargetException,
-               SecurityException,
-               IllegalStateException,
-               ExecutionServiceException {
+            NoSuchMethodException,
+            IllegalAccessException,
+            IllegalArgumentException,
+            InvocationTargetException,
+            SecurityException,
+            IllegalStateException,
+            ExecutionServiceException {
         this(name);
         addImplementation(implementation, interfaceClasses);
     }
 
-
-     public  void addImplementation(
+    public void addImplementation(
             final Object implementation,
             final Class interfaceClasses) throws SecurityException,
             IllegalStateException, InvocationTargetException, NoSuchMethodException,
             IllegalAccessException, IllegalArgumentException, ExecutionServiceException {
 
-         addImplementation(implementation, new Class[]{interfaceClasses});
-     }
-
+        addImplementation(implementation, new Class[]{interfaceClasses});
+    }
 
     // XXXX Refactor this to get the
     //      prototype definitions from the input and output types of a method, and
     //      make those methods public static.  Then use them to implement getPrototypeForClass
     //      in RpcPeerHandler.
-    public  void addImplementation(
+    public void addImplementation(
             final Object implementation,
             final Class[] interfaceClasses) throws SecurityException, IllegalStateException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, IllegalArgumentException, ExecutionServiceException {
         this.implementation = checkNotNull(implementation);
 
         final Collection<Class> ifaces = new HashSet<Class>();
 
-        for (final Class i: implementation.getClass().getClasses()) {
+        for (final Class i : implementation.getClass().getClasses()) {
             ifaces.add(i);
         }
 
-        for (final Class ic: interfaceClasses) {
+        for (final Class ic : interfaceClasses) {
             if (implementations.containsKey(ic)) {
                 throw new ExecutionServiceException("Interface " + ic + " already has an implementation");
             }
@@ -163,7 +176,7 @@ public final class RpcExecutionServiceImpl
                 final MethodSignature methodSignature =
                         ResolverImpl.getMethodSignatureFromMethodDescriptor(descriptor);
 
-                final  Method implementationMethod = findMethod(name, implementation.getClass());
+                final Method implementationMethod = findMethod(name, implementation.getClass());
                 if (implementationMethod == null) {
                     throw new IllegalStateException("Unknown method " + name);
                 }
@@ -192,19 +205,18 @@ public final class RpcExecutionServiceImpl
         return typeOfReturnvalue;
     }
 
-
     // XXX Linear search.  I'm sure there is a better way.
     private Method findMethod(final String name, final Class clazz) {
-        for (final Method method: clazz.getMethods()) {
-                    if (method.getName().equals(name)) {
-                        return method;
-                    }
+        for (final Method method : clazz.getMethods()) {
+            if (method.getName().equals(name)) {
+                return method;
+            }
         }
         return null;
     }
 
-
     public final static class ControllerCoordinate {
+
         final ChannelHandlerContext ctx;
         final Long rpcIdx;
 
@@ -221,10 +233,10 @@ public final class RpcExecutionServiceImpl
 
         @Override
         public boolean equals(final Object obj) {
-            if (obj instanceof  ControllerCoordinate) {
+            if (obj instanceof ControllerCoordinate) {
                 final ControllerCoordinate ob = (ControllerCoordinate) obj;
-             return Objects.equal(ctx, ob.ctx) &&
-                    Objects.equal(rpcIdx, ob.rpcIdx);
+                return Objects.equal(ctx, ob.ctx)
+                        && Objects.equal(rpcIdx, ob.rpcIdx);
             } else {
                 return false;
             }
@@ -232,12 +244,10 @@ public final class RpcExecutionServiceImpl
     }
 
     // XXX Use "table" from guava instead?
-
-
     public final static class ControllerStorage {
 
         private final Map<ControllerCoordinate, RpcServiceController> map =
-                new HashMap<ControllerCoordinate, RpcServiceController>();
+                new ConcurrentHashMap<ControllerCoordinate, RpcServiceController>();
 
         public void storeController(
                 final ChannelHandlerContext ctx,
@@ -259,53 +269,80 @@ public final class RpcExecutionServiceImpl
         }
     }
 
-
-
     public void execute(
             final RemoteExecutionContext dc,
             final ChannelHandlerContext ctx, // XXX Redundant? dc.getCtx or something
             final Object parameter) {
 
-        // XXX Handle exceptions better!
-        final Runnable runnable = new Runnable() {
-            public void run() {
-                final Method method = mmap.get(dc.getMethodSignature());
-                // XXXX Add misc contexts.
-                final RpcServiceController controller = new RpcServiceControllerImpl(dc);
 
-                controllerStorage.storeController(ctx, dc.getRpcIndex(), controller);
-
-                final RpcCallback<Message> callback =
-                        new RpcCallback<Message>() {
-                            public void run(final Message response) {
-                                controller.invokeCancelledCallback();
-                                dc.returnResult(response);
-                            }
-                        };
-
-
-                try {
-                    method.invoke(implementation, controller, parameter, callback);
-                }
-                // XXX Swalloing exceptions is baaad, but for now that's what
-                //     we're doing.
-                catch (IllegalAccessException ex) {
-                    log.log(Level.SEVERE, null, ex);
-                }
-                catch (IllegalArgumentException ex) {
-                    log.log(Level.SEVERE, null, ex);
-                }
-                catch (InvocationTargetException ex) {
-                    log.log(Level.SEVERE, null, ex);
-                }
-            }
-        };
-
-        threadPool.submit(runnable);
+        final Runnable runnable = new MethodInvokingRunnable(dc, ctx, parameter);
+        try {
+            // For some reason not all the invocations
+            // that are submitted are actually run.  The ones that are run
+            // does seem to always work correctly though
+            // this is a big XXXX
+            threadPool.submit(runnable);
+        }
+        catch (Exception e) {
+            log.log(Level.SEVERE, "Couldn't execute runnable.  That's awful!", e);
+        }
     }
 
     public void startCancel(final ChannelHandlerContext ctx, final long rpcIndex) {
         // XXX Bogus error handling
         controllerStorage.getController(ctx, rpcIndex).startCancel();
+    }
+
+    private class MethodInvokingRunnable implements Runnable {
+
+        private final RemoteExecutionContext dc;
+        private final ChannelHandlerContext ctx;
+        private final Object parameter;
+
+        public MethodInvokingRunnable(RemoteExecutionContext dc, ChannelHandlerContext ctx, Object parameter) {
+            this.dc = dc;
+            this.ctx = ctx;
+            this.parameter = parameter;
+        }
+
+        public void run() {
+
+            final Method method = mmap.get(dc.getMethodSignature());
+
+
+
+            final RpcServiceController controller = new RpcServiceControllerImpl(dc);
+
+            // XXX This sometimes fails!
+            controllerStorage.storeController(ctx, dc.getRpcIndex(), controller);
+
+            // For debugging.
+            if (listener != null) {
+                listener.listen(threadPool, null, implementation, null, parameter, null);
+            }
+
+            final RpcCallback<Message> callbackAdapter =
+                    new RpcCallback<Message>() {
+                        public void run(final Message response) {
+                            controller.invokeCancelledCallback();
+                            dc.returnResult(response);
+                        }
+                    };
+
+
+            try {
+                method.invoke(implementation, controller, parameter, callbackAdapter);
+            }
+            // XXX Throwing Runtime Exceptions is evil.
+            catch (IllegalAccessException ex) {
+                throw new RuntimeException(ex);
+            }
+            catch (IllegalArgumentException ex) {
+                throw new RuntimeException(ex);
+            }
+            catch (InvocationTargetException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
     }
 }

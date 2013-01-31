@@ -41,7 +41,7 @@ import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
  */
 public final class RpcSetup {
 
-    public final static int DEFAULT_BUFFER_SIZE = 1;
+    public final static int DEFAULT_BUFFER_SIZE = 1000;
 
 
     /**
@@ -126,6 +126,16 @@ public final class RpcSetup {
         checkNotNull(inetSocketAddress);
         return new RpcServerImpl(inetSocketAddress, rpcMessageListener);
     }
+
+     // XXX This may actually be the version we want!
+    public static RpcServerImpl nyServer(
+            final InetSocketAddress inetSocketAddress,
+            final RpcMessageListener rpcMessageListener,
+            final ExecutionServiceListener esListener) {
+        checkNotNull(inetSocketAddress);
+        return new RpcServerImpl(inetSocketAddress, rpcMessageListener, esListener);
+    }
+
 
     // XXX This may actually be the version we want!
     public static RpcServerImpl nyServer(
