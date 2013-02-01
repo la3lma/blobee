@@ -1,16 +1,28 @@
+/**
+ * Copyright 2013 Bjørn Remseth (la3lma@gmail.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package no.rmz.blobee.rpc.client;
 
-import no.rmz.blobee.rpc.client.MethodSignatureResolver;
-import no.rmz.blobee.rpc.client.RpcClientSideInvocationListener;
-import no.rmz.blobee.rpc.client.RpcClient;
-import no.rmz.blobee.rpc.client.RpcClientImpl;
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.Message;
 import com.google.protobuf.RpcChannel;
 import com.google.protobuf.RpcController;
 import java.net.InetSocketAddress;
-import no.rmz.blobee.rpc.peer.RemoteExecutionContext;
 import no.rmz.blobee.rpc.RpcSetup;
+import no.rmz.blobee.rpc.peer.RemoteExecutionContext;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.ChannelFuture;
 
