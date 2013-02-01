@@ -136,10 +136,7 @@ public final class RpcExecutionServiceImpl
         addImplementation(implementation, new Class[]{interfaceClasses});
     }
 
-    // XXXX Refactor this to get the
-    //      prototype definitions from the input and output types of a method, and
-    //      make those methods public static.  Then use them to implement getPrototypeForClass
-    //      in RpcPeerHandler.
+  
     public void addImplementation(
             final Object implementation,
             final Class[] interfaceClasses) throws SecurityException, IllegalStateException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, IllegalArgumentException, ExecutionServiceException {
@@ -261,6 +258,12 @@ public final class RpcExecutionServiceImpl
             map.put(new ControllerCoordinate(ctx, rpcIdx), controller);
         }
 
+        public RpcServiceController removeController(
+                final ChannelHandlerContext ctx,
+                final long rpcIdx) {
+                return map.remove(new ControllerCoordinate(ctx, rpcIdx));
+        }
+
         public RpcServiceController getController(
                 final ChannelHandlerContext ctx,
                 final long rpcIdx) {
@@ -311,11 +314,8 @@ public final class RpcExecutionServiceImpl
 
             final Method method = mmap.get(dc.getMethodSignature());
 
-
-
             final RpcServiceController controller = new RpcServiceControllerImpl(dc);
 
-            // XXX This sometimes fails!
             controllerStorage.storeController(ctx, dc.getRpcIndex(), controller);
 
             // For debugging.
@@ -331,7 +331,6 @@ public final class RpcExecutionServiceImpl
                         }
                     };
 
-
             try {
                 method.invoke(implementation, controller, parameter, callbackAdapter);
             }
@@ -345,6 +344,7 @@ public final class RpcExecutionServiceImpl
             catch (InvocationTargetException ex) {
                 throw new RuntimeException(ex);
             }
+            controllerStorage.removeController(ctx, dc.getRpcIndex());
         }
     }
 }

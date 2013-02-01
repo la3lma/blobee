@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package no.rmz.blobee.rpc;
 
 import com.google.protobuf.RpcCallback;
@@ -32,23 +31,16 @@ import no.rmz.blobee.rpc.server.RpcServer;
 import no.rmz.blobeeprototest.api.proto.Testservice;
 import no.rmz.blobeeprototest.api.proto.Testservice.RpcResult;
 import no.rmz.testtools.Net;
-import org.junit.Before;
-import org.junit.Test;
-
 
 public class ReallySimplePerformanceTest {
 
-    private final static int ROUNDTRIPS = 2000000;
-
+    private final static int ROUNDTRIPS = 4000000;
     private static final Logger log = Logger.getLogger(
             no.rmz.blobee.rpc.RpcPeerInvocationTest.class.getName());
     private final static String HOST = "localhost";
-
     private int port;
-
     private RpcChannel clientChannel;
     private Testservice.RpcParam request = Testservice.RpcParam.newBuilder().build();
-
     RpcClient rpcclient;
 
     public final class TestServiceXX extends Testservice.RpcService {
@@ -56,9 +48,8 @@ public class ReallySimplePerformanceTest {
         public final static String RETURN_VALUE = "Going home";
         private final Testservice.RpcResult result =
                 Testservice.RpcResult.newBuilder().setReturnvalue(RETURN_VALUE).build();
-
         final RpcResult returnvalue =
-                    Testservice.RpcResult.newBuilder().setReturnvalue(request.getParameter()).build();
+                Testservice.RpcResult.newBuilder().setReturnvalue(request.getParameter()).build();
 
         @Override
         public void invoke(
@@ -69,7 +60,6 @@ public class ReallySimplePerformanceTest {
         }
     }
 
-    @Before
     public void setUp() throws
             NoSuchMethodException,
             IllegalAccessException,
@@ -96,34 +86,33 @@ public class ReallySimplePerformanceTest {
                 .addInterface(Testservice.RpcService.class)
                 .start();
 
-        clientChannel    = rpcclient.newClientRpcChannel();
+        clientChannel = rpcclient.newClientRpcChannel();
     }
 
     @edu.umd.cs.findbugs.annotations.SuppressWarnings("WA_AWAIT_NOT_IN_LOOP")
-    @Test
     public void testRpcInvocation() throws InterruptedException, BrokenBarrierException {
 
         final CountDownLatch latch = new CountDownLatch(ROUNDTRIPS);
 
         final RpcCallback<Testservice.RpcResult> callback =
                 new RpcCallback<Testservice.RpcResult>() {
-                    public void run(final Testservice.RpcResult response) {
-                        latch.countDown();
-                    }
-                };
+            public void run(final Testservice.RpcResult response) {
+                latch.countDown();
+            }
+        };
 
         final Testservice.RpcService myService = Testservice.RpcService.newStub(clientChannel);
 
         final long startTime = System.currentTimeMillis();
 
-        for (int i = 0; i < ROUNDTRIPS ; i++) {
+        for (int i = 0; i < ROUNDTRIPS; i++) {
             final RpcController clientController = rpcclient.newController();
             myService.invoke(clientController, request, callback);
         }
 
         final int marginFactor = 2;
 
-        final double expectedTime = 0.025 * ROUNDTRIPS *marginFactor;
+        final double expectedTime = 0.025 * ROUNDTRIPS * marginFactor;
 
         final long expectedMillis = (long) expectedTime;
         log.info("This shouldn't take more than "
@@ -133,10 +122,11 @@ public class ReallySimplePerformanceTest {
                 + ")");
 
 
-        latch.await((long) expectedTime, TimeUnit.MILLISECONDS);
+        latch.await();
+//        latch.await((long) expectedTime, TimeUnit.MILLISECONDS);
         final long endTime = System.currentTimeMillis();
         final long duration = endTime - startTime;
-        final double millisPerRoundtrip = (double)duration / (double)ROUNDTRIPS;
+        final double millisPerRoundtrip = (double) duration / (double) ROUNDTRIPS;
 
         log.info("Duration of "
                 + ROUNDTRIPS
@@ -147,8 +137,14 @@ public class ReallySimplePerformanceTest {
                 + " milliseconds per roundtrip.");
         log.info("Latch count "
                 + latch.getCount());
-        org.junit.Assert.assertEquals("Count should be zero",
-                0,
-                latch.getCount());
+
+
+    }
+
+    public final static void main(final String argv[])  throws Exception {
+        final ReallySimplePerformanceTest tst = new ReallySimplePerformanceTest();
+        tst.setUp();
+        tst.testRpcInvocation();
+        System.exit(0);
     }
 }

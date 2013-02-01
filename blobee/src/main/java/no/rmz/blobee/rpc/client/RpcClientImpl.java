@@ -35,15 +35,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.rmz.blobee.controllers.RpcClientController;
 import no.rmz.blobee.controllers.RpcClientControllerImpl;
-import no.rmz.blobee.protobuf.TypeExctractor;
 import no.rmz.blobee.protobuf.MethodTypeException;
+import no.rmz.blobee.protobuf.TypeExctractor;
 import no.rmz.blobee.rpc.peer.RemoteExecutionContext;
 import no.rmz.blobee.rpc.peer.WireFactory;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
 import no.rmz.blobeeproto.api.proto.Rpc.RpcControl;
 import org.jboss.netty.channel.Channel;
-
 
 public final class RpcClientImpl implements RpcClient {
 
@@ -56,12 +55,9 @@ public final class RpcClientImpl implements RpcClient {
             new TreeMap<Long, RpcClientSideInvocation>();
     private long nextIndex;
     private Channel channel;
-
     private final Object mutationMonitor = new Object();
     private final Object runLock = new Object();
     private final static int MAX_CAPACITY_FOR_INPUT_BUFFER = 10000;
-
-
     private final MethodSignatureResolver resolver;
 
     @Override
@@ -78,13 +74,22 @@ public final class RpcClientImpl implements RpcClient {
             // so it can be reused.
             final RpcCallback<Message> done = invocation.getDone();
             done.run(message);
-            final RpcClientController ctl = invocation.getController();
-            invocations.remove(ctl.getIndex());
-            invocation.getController().setActive(false);
+            deactivateInvocation(dc.getRpcIndex());
         }
     }
 
-   private  final Runnable incomingDispatcher = new Runnable() {
+    private void deactivateInvocation(final long index) {
+        synchronized (invocations) {
+            final RpcClientSideInvocation invocation =
+                    invocations.get(index);
+            if (invocation == null) {
+                throw new IllegalStateException("Couldn't find call stub for invocation " + index);
+            }
+            invocations.remove(index);
+            invocation.getController().setActive(false);
+        }
+    }
+    private final Runnable incomingDispatcher = new Runnable() {
         public void run() {
             while (running) {
                 sendFirstAvailableOutgoingInvocation();
@@ -150,13 +155,13 @@ public final class RpcClientImpl implements RpcClient {
         this(capacity, new ResolverImpl());
     }
 
-    public RpcClientImpl(final int capacity, final MethodSignatureResolver resolver ) {
+    public RpcClientImpl(final int capacity, final MethodSignatureResolver resolver) {
 
         checkArgument(0 < capacity && capacity < MAX_CAPACITY_FOR_INPUT_BUFFER);
         this.capacity = capacity;
         this.incoming =
                 new ArrayBlockingQueue<RpcClientSideInvocation>(capacity);
-         this.resolver = checkNotNull(resolver);
+        this.resolver = checkNotNull(resolver);
     }
 
     public void setChannel(final Channel channel) {
@@ -262,6 +267,7 @@ public final class RpcClientImpl implements RpcClient {
         }
         checkNotNull(invocation);
         invocation.getController().setFailed(errorMessage);
+        deactivateInvocation(rpcIndex);
     }
 
     @Override
@@ -281,12 +287,13 @@ public final class RpcClientImpl implements RpcClient {
 
         WireFactory.getWireForChannel(channel)
                 .write(cancelRequest);
+
+        deactivateInvocation(rpcIndex);
     }
 
     public RpcClient start() {
         return this;
     }
-
     private RpcClientSideInvocationListener listener;
 
     public RpcClient addInvocationListener(final RpcClientSideInvocationListener listener) {
@@ -295,21 +302,17 @@ public final class RpcClientImpl implements RpcClient {
         return this;
     }
 
-
-
     public MethodSignatureResolver getResolver() {
         return resolver;
     }
 
-
     public RpcClient addProtobuferRpcInterface(final Object instance) {
 
-        if (! (instance instanceof  com.google.protobuf.Service)) {
+        if (!( instance instanceof com.google.protobuf.Service )) {
             throw new IllegalArgumentException("Expected a class extending com.google.protobuf.Service");
         }
 
         final Service service = (Service) instance;
-
 
         final ServiceDescriptor descriptor = service.getDescriptorForType();
         final List<MethodDescriptor> methods = descriptor.getMethods();
@@ -329,7 +332,6 @@ public final class RpcClientImpl implements RpcClient {
 
                 resolver.addTypes(md, inputType, outputType);
             }
-
             catch (MethodTypeException ex) {
                 /// XXXX Something  more severe should happen here
                 Logger.getLogger(RpcClientImpl.class.getName()).log(Level.SEVERE, null, ex);
