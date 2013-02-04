@@ -20,18 +20,56 @@ import no.rmz.blobee.rpc.peer.RemoteExecutionContext;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import org.jboss.netty.channel.ChannelHandlerContext;
 
+/**
+ * A service that is used to
+ */
 public interface RpcExecutionService {
 
-    public Class getReturnType(final Rpc.MethodSignature sig);
+    /**
+     * Look Find the return type associated with a method signature.
+     * @param sig The signature
+     * @return The return type of a method signature.
+     */
+    Class getReturnType(final Rpc.MethodSignature sig);
 
-    public Class getParameterType(final Rpc.MethodSignature sig);
 
-    public void execute(RemoteExecutionContext dc, ChannelHandlerContext ctx, Object message);
+      /**
+     * Look Find the parameter type associated with a method signature.
+     * @param sig The signature
+     * @return The parameter type of a method signature.
+     */
+    Class getParameterType(final Rpc.MethodSignature sig);
 
-    public void startCancel(ChannelHandlerContext ctx, long rpcIndex);
+    /**
+     * Execute a method coming in over the wire.
+     * @param dc XXXX
+     * @param ctx
+     * @param message  The parameter object.
+     */
+    void execute(RemoteExecutionContext dc, ChannelHandlerContext ctx, Object message);
 
-    public  void addImplementation(
+    /**
+     * Cancel an invocation.
+     * @param ctx
+     * @param rpcIndex
+     */
+    void startCancel(ChannelHandlerContext ctx, long rpcIndex);
+
+    /**
+     * Add an implementation of an interface.
+     * @param implementation The instance implementing the RPC interface.
+     * @param interfaceClass The class defining the RPC interface.
+     * @throws SecurityException XXX A complete abominiation.
+     * @throws IllegalStateException
+     * @throws InvocationTargetException
+     * @throws NoSuchMethodException
+     * @throws IllegalAccessException
+     * @throws IllegalArgumentException
+     * @throws ExecutionServiceException
+     */
+    void addImplementation(
             final Object implementation,
-            final Class interfaceClass) throws SecurityException, IllegalStateException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, IllegalArgumentException, ExecutionServiceException;
+            final Class interfaceClass)
+            throws SecurityException, IllegalStateException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, IllegalArgumentException, ExecutionServiceException;
 
 }

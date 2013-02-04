@@ -88,7 +88,6 @@ public class SimplePerformanceTest {
         }
     }
 
-    private ExecutorService executorService;
 
     @Before
     public void setUp() throws
@@ -102,7 +101,6 @@ public class SimplePerformanceTest {
             ExecutionServiceException {
 
         port = Net.getFreePort();
-        executorService = null;
 
         targetLatch = new CountDownLatch(ROUNDTRIPS);
         final RpcServer rpcServer =
@@ -127,7 +125,6 @@ public class SimplePerformanceTest {
                             Object controller,
                             Object parameter,
                             Object callback) {
-                        executorService = ex;
                        final Testservice.RpcParam trp = (Testservice.RpcParam) parameter;
                        final String paramString = trp.getParameter();
                        serverExecutorMap.remove(paramString);
@@ -235,8 +232,6 @@ public class SimplePerformanceTest {
         log.info("count(serverReceiverMap): " + serverReceiverMap.keySet().size());
         log.info("count(clientSenderMap): " + clientSenderMap.keySet().size());
         log.info("count(serverExecutorMap): " + serverExecutorMap.keySet().size());
-
-        log.info("Jobs still pending in the executor service " + executorService.shutdownNow());
 
         org.junit.Assert.assertEquals("Latch counts should be equal",
                 targetLatch.getCount(),

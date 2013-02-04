@@ -19,8 +19,12 @@ package no.rmz.blobee.rpc.server;
 
 import java.util.concurrent.ExecutorService;
 
-public interface ExecutionServiceListener {
 
+/**
+ * Interface that is is used to "listen in" on traffic coming through an
+ * executor unit.
+ */
+public interface ExecutionServiceListener {
 
     public void listen(
             ExecutorService threadPool,

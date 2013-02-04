@@ -18,7 +18,6 @@ package no.rmz.blobee.rpc.server;
 import com.google.common.base.Objects;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import com.google.common.util.concurrent.UncaughtExceptionHandlers;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
 import com.google.protobuf.RpcCallback;
@@ -40,8 +39,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.rmz.blobee.controllers.RpcServiceController;
 import no.rmz.blobee.controllers.RpcServiceControllerImpl;
-import no.rmz.blobee.rpc.peer.RemoteExecutionContext;
 import no.rmz.blobee.rpc.client.ResolverImpl;
+import no.rmz.blobee.rpc.peer.RemoteExecutionContext;
 import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
 import org.jboss.netty.channel.ChannelHandlerContext;
 
@@ -54,11 +53,23 @@ public final class RpcExecutionServiceImpl
 
     private final static Logger log =
             Logger.getLogger(RpcExecutionServiceImpl.class.getName());
-    private final static UncaughtExceptionHandler EXCEPTION_HANDLER = new UncaughtExceptionHandler() {
-        public void uncaughtException(final Thread t, final Throwable e) {
-            log.log(Level.SEVERE, "Uncaught exception in thrad " + t, e);
-        }
-    };
+
+    /**
+     * An exeption handler that logs exceptions as severe to the
+     * logger.
+     */
+    private final static UncaughtExceptionHandler EXCEPTION_HANDLER =
+            new UncaughtExceptionHandler() {
+                public void uncaughtException(final Thread t, final Throwable e) {
+                    log.log(Level.SEVERE, "Uncaught exception in thrad " + t, e);
+                }
+            };
+
+
+    /**
+     * A thread pool using the EXCEPTION_HANDLER that is used to
+     * execute incoming RPC requests.
+     */
     private final ExecutorService threadPool = Executors.newCachedThreadPool(
             new ThreadFactory() {
                 public Thread newThread(Runnable r) {
@@ -67,18 +78,15 @@ public final class RpcExecutionServiceImpl
                     thread.setUncaughtExceptionHandler(EXCEPTION_HANDLER);
                     return thread;
                 }
-            }); // XXX Just a  number
-    // XXX No longer final, but the design of this
-    //     field is in flux.  May in fact become a
-    //     map from interfaces to implementations.
+            });
+
+
     private Object implementation;
     private final Map<MethodSignature, Method> mmap;
     private final Map<MethodSignature, Class<?>> returnTypes;
     private final Map<MethodSignature, Class<?>> pmtypes;
     private Map<Class, Object> implementations = new HashMap<Class, Object>();
-    // XXX This is actually a memory leak since nothing ever
-    //     gets deleted from this thing.   When an invocation's result
-    //     is returned, this structure should be cleaned up.
+
     private final ControllerStorage controllerStorage = new ControllerStorage();
 
     public Class getReturnType(final MethodSignature sig) {
@@ -136,7 +144,7 @@ public final class RpcExecutionServiceImpl
         addImplementation(implementation, new Class[]{interfaceClasses});
     }
 
-  
+
     public void addImplementation(
             final Object implementation,
             final Class[] interfaceClasses) throws SecurityException, IllegalStateException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, IllegalArgumentException, ExecutionServiceException {
@@ -214,6 +222,10 @@ public final class RpcExecutionServiceImpl
         return null;
     }
 
+    public void removeController(final ChannelHandlerContext ctx, long rpcIndex) {
+         controllerStorage.removeController(ctx, rpcIndex);
+    }
+
     public final static class ControllerCoordinate {
 
         final ChannelHandlerContext ctx;
@@ -242,45 +254,15 @@ public final class RpcExecutionServiceImpl
         }
     }
 
-    // XXX Use "table" from guava instead?
-    public final static class ControllerStorage {
-
-        private final Map<ControllerCoordinate, RpcServiceController> map =
-                new ConcurrentHashMap<ControllerCoordinate, RpcServiceController>();
-
-        public void storeController(
-                final ChannelHandlerContext ctx,
-                final long rpcIdx,
-                final RpcServiceController controller) {
-            checkNotNull(ctx);
-            checkArgument(rpcIdx >= 0);
-            checkNotNull(controller);
-            map.put(new ControllerCoordinate(ctx, rpcIdx), controller);
-        }
-
-        public RpcServiceController removeController(
-                final ChannelHandlerContext ctx,
-                final long rpcIdx) {
-                return map.remove(new ControllerCoordinate(ctx, rpcIdx));
-        }
-
-        public RpcServiceController getController(
-                final ChannelHandlerContext ctx,
-                final long rpcIdx) {
-
-            final RpcServiceController result =
-                    map.get(new ControllerCoordinate(ctx, rpcIdx));
-            return result;
-        }
-    }
-
     public void execute(
             final RemoteExecutionContext dc,
             final ChannelHandlerContext ctx, // XXX Redundant? dc.getCtx or something
             final Object parameter) {
 
 
-        final Runnable runnable = new MethodInvokingRunnable(dc, ctx, parameter);
+
+        final Runnable runnable =
+                new MethodInvokingRunnable(implementation, dc, ctx, parameter, controllerStorage, this);
         try {
             // For some reason not all the invocations
             // that are submitted are actually run.  The ones that are run
@@ -296,55 +278,29 @@ public final class RpcExecutionServiceImpl
     public void startCancel(final ChannelHandlerContext ctx, final long rpcIndex) {
         // XXX Bogus error handling
         controllerStorage.getController(ctx, rpcIndex).startCancel();
+        controllerStorage.removeController(ctx, rpcIndex);
     }
 
-    private class MethodInvokingRunnable implements Runnable {
-
-        private final RemoteExecutionContext dc;
-        private final ChannelHandlerContext ctx;
-        private final Object parameter;
-
-        public MethodInvokingRunnable(RemoteExecutionContext dc, ChannelHandlerContext ctx, Object parameter) {
-            this.dc = dc;
-            this.ctx = ctx;
-            this.parameter = parameter;
-        }
-
-        public void run() {
-
-            final Method method = mmap.get(dc.getMethodSignature());
-
-            final RpcServiceController controller = new RpcServiceControllerImpl(dc);
-
-            controllerStorage.storeController(ctx, dc.getRpcIndex(), controller);
-
-            // For debugging.
-            if (listener != null) {
-                listener.listen(threadPool, null, implementation, null, parameter, null);
-            }
-
-            final RpcCallback<Message> callbackAdapter =
-                    new RpcCallback<Message>() {
-                        public void run(final Message response) {
-                            controller.invokeCancelledCallback();
-                            dc.returnResult(response);
-                        }
-                    };
-
-            try {
-                method.invoke(implementation, controller, parameter, callbackAdapter);
-            }
-            // XXX Throwing Runtime Exceptions is evil.
-            catch (IllegalAccessException ex) {
-                throw new RuntimeException(ex);
-            }
-            catch (IllegalArgumentException ex) {
-                throw new RuntimeException(ex);
-            }
-            catch (InvocationTargetException ex) {
-                throw new RuntimeException(ex);
-            }
-            controllerStorage.removeController(ctx, dc.getRpcIndex());
+    // XXX Why is this public?
+    public void listen(
+            final ExecutorService threadPool,
+            final Object object,
+            final Object implementation,
+            final Object object0,
+            final Object parameter,
+            final Object object1) {
+        // For debugging.
+        if (listener != null) {
+            listener.listen(threadPool, null, implementation, null, parameter, null);
         }
     }
+
+    public Method getMethod(final MethodSignature ms) {
+        return mmap.get(ms);
+    }
+
+    public void storeController(ChannelHandlerContext ctx, long rpcIdx, RpcServiceController controller) {
+        controllerStorage.storeController(ctx, rpcIdx, controller);
+    }
+    // XXX Gjør denne ekstern.
 }

@@ -15,11 +15,6 @@
  */
 package no.rmz.blobee.rpc;
 
-import no.rmz.blobee.rpc.peer.RpcMessageListener;
-import no.rmz.blobee.rpc.server.ExecutionServiceException;
-import no.rmz.blobee.rpc.server.RpcExecutionService;
-import no.rmz.blobee.rpc.server.RpcExecutionServiceImpl;
-import no.rmz.blobee.rpc.client.RpcClient;
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcChannel;
 import com.google.protobuf.RpcController;
@@ -32,6 +27,11 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import no.rmz.blobee.rpc.client.RpcClient;
+import no.rmz.blobee.rpc.peer.RpcMessageListener;
+import no.rmz.blobee.rpc.server.ExecutionServiceException;
+import no.rmz.blobee.rpc.server.RpcExecutionService;
+import no.rmz.blobee.rpc.server.RpcExecutionServiceImpl;
 import no.rmz.blobee.serviceimpls.SampleServerImpl;
 import no.rmz.blobeeprototest.api.proto.Testservice;
 import no.rmz.testtools.Net;
@@ -74,13 +74,14 @@ public final class ControlChannelFailedInvocationTest {
         private final Testservice.RpcResult result =
                 Testservice.RpcResult.newBuilder().setReturnvalue(RETURN_VALUE).build();
 
-
         @Override
         public void invoke(
                 final RpcController controller,
                 final Testservice.RpcParam request,
                 final RpcCallback<Testservice.RpcResult> done) {
             controller.setFailed(FAILED_TEXT);
+            signalFailedSent();
+
             done.run(result);
         }
     }
@@ -93,12 +94,23 @@ public final class ControlChannelFailedInvocationTest {
     };
     private Lock lock;
     private Condition resultReceived;
+    private Condition failedSent;
     private RpcController servingController;
 
     private void signalResultReceived() {
         try {
             lock.lock();
             resultReceived.signal();
+        }
+        finally {
+            lock.unlock();
+        }
+    }
+
+      private void signalFailedSent() {
+        try {
+            lock.lock();
+            failedSent.signal();
         }
         finally {
             lock.unlock();
@@ -118,6 +130,7 @@ public final class ControlChannelFailedInvocationTest {
 
         lock = new ReentrantLock();
         resultReceived = lock.newCondition();
+        failedSent = lock.newCondition();
         port = Net.getFreePort();
 
         final RpcExecutionService executionService;
@@ -129,15 +142,7 @@ public final class ControlChannelFailedInvocationTest {
         final RpcClient client = RpcSetup.newClient(new InetSocketAddress(HOST, port));
         client.addProtobuferRpcInterface(Testservice.RpcService.newReflectiveService(null));
 
-        // XXX This is an abomination,  What is really needed is a
-        //     "server client" implementation that the -server- can use
-        //     when it has to behave as a client, either to call some other
-        //     service or to receive responses. This server-client should
-        //     simply reuse the connection of the server, and not have its
-        //     own connection to a remote server.  That should be it, but
-        //     it's not there yet :-/
 
-        // XXXX this is completely bogus
         RpcSetup.newServer(port, executionService,  rpcMessageListener);
 
         client.start();
@@ -162,20 +167,27 @@ public final class ControlChannelFailedInvocationTest {
 
         final Testservice.RpcService myService = Testservice.RpcService.newStub(clientChannel);
         myService.invoke(clientController, request, callback);
+        log.info("zot");
 
         try {
             lock.lock();
-            log.info("Awaiting result received.");
-            resultReceived.await();
+            log.info("Awaiting failedSent.");
+            failedSent.await();
+            log.info("   Just received failedSent.");
         }
-
         finally {
             lock.unlock();
             log.info("unlocked, test passed");
         }
 
-        verify(callbackResponse).receive(SampleServerImpl.RETURN_VALUE);
+        log.info("yup");
+        verifyZeroInteractions(callbackResponse);
+        log.info("yup");
+        // XXX This may actually fail due to synchronization issues.
         assertTrue(clientController.failed());
+
+        log.info("yap");
         assertEquals(FAILED_TEXT, clientController.errorText());
+        log.info("zap");
     }
 }

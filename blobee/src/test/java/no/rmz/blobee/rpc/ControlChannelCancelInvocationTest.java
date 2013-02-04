@@ -15,11 +15,6 @@
  */
 package no.rmz.blobee.rpc;
 
-import no.rmz.blobee.rpc.peer.RpcMessageListener;
-import no.rmz.blobee.rpc.server.ExecutionServiceException;
-import no.rmz.blobee.rpc.server.RpcExecutionService;
-import no.rmz.blobee.rpc.server.RpcExecutionServiceImpl;
-import no.rmz.blobee.rpc.client.RpcClient;
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcChannel;
 import com.google.protobuf.RpcController;
@@ -32,6 +27,11 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import no.rmz.blobee.rpc.client.RpcClient;
+import no.rmz.blobee.rpc.peer.RpcMessageListener;
+import no.rmz.blobee.rpc.server.ExecutionServiceException;
+import no.rmz.blobee.rpc.server.RpcExecutionService;
+import no.rmz.blobee.rpc.server.RpcExecutionServiceImpl;
 import no.rmz.blobeeprototest.api.proto.Testservice;
 import no.rmz.testtools.Net;
 import no.rmz.testtools.Receiver;
@@ -112,7 +112,7 @@ public final class ControlChannelCancelInvocationTest {
             controller.notifyOnCancel(new RpcCallback<Object>() {
                 public void run(Object parameter) {
                     if (controller.isCanceled()) {
-                        bh.setValue(true);
+                        cancelMessageWasReceived.setValue(true);
                     }
                     signalCondition("service:cancellationReceived", cancelLock, cancellationReceived);
                 }
@@ -121,11 +121,14 @@ public final class ControlChannelCancelInvocationTest {
             signalCondition("service:remoteInvokeStarted", cancelLock, remoteInvokeStarted);
             waitForCondition("service:cancellationSent", cancelLock, cancellationSent);
 
-            controller.setFailed(FAILED_TEXT);
+            // XXX Shouldn't happen!  Will not get through since the
+            //     the invocation is failed at this point.  Should just be
+            //     dropped.
+            //  controller.setFailed(FAILED_TEXT);
             done.run(result);
         }
     }
-    private BooleanHolder bh;
+    private BooleanHolder cancelMessageWasReceived;
 
     public final static class BooleanHolder {
 
@@ -170,8 +173,8 @@ public final class ControlChannelCancelInvocationTest {
             IllegalStateException,
             ExecutionServiceException {
 
-        bh = new BooleanHolder();
-        bh.setValue(false);
+        cancelMessageWasReceived = new BooleanHolder();
+        cancelMessageWasReceived.setValue(false);
 
         // XXX Setting up the locks and conditions
         resultLock = new ReentrantLock();
@@ -244,14 +247,10 @@ public final class ControlChannelCancelInvocationTest {
         clientController.startCancel();
         signalCondition("main:cancellationSent", cancelLock, cancellationSent);
         waitForCondition("main:cancellationReceived", cancelLock, cancellationReceived);
-        waitForCondition("main:resultReceivedCondition", resultLock, resultReceivedCondition);
 
 
-        // Finally checking that all of our assumptions are valid,
-        // and if so pass the test.
-
-        verify(callbackResponse).receive(RETURN_VALUE);
-        assertTrue(bh.value);
-        assertEquals(FAILED_TEXT, clientController.errorText());
+        // Pass the test if we didn't get a callback response.
+        verifyZeroInteractions(callbackResponse);
+        assertTrue(cancelMessageWasReceived.getValue());
     }
 }

@@ -65,11 +65,17 @@ public final class RpcClientImpl implements RpcClient {
             final RemoteExecutionContext dc,
             final Message message) {
         synchronized (invocations) {
+            final long rpcIndex = dc.getRpcIndex();
             final RpcClientSideInvocation invocation =
-                    invocations.get(dc.getRpcIndex());
+                    invocations.get(rpcIndex);
+
             if (invocation == null) {
-                throw new IllegalStateException("Couldn't find call stub for invocation " + dc);
+                log.log(Level.FINEST,
+                        "Attempt to return  nonexistant invocation: "
+                        + rpcIndex + " with message message " + message);
+                return;
             }
+
             // Deliver the result then disable the controller
             // so it can be reused.
             final RpcCallback<Message> done = invocation.getDone();
@@ -89,6 +95,8 @@ public final class RpcClientImpl implements RpcClient {
             invocation.getController().setActive(false);
         }
     }
+
+    
     private final Runnable incomingDispatcher = new Runnable() {
         public void run() {
             while (running) {
@@ -265,6 +273,11 @@ public final class RpcClientImpl implements RpcClient {
         synchronized (invocations) {
             invocation = invocations.get(rpcIndex);
         }
+        if (invocation == null) {
+            log.log(Level.FINEST, "Attempt to fail nonexistant invocation: " + rpcIndex + " with error message " + errorMessage);
+            return;
+        }
+
         checkNotNull(invocation);
         invocation.getController().setFailed(errorMessage);
         deactivateInvocation(rpcIndex);
@@ -276,7 +289,12 @@ public final class RpcClientImpl implements RpcClient {
 
         synchronized (invocations) {
             final RpcClientSideInvocation invocation = invocations.get(rpcIndex);
-            checkNotNull(invocation);
+
+            if (invocation == null) {
+                log.log(Level.FINEST, "Attempt to cancel nonexistant invocation: "
+                        + rpcIndex);
+                return;
+            }
         }
 
         final RpcControl cancelRequest =
