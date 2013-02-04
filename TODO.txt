@@ -4,7 +4,19 @@ MAKE THE BASICS WORK
 o Get a handle on the memory leak that makes the thing
   freak out when it handles large amounts of messags.
 
+    -> Add instrumentation to the Maps, since
+       it's most likely one of them that is the
+       culrprit.  What we're looking for is 
+       covariation in allocations with the 
+       long-lived memory objects.
+
 o Make a pretty client API.
+
+o Generally increase neatness:
+   -> Test coverage.
+   -> Make tests cleaner.  Currently they have a mix
+      of old and new code, and that makes them much less
+      readable than they should be.
 
 o Make some nice examples 
    - Get rid of some of the ugly ones.
