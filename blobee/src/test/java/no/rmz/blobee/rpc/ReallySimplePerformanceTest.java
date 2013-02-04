@@ -23,18 +23,18 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import no.rmz.blobee.rpc.client.RpcClient;
 import no.rmz.blobee.rpc.server.ExecutionServiceException;
 import no.rmz.blobee.rpc.server.RpcServer;
 import no.rmz.blobeeprototest.api.proto.Testservice;
 import no.rmz.blobeeprototest.api.proto.Testservice.RpcResult;
+import no.rmz.maputils.InstrumentedMapRegistry;
 import no.rmz.testtools.Net;
 
 public class ReallySimplePerformanceTest {
 
-    private final static int ROUNDTRIPS = 4000000;
+    private final static int ROUNDTRIPS = 400000;
     private static final Logger log = Logger.getLogger(
             no.rmz.blobee.rpc.RpcPeerInvocationTest.class.getName());
     private final static String HOST = "localhost";
@@ -123,7 +123,6 @@ public class ReallySimplePerformanceTest {
 
 
         latch.await();
-//        latch.await((long) expectedTime, TimeUnit.MILLISECONDS);
         final long endTime = System.currentTimeMillis();
         final long duration = endTime - startTime;
         final double millisPerRoundtrip = (double) duration / (double) ROUNDTRIPS;

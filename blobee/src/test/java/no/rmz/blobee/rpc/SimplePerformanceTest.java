@@ -227,7 +227,7 @@ public class SimplePerformanceTest {
         log.info("Requests that didn't get through all the way: " + hitMap.keySet().toString());
         log.info("Requests that were not transmitted to the wire: " + clientSenderMap.keySet().toString());
         log.info("Requests that did not get through to the server: " + serverReceiverMap.keySet().toString());
-        log.info("Requests that were not invoked by the server: " + serverExecutorMap.keySet().toString());
+        // log.info("Requests that were not invoked by the server: " + serverExecutorMap.keySet().toString());
 
         log.info("count(serverReceiverMap): " + serverReceiverMap.keySet().size());
         log.info("count(clientSenderMap): " + clientSenderMap.keySet().size());

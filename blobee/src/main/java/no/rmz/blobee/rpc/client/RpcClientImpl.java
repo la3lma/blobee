@@ -51,14 +51,21 @@ public final class RpcClientImpl implements RpcClient {
     private final int capacity;
     final BlockingQueue<RpcClientSideInvocation> incoming;
     private volatile boolean running = false;
+
+    // XXX Should this also be a concurrent hash?  Yes.  Also, a lot
+    //     (perhaps all) of the synchronization over invocations
+    //     should be removed.
     private final Map<Long, RpcClientSideInvocation> invocations =
-            new TreeMap<Long, RpcClientSideInvocation>();
+                new TreeMap <Long, RpcClientSideInvocation>();
+            // new HashMap<Long, RpcClientSideInvocation>();
+
     private long nextIndex;
     private Channel channel;
     private final Object mutationMonitor = new Object();
     private final Object runLock = new Object();
     private final static int MAX_CAPACITY_FOR_INPUT_BUFFER = 10000;
     private final MethodSignatureResolver resolver;
+
 
     @Override
     public void returnCall(
@@ -84,19 +91,26 @@ public final class RpcClientImpl implements RpcClient {
         }
     }
 
-    private void deactivateInvocation(final long index) {
+    private void deactivateInvocation(final Long index) {
         synchronized (invocations) {
             final RpcClientSideInvocation invocation =
                     invocations.get(index);
             if (invocation == null) {
                 throw new IllegalStateException("Couldn't find call stub for invocation " + index);
             }
+
+            // XXX Checking that the size decreases
+            final long pre = invocations.keySet().size();
             invocations.remove(index);
+            if (invocations.containsKey(index)) {
+                log.info("Removal of index did not succeed for index " + index);
+            }
             invocation.getController().setActive(false);
+
         }
     }
 
-    
+
     private final Runnable incomingDispatcher = new Runnable() {
         public void run() {
             while (running) {
@@ -120,7 +134,9 @@ public final class RpcClientImpl implements RpcClient {
             }
 
             final Long currentIndex = nextIndex++;
-            invocations.put(currentIndex, invocation);
+            synchronized (invocations) {
+                invocations.put(currentIndex, invocation);
+            }
             final RpcClientController rcci = (RpcClientController) invocation.getController();
 
             rcci.setClientAndIndex(this, currentIndex);
