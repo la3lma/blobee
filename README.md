@@ -30,11 +30,11 @@ feedback from someone else now :-)
 
 * Clone it from github 
 
-      git clone git://github.com/la3lma/blobee.git
+           git clone git://github.com/la3lma/blobee.git
 
 * Compile
 
-      mvn clean install
+           mvn clean install
 
 * Write some code that uses it.   You should  include something like this
    in your pom.xml file.  It will only work if you've compiled the library
