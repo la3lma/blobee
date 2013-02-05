@@ -47,8 +47,8 @@ feedback from someone else now :-)
         </dependency>
 
 *  Write some code.   This is a test program from the  project itself, 
-but it should be able to serve as a template both for writing clients
- and servers.
+   but it should be able to serve as a template both for writing clients
+   and servers.
 
 
              /**
