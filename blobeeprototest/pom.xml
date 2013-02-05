@@ -83,7 +83,7 @@
                                 <exec executable="${basedir}/${protoc.executable}">
                                     <arg value="--java_out=${project.build.directory}/generated-sources" />
                                     <arg value="--proto_path=${basedir}/src/main/protobuf" />
-                                    <arg value="${basedir}/src/main/protobuf/tullball.proto" />
+                                    <arg value="${basedir}/src/main/protobuf/testservice.proto" />
                                 </exec>
                             </tasks>
                             <sourceRoot>${project.build.directory}/generated-sources</sourceRoot>
