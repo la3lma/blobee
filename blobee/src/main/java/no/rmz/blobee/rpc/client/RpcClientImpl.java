@@ -454,7 +454,7 @@ public final class RpcClientImpl implements RpcClient {
                 log.info("about to close stuff");
                 channel.close();
             } catch (Throwable e) {
-                log.log(Level.INFO, "Something went wrong when closing channel:  " + channel, e);
+                log.log(Level.SEVERE, "Something went wrong when closing channel:  " + channel, e);
             }
         }
     }
