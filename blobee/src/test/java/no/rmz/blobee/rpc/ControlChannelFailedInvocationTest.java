@@ -19,21 +19,14 @@ import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcChannel;
 import com.google.protobuf.RpcController;
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.net.InetSocketAddress;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import no.rmz.blobee.rpc.client.RpcClient;
 import no.rmz.blobee.rpc.peer.RpcMessageListener;
-import no.rmz.blobee.rpc.server.ExecutionServiceException;
-import no.rmz.blobee.rpc.server.RpcExecutionService;
-import no.rmz.blobee.rpc.server.RpcExecutionServiceImpl;
 import no.rmz.blobeetestproto.api.proto.Testservice;
-import no.rmz.testtools.Net;
+import no.rmz.testtools.Conditions;
 import no.rmz.testtools.Receiver;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.junit.After;
@@ -88,7 +81,7 @@ public final class ControlChannelFailedInvocationTest {
                 final Testservice.RpcParam request,
                 final RpcCallback<Testservice.RpcResult> done) {
             controller.setFailed(FAILED_TEXT);
-            signalFailedSent();
+            Conditions.signalCondition("failedSent", lock, failedSent);
 
             done.run(result);
         }
@@ -105,27 +98,6 @@ public final class ControlChannelFailedInvocationTest {
     private Condition failedSent;
     private RpcController servingController;
 
-    @Deprecated  // Use Conditions instead
-    private void signalResultReceived() {
-        try {
-            lock.lock();
-            resultReceived.signal();
-        }
-        finally {
-            lock.unlock();
-        }
-    }
-
-    @Deprecated // use Conditions instead.
-    private void signalFailedSent() {
-        try {
-            lock.lock();
-            failedSent.signal();
-        }
-        finally {
-            lock.unlock();
-        }
-    }
 
     @Before
     public void setUp() {
@@ -151,7 +123,7 @@ public final class ControlChannelFailedInvocationTest {
                 new RpcCallback<Testservice.RpcResult>() {
                     public void run(final Testservice.RpcResult response) {
                         callbackResponse.receive(response.getReturnvalue());
-                        signalResultReceived();
+                         Conditions.waitForCondition("resultReceived", lock, resultReceived);
                     }
                 };
 
