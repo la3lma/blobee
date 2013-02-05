@@ -90,15 +90,7 @@ public class SimplePerformanceTest {
 
 
     @Before
-    public void setUp() throws
-            NoSuchMethodException,
-            IllegalAccessException,
-            IllegalArgumentException,
-            InvocationTargetException,
-            IOException,
-            SecurityException,
-            IllegalStateException,
-            ExecutionServiceException {
+    public void setUp() throws IOException  {
 
         port = Net.getFreePort();
 

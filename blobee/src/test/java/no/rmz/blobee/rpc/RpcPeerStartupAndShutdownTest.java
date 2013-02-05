@@ -15,20 +15,12 @@
  */
 package no.rmz.blobee.rpc;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.util.logging.Logger;
-import no.rmz.blobee.rpc.client.RpcClient;
 import no.rmz.blobee.rpc.peer.RpcMessageListener;
-import no.rmz.blobee.rpc.server.RpcServer;
-import no.rmz.blobee.serviceimpls.SampleServerImpl;
 import no.rmz.blobeeproto.api.proto.Rpc;
-import no.rmz.blobeetestproto.api.proto.Testservice;
-import no.rmz.testtools.Net;
 import no.rmz.testtools.Receiver;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -45,37 +37,17 @@ public final class RpcPeerStartupAndShutdownTest {
             Rpc.RpcControl.newBuilder().setMessageType(Rpc.MessageType.HEARTBEAT).build();
     private final static Rpc.RpcControl SHUTDOWN_MESSAGE =
             Rpc.RpcControl.newBuilder().setMessageType(Rpc.MessageType.SHUTDOWN).build();
-    private int port;
 
-    @Before
-    public void setUp() throws IOException {
-        port = Net.getFreePort();
-    }
-    private RpcServer rpcServer;
-    private RpcClient rpcclient;
 
+    private ClientServerFixture csf;
 
     private void startClientAndServer(final RpcMessageListener ml) {
-        rpcServer =
-                RpcSetup.newServer(
-                new InetSocketAddress(HOST, port),
-                ml)
-                .addImplementation(
-                new SampleServerImpl(),
-                Testservice.RpcService.Interface.class)
-                .start();
-
-        rpcclient =
-                RpcSetup
-                .newClient(new InetSocketAddress(HOST, port))
-                .addInterface(Testservice.RpcService.class)
-                .start();
+        csf = new ClientServerFixture(ml);
     }
 
     @After
     public void shutDown() {
-        rpcclient.stop();
-        rpcServer.stop();
+        csf.stop();
     }
     @Mock
     Receiver<Rpc.RpcControl> heartbeatReceiver;
@@ -106,6 +78,7 @@ public final class RpcPeerStartupAndShutdownTest {
                 }
             }
         };
+        
         startClientAndServer(ml);
 
         sleepHalfASec();
