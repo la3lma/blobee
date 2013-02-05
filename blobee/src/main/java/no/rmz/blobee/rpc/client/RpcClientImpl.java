@@ -444,8 +444,7 @@ public final class RpcClientImpl implements RpcClient {
             noLongerRunning.await();
         } catch (InterruptedException ex) {
             throw new RuntimeException(ex); // XXXX
-        }
-        finally {
+        } finally {
             runningLock.unlock();
         }
 
