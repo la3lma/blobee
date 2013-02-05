@@ -23,6 +23,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CountDownLatch;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.rmz.blobee.rpc.client.RpcClient;
 import no.rmz.blobee.rpc.server.ExecutionServiceException;
@@ -125,19 +126,14 @@ public final class ReallySimplePerformanceTest {
      * This is where we set up the server and the client
      * and start them up.
      */
-    public void setUp() throws // XXXX These are way too many exceptions
-            NoSuchMethodException,
-            IllegalAccessException,
-            IllegalArgumentException,
-            InvocationTargetException,
-            IOException,
-            SecurityException,
-            IllegalStateException,
-            ExecutionServiceException {
-
-
-        // First we find a free port
-        port = Net.getFreePort();
+    public void setUp()  {
+        try {
+            // First we find a free port
+            port = Net.getFreePort();
+        }
+        catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
 
         // Then we set up a new server.
         // This is done using a "cascading" style, so the server is
