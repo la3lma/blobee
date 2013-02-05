@@ -19,14 +19,11 @@ import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcChannel;
 import com.google.protobuf.RpcController;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CountDownLatch;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.rmz.blobee.rpc.client.RpcClient;
-import no.rmz.blobee.rpc.server.ExecutionServiceException;
 import no.rmz.blobee.rpc.server.RpcServer;
 import no.rmz.blobeeprototest.api.proto.Testservice;
 import no.rmz.blobeeprototest.api.proto.Testservice.RpcResult;
@@ -40,10 +37,10 @@ import no.rmz.testtools.Net;
  * roundtrip on my laptop), but also to smoke out any memory leaks.
  *
  * The idea is simple: Perform a very simple invocation a lot of
- * times.  At present  100 million times, but it has proven to be
- * very convenient to try lower numbers (10K and 40K are favorites),
- * in particular when smoking out blatant performance and memory
- * leaks.
+ * times.  At present  100K, but it has proven to be
+ * very convenient to try many different numbers (10K and 40K, 100K,  400K
+ * 1M and 100M are favorites)in particular when smoking out blatant
+ * performance and memory leaks.
  */
 public final class ReallySimplePerformanceTest {
 
@@ -55,7 +52,7 @@ public final class ReallySimplePerformanceTest {
     /**
      * The number of iterations we should run during the test.
      */
-    private final static int ROUNDTRIPS = 10000;
+    private final static int ROUNDTRIPS = 1000000;
 
     /**
      * The host where we set up the server.
@@ -137,11 +134,11 @@ public final class ReallySimplePerformanceTest {
 
         // Then we set up a new server.
         // This is done using a "cascading" style, so the server is
-        // actually created by the first line (nyServer),
+        // actually created by the first line (newServer),
         // then one or more service implementations are added
         // (in this case one), and finally the service is started.
         rpcServer =
-                RpcSetup.nyServer( // XXX Reneame this method
+                RpcSetup.newServer(
                     new InetSocketAddress(HOST, port))
                 .addImplementation(
                     new TestService(), // An implementation instance
@@ -234,8 +231,6 @@ public final class ReallySimplePerformanceTest {
                 + " milliseconds per roundtrip.");
         log.info("Latch count "
                 + callbackCounter.getCount());
-
-
     }
 
     /**

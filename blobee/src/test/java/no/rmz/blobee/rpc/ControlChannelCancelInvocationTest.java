@@ -196,7 +196,7 @@ public final class ControlChannelCancelInvocationTest {
         final RpcClient client = RpcSetup.newClient(new InetSocketAddress(HOST, port));
         client.addProtobuferRpcInterface(Testservice.RpcService.newReflectiveService(null));
 
-        RpcSetup.newServer(port, executionService, rpcMessageListener);
+        RpcSetup.deprecatedNewServer(port, executionService, rpcMessageListener);
 
         client.start();
 

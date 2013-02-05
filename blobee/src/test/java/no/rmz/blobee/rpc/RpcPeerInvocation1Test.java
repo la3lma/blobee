@@ -104,7 +104,7 @@ public final class RpcPeerInvocation1Test {
 
         final Service bax = RpcServ.newReflectiveService(null);
         rpcclient.addProtobuferRpcInterface(bax);
-        RpcSetup.newServer(port, executionService, rpcMessageListener);
+        RpcSetup.deprecatedNewServer(port, executionService, rpcMessageListener);
 
         rpcclient.start();
 

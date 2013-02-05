@@ -52,7 +52,7 @@ import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
  */
 public final class RpcSetup {
 
-    public final static int DEFAULT_BUFFER_SIZE = 1000;
+    public final static int DEFAULT_BUFFER_SIZE = 100;
 
 
     /**
@@ -61,22 +61,6 @@ public final class RpcSetup {
     private RpcSetup() {
     }
 
-    public final static class Node {
-
-        final RpcExecutionService executionService;
-        final RpcClientFactory rcf;
-
-        private Node(final RpcExecutionService executor,
-                final RpcClientFactory rcf) {
-            this.executionService = checkNotNull(executor);
-            this.rcf = checkNotNull(rcf);
-        }
-
-        final RpcClient getClient(final Channel channel) {
-            checkNotNull(channel);
-            return rcf.getClientFor(channel);
-        }
-    }
 
     public static RpcClient newClient(
             final InetSocketAddress socketAddress) {
@@ -107,7 +91,8 @@ public final class RpcSetup {
         return rpcClient;
     }
 
-    public static RpcServer newServer(
+    @Deprecated
+    public static RpcServer deprecatedNewServer(
             final InetSocketAddress socket,
             final RpcExecutionService executionService,
             final RpcMessageListener listener) {
@@ -122,24 +107,24 @@ public final class RpcSetup {
         return server;
     }
 
-    // XXX Eventually, stop using this.
-    public static RpcServer newServer(
+    @Deprecated
+    public static RpcServer deprecatedNewServer(
             final int port,
             final RpcExecutionService executionService,
             final RpcMessageListener listener) {
-        return newServer(new InetSocketAddress(port), executionService, listener);
+        return deprecatedNewServer(new InetSocketAddress(port), executionService, listener);
     }
 
-    // XXX This may actually be the version we want!
-    public static RpcServerImpl nyServer(
+
+    public static RpcServerImpl newServer(
             final InetSocketAddress inetSocketAddress,
             final RpcMessageListener rpcMessageListener) {
         checkNotNull(inetSocketAddress);
         return new RpcServerImpl(inetSocketAddress, rpcMessageListener);
     }
 
-     // XXX This may actually be the version we want!
-    public static RpcServerImpl nyServer(
+
+    public static RpcServerImpl newServer(
             final InetSocketAddress inetSocketAddress,
             final RpcMessageListener rpcMessageListener,
             final ExecutionServiceListener esListener) {
@@ -147,10 +132,8 @@ public final class RpcSetup {
         return new RpcServerImpl(inetSocketAddress, rpcMessageListener, esListener);
     }
 
-
-    // XXX This may actually be the version we want!
-    public static RpcServerImpl nyServer(
+    public static RpcServerImpl newServer(
             final InetSocketAddress inetSocketAddress) {
-        return nyServer(inetSocketAddress, null);
+        return newServer(inetSocketAddress, null);
     }
 }

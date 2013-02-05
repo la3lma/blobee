@@ -93,7 +93,7 @@ public final class RpcPeerStartupAndShutdownTest {
         //     a client, but something that I've not abstracted out yet.
         //     Nonetheless, in the present test environment, this should
         //     work.
-        RpcSetup.newServer(port, executor, ml);
+        RpcSetup.deprecatedNewServer(port, executor, ml);
 
         rpcClient.start();
         // Need some time to let the startup transient settle.
@@ -159,7 +159,7 @@ public final class RpcPeerStartupAndShutdownTest {
 
         final RpcClient rpcClient = RpcSetup.newClient(new InetSocketAddress(HOST, port));
 
-        RpcSetup.newServer(port, executor, ml);
+        RpcSetup.deprecatedNewServer(port, executor, ml);
 
         rpcClient.start();
         // Need some time to let the startup transient settle.

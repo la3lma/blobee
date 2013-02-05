@@ -104,7 +104,7 @@ public class SimplePerformanceTest {
 
         targetLatch = new CountDownLatch(ROUNDTRIPS);
         final RpcServer rpcServer =
-                RpcSetup.nyServer(
+                RpcSetup.newServer(
                     new InetSocketAddress(HOST, port),
                     new RpcMessageListener() {
 
