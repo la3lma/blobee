@@ -97,4 +97,9 @@ public final class ConnectingRpcClientImpl implements RpcClient {
         rpcClient.addInvocationListener(listener);
         return this;
     }
+
+    @Override
+    public void stop() {
+        rpcClient.stop();
+    }
 }

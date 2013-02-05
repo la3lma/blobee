@@ -31,6 +31,10 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.rmz.blobee.controllers.RpcClientController;
@@ -47,6 +51,8 @@ import org.jboss.netty.channel.Channel;
 public final class RpcClientImpl implements RpcClient {
 
     private static final Logger log = Logger.getLogger(RpcClientImpl.class.getName());
+
+    private final static int TIME_TO_WAIT_WHEN_QUEUE_IS_EMPTY_IN_MILLIS = 50;
     public static final int MAXIMUM_TCP_PORT_NUMBER = 65535;
     private final int capacity;
     final BlockingQueue<RpcClientSideInvocation> incoming;
@@ -111,17 +117,32 @@ public final class RpcClientImpl implements RpcClient {
     }
 
 
+
     private final Runnable incomingDispatcher = new Runnable() {
         public void run() {
             while (running) {
                 sendFirstAvailableOutgoingInvocation();
             }
+
+          try {
+            runningLock.lock();
+            noLongerRunning.signal();
+          } finally {
+              runningLock.unlock();
+          }
+
         }
     };
 
     private void sendFirstAvailableOutgoingInvocation() {
         try {
-            final RpcClientSideInvocation invocation = incoming.take();
+            final RpcClientSideInvocation invocation =
+                incoming.poll(TIME_TO_WAIT_WHEN_QUEUE_IS_EMPTY_IN_MILLIS,
+                        TimeUnit.MILLISECONDS);
+            // If nothing there, then just return to the busy-waiting loop.
+            if (invocation == null) {
+                return;
+            }
 
             // If the invocation is cancelled already, don't even bother
             // sending it over the wire, just forget about it.
@@ -179,6 +200,9 @@ public final class RpcClientImpl implements RpcClient {
         this(capacity, new ResolverImpl());
     }
 
+    private final Lock runningLock;
+    private final Condition noLongerRunning;
+
     public RpcClientImpl(final int capacity, final MethodSignatureResolver resolver) {
 
         checkArgument(0 < capacity && capacity < MAX_CAPACITY_FOR_INPUT_BUFFER);
@@ -186,6 +210,8 @@ public final class RpcClientImpl implements RpcClient {
         this.incoming =
                 new ArrayBlockingQueue<RpcClientSideInvocation>(capacity);
         this.resolver = checkNotNull(resolver);
+        this.runningLock = new ReentrantLock();
+        this.noLongerRunning = runningLock.newCondition();
     }
 
     public void setChannel(final Channel channel) {
@@ -408,4 +434,20 @@ public final class RpcClientImpl implements RpcClient {
 
         return this;
     }
+
+    @Override
+    public void stop() {
+        running = false;
+
+        try {
+            runningLock.lock();
+            noLongerRunning.await();
+        } catch (InterruptedException ex) {
+            throw new RuntimeException(ex); // XXXX
+        }
+        finally {
+            runningLock.unlock();
+        }
+    }
+
 }

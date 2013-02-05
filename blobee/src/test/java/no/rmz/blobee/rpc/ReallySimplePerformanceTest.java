@@ -54,7 +54,7 @@ public final class ReallySimplePerformanceTest {
     /**
      * The number of iterations we should run during the test.
      */
-    private final static int ROUNDTRIPS = 100000000;
+    private final static int ROUNDTRIPS = 10000;
 
     /**
      * The host where we set up the server.
@@ -76,7 +76,12 @@ public final class ReallySimplePerformanceTest {
     /**
      * The RpcClient that is used to sent messages over the channel.
      */
-    private RpcClient rpcclient;
+    private RpcClient rpcClient;
+
+    /**
+     * The server accepting incoming requests.
+     */
+    private  RpcServer rpcServer;
 
     /**
      * This test is all about simplicity and speed, so we pre-compute both
@@ -96,7 +101,6 @@ public final class ReallySimplePerformanceTest {
      */
     final RpcResult RETURNVALUE =
             Testservice.RpcResult.newBuilder().setReturnvalue(RETURN_VALUE).build();
-
 
 
     /**
@@ -140,7 +144,7 @@ public final class ReallySimplePerformanceTest {
         // actually created by the first line (nyServer),
         // then one or more service implementations are added
         // (in this case one), and finally the service is started.
-        final RpcServer rpcServer =
+        rpcServer =
                 RpcSetup.nyServer( // XXX Reneame this method
                     new InetSocketAddress(HOST, port))
                 .addImplementation(
@@ -153,7 +157,7 @@ public final class ReallySimplePerformanceTest {
         // then we add a service implementation class that is handled by
         // the client, and then we start it. Starting the client will
         // involve connecting to the server at the other end.
-        rpcclient =
+        rpcClient =
                 RpcSetup
                 .newClient(new InetSocketAddress(HOST, port))
                 .addInterface(Testservice.RpcService.class)
@@ -163,7 +167,7 @@ public final class ReallySimplePerformanceTest {
         // invoking the RPC service (this is the way the RPC interface
         // provided by the protoc compiler assumes we will use
         // RPC).
-        clientChannel = rpcclient.newClientRpcChannel();
+        clientChannel = rpcClient.newClientRpcChannel();
     }
 
     /**
@@ -198,7 +202,7 @@ public final class ReallySimplePerformanceTest {
         // ... and let it rip.  Nothing magical here: We create a new controller
         // per invocation(recycling is just too much hassle).
         for (int i = 0; i < ROUNDTRIPS; i++) {
-            final RpcController clientController = rpcclient.newController();
+            final RpcController clientController = rpcClient.newController();
             myService.invoke(clientController, request, callback);
         }
 
@@ -252,6 +256,11 @@ public final class ReallySimplePerformanceTest {
         // XXX This shouldn't be necessary, we should shut down the
         //     server and the client in an orderly fashion and then we should
         //     just quit.
+
+        tst.rpcClient.stop();
+        log.info("Successfully stopped rpc client");
+        // tst.rpcServer.stop();
+
         System.exit(0);
     }
 }

@@ -35,6 +35,8 @@ public interface RpcClient {
 
     RpcClient start();
 
+    void stop();
+
     RpcClient addProtobuferRpcInterface(final Object instance);
 
     RpcClient addInterface(final Class serviceInterface);
