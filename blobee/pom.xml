@@ -52,36 +52,13 @@
         </dependency>
 
 
-         <dependency>
-             <groupId>no.rmz</groupId>
-             <artifactId>blobeetestproto</artifactId>
-             <version>1.0-SNAPSHOT</version>
-             <!-- <scope>test</scope> XXX DEBUGGING -->
-         </dependency>
-
-
-         <dependency>
-             <groupId>no.rmz</groupId>
-             <artifactId>blobeeprototest</artifactId>
-             <version>1.0-SNAPSHOT</version>
-             <!-- <scope>test</scope> --> <!-- For debugging only XXXX -->
-         </dependency>
-
-
-       <!--  If we don't need this we should drop it
         <dependency>
-            <groupId>com.google.inject</groupId>
-            <artifactId>guice</artifactId>
-            <version>${guice.version}</version>
+            <groupId>no.rmz</groupId>
+            <artifactId>blobeeprototest</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>com.google.inject.extensions</groupId>
-            <artifactId>guice-servlet</artifactId>
-            <version>${guice.version}</version>
-            <type>jar</type>
-        </dependency>
-        -->
 
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -97,7 +74,7 @@
     </dependencies>
 
 
-      <build>
+    <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
