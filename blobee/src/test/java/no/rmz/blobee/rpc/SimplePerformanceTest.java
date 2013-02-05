@@ -48,7 +48,7 @@ import org.junit.Test;
 
 public class SimplePerformanceTest {
 
-    final int ROUNDTRIPS = 400000;
+    final int ROUNDTRIPS = 40000;
     final int DELTA = 0;
 
     private static final Logger log = Logger.getLogger(

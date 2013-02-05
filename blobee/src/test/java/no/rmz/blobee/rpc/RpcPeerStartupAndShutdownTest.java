@@ -54,6 +54,7 @@ public final class RpcPeerStartupAndShutdownTest {
     private RpcServer rpcServer;
     private RpcClient rpcclient;
 
+
     private void startClientAndServer(final RpcMessageListener ml) {
         rpcServer =
                 RpcSetup.newServer(
@@ -106,8 +107,6 @@ public final class RpcPeerStartupAndShutdownTest {
             }
         };
         startClientAndServer(ml);
-
-
 
         sleepHalfASec();
         verify(heartbeatReceiver, times(1)).receive(HEARTBEAT_MESSAGE);

@@ -15,12 +15,12 @@
  */
 package no.rmz.blobee.rpc;
 
-import no.rmz.blobee.protobuf.MethodTypeException;
-import no.rmz.blobee.protobuf.TypeExctractor;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
 import java.util.List;
 import java.util.logging.Logger;
+import no.rmz.blobee.protobuf.MethodTypeException;
+import no.rmz.blobee.protobuf.TypeExctractor;
 import no.rmz.blobee.serviceimpls.SampleServerImpl;
 import no.rmz.blobeetestproto.api.proto.Testservice;
 import org.junit.Test;
@@ -51,7 +51,7 @@ public final class TypeExtractorTest {
 
         final String fullName = md.getFullName();
 
-        org.junit.Assert.assertEquals("no.rmz.blobeeprototest.api.proto.RpcService.Invoke", fullName);
+        org.junit.Assert.assertEquals("no.rmz.blobeetestproto.api.proto.RpcService.Invoke", fullName);
         org.junit.Assert.assertTrue(inputType instanceof Testservice.RpcParam);
         org.junit.Assert.assertTrue(outputType instanceof Testservice.RpcResult);
     }
