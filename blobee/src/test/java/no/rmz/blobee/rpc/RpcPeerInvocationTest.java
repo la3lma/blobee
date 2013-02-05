@@ -15,10 +15,6 @@
  */
 package no.rmz.blobee.rpc;
 
-import no.rmz.blobee.rpc.peer.RpcMessageListener;
-import no.rmz.blobee.rpc.server.ExecutionServiceException;
-import no.rmz.blobee.rpc.server.RpcServer;
-import no.rmz.blobee.rpc.client.RpcClient;
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcChannel;
 import com.google.protobuf.RpcController;
@@ -31,6 +27,10 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import no.rmz.blobee.rpc.client.RpcClient;
+import no.rmz.blobee.rpc.peer.RpcMessageListener;
+import no.rmz.blobee.rpc.server.ExecutionServiceException;
+import no.rmz.blobee.rpc.server.RpcServer;
 import no.rmz.blobee.serviceimpls.SampleServerImpl;
 import no.rmz.blobeeprototest.api.proto.Testservice;
 import no.rmz.testtools.Net;
@@ -91,7 +91,6 @@ public final class RpcPeerInvocationTest {
         lock = new ReentrantLock();
         resultReceived = lock.newCondition();
         port = Net.getFreePort();
-
 
         final RpcServer rpcServer =
                 RpcSetup.newServer(
