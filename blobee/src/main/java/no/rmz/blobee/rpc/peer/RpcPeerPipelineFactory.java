@@ -15,12 +15,12 @@
  */
 package no.rmz.blobee.rpc.peer;
 
-import no.rmz.blobee.rpc.client.RpcClientFactory;
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.MessageLite;
 import java.util.WeakHashMap;
 import no.rmz.blobee.protobuf.DynamicProtobufDecoder;
 import no.rmz.blobee.rpc.client.MethodSignatureResolver;
+import no.rmz.blobee.rpc.client.RpcClientFactory;
 import no.rmz.blobee.rpc.server.RpcExecutionService;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import org.jboss.netty.channel.ChannelPipeline;

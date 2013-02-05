@@ -67,6 +67,8 @@ public final class RpcSetup {
                 new RpcExecutionServiceImpl("Client execution service");
 
         // Configure the client.
+        // XXX Use a thread factory to catch throws that are not
+        //     caught by anyone else.
         final ClientBootstrap clientBootstrap = new ClientBootstrap(
                 new NioClientSocketChannelFactory(
                 Executors.newCachedThreadPool(),
