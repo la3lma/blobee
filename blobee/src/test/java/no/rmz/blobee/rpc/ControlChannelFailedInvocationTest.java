@@ -36,6 +36,7 @@ import no.rmz.blobeetestproto.api.proto.Testservice;
 import no.rmz.testtools.Net;
 import no.rmz.testtools.Receiver;
 import org.jboss.netty.channel.ChannelHandlerContext;
+import org.junit.After;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
@@ -59,9 +60,17 @@ public final class ControlChannelFailedInvocationTest {
     private RpcChannel clientChannel;
     private Testservice.RpcParam request = Testservice.RpcParam.newBuilder().build();
     private RpcController clientController;
+    private final static String FAILED_TEXT = "The computation failed";
+    private ClientServerFixture csf;
 
-     private final static String FAILED_TEXT = "The computation failed";
+    private void startClientAndServer(final RpcMessageListener ml) {
+        csf = new ClientServerFixture(new ServiceTestItem(), ml);
+    }
 
+    @After
+    public void shutDown() {
+        csf.stop();
+    }
 
     /**
      * The service instance that we will use to communicate over the controller
@@ -96,6 +105,7 @@ public final class ControlChannelFailedInvocationTest {
     private Condition failedSent;
     private RpcController servingController;
 
+    @Deprecated  // Use Conditions instead
     private void signalResultReceived() {
         try {
             lock.lock();
@@ -106,7 +116,8 @@ public final class ControlChannelFailedInvocationTest {
         }
     }
 
-      private void signalFailedSent() {
+    @Deprecated // use Conditions instead.
+    private void signalFailedSent() {
         try {
             lock.lock();
             failedSent.signal();
@@ -117,38 +128,18 @@ public final class ControlChannelFailedInvocationTest {
     }
 
     @Before
-    public void setUp() throws
-            NoSuchMethodException,
-            IllegalAccessException,
-            IllegalArgumentException,
-            InvocationTargetException,
-            IOException,
-            SecurityException,
-            IllegalStateException,
-            ExecutionServiceException {
+    public void setUp() {
 
         lock = new ReentrantLock();
         resultReceived = lock.newCondition();
         failedSent = lock.newCondition();
-        port = Net.getFreePort();
 
-        final RpcExecutionService executionService;
-        executionService = new RpcExecutionServiceImpl(
-                "Test service for class " + this.getClass().getName(),
-                new ServiceTestItem(),
-                Testservice.RpcService.Interface.class);
+        startClientAndServer(rpcMessageListener);
 
-        final RpcClient client = RpcSetup.newClient(new InetSocketAddress(HOST, port));
-        client.addProtobuferRpcInterface(Testservice.RpcService.newReflectiveService(null));
-
-
-        RpcSetup.deprecatedNewServer(port, executionService,  rpcMessageListener);
-
-        client.start();
-
-        clientChannel = client.newClientRpcChannel();
-        clientController = client.newController();
+        clientChannel = csf.getClient().newClientRpcChannel();
+        clientController = csf.getClient().newController();
     }
+
     @Mock
     Receiver<String> callbackResponse;
 

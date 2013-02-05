@@ -1,17 +1,17 @@
 /**
- * Copyright 2013  Bjørn Remseth (la3lma@gmail.com)
+ * Copyright 2013 Bjørn Remseth (la3lma@gmail.com)
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 package no.rmz.blobee.rpc;
 
@@ -19,23 +19,17 @@ import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcChannel;
 import com.google.protobuf.RpcController;
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.net.InetSocketAddress;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import no.rmz.blobee.rpc.client.RpcClient;
 import no.rmz.blobee.rpc.peer.RpcMessageListener;
-import no.rmz.blobee.rpc.server.ExecutionServiceException;
-import no.rmz.blobee.rpc.server.RpcExecutionService;
-import no.rmz.blobee.rpc.server.RpcExecutionServiceImpl;
 import no.rmz.blobeetestproto.api.proto.Testservice;
-import no.rmz.testtools.Net;
+import no.rmz.testtools.Conditions;
 import no.rmz.testtools.Receiver;
 import org.jboss.netty.channel.ChannelHandlerContext;
+import org.junit.After;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
@@ -49,6 +43,8 @@ import org.mockito.runners.MockitoJUnitRunner;
  * various kinds of messages over it, such as error messages, instructions to
  * halt execution of an ongoing computation etc.
  */
+
+// XXX This test is way way way to complex.
 @RunWith(MockitoJUnitRunner.class)
 public final class ControlChannelCancelInvocationTest {
 
@@ -61,35 +57,15 @@ public final class ControlChannelCancelInvocationTest {
     private Testservice.RpcParam request = Testservice.RpcParam.newBuilder().build();
     private RpcController clientController;
     private final static String FAILED_TEXT = "The computation failed";
+    private ClientServerFixture csf;
 
-
-    private static void waitForCondition(
-            final String description,
-            final Lock lock,
-            final Condition condition) {
-        try {
-            lock.lock();
-            log.log(Level.INFO, "Awaiting condition {0}", description);
-            condition.await();
-            log.log(Level.INFO, "Just finished waiting for condition {0}", description);
-        }
-        catch (InterruptedException ex) {
-            fail("Interrupted: " + ex);
-        }
-        finally {
-            lock.unlock();
-        }
+    private void startClientAndServer(final RpcMessageListener ml) {
+        csf = new ClientServerFixture(new ServiceTestItem(), ml);
     }
 
-    private static void signalCondition(final String description, final Lock lock, final Condition condition) {
-        try {
-            lock.lock();
-            log.log(Level.INFO, "Signalling condition {0}", description);
-            condition.signal();
-        }
-        finally {
-            lock.unlock();
-        }
+    @After
+    public void shutDown() {
+        csf.stop();
     }
 
     /**
@@ -97,7 +73,6 @@ public final class ControlChannelCancelInvocationTest {
      * channel.
      */
     public final class ServiceTestItem extends Testservice.RpcService {
-
 
         private final Testservice.RpcResult result =
                 Testservice.RpcResult.newBuilder().setReturnvalue(RETURN_VALUE).build();
@@ -114,12 +89,12 @@ public final class ControlChannelCancelInvocationTest {
                     if (controller.isCanceled()) {
                         cancelMessageWasReceived.setValue(true);
                     }
-                    signalCondition("service:cancellationReceived", cancelLock, cancellationReceived);
+                    Conditions.signalCondition("service:cancellationReceived", cancelLock, cancellationReceived);
                 }
             });
 
-            signalCondition("service:remoteInvokeStarted", cancelLock, remoteInvokeStarted);
-            waitForCondition("service:cancellationSent", cancelLock, cancellationSent);
+            Conditions.signalCondition("service:remoteInvokeStarted", cancelLock, remoteInvokeStarted);
+            Conditions.waitForCondition("service:cancellationSent", cancelLock, cancellationSent);
 
             // XXX Shouldn't happen!  Will not get through since the
             //     the invocation is failed at this point.  Should just be
@@ -130,6 +105,7 @@ public final class ControlChannelCancelInvocationTest {
     }
     private BooleanHolder cancelMessageWasReceived;
 
+    // XXX Use volatile instead?
     public final static class BooleanHolder {
 
         private boolean value;
@@ -143,17 +119,14 @@ public final class ControlChannelCancelInvocationTest {
         }
     }
 
-
     private final RpcMessageListener rpcMessageListener =
             new RpcMessageListener() {
-        public void receiveMessage(
-                final Object message,
-                final ChannelHandlerContext ctx) {
-            log.log(Level.INFO, "message = {0}", message);
-        }
-    };
-
-
+                public void receiveMessage(
+                        final Object message,
+                        final ChannelHandlerContext ctx) {
+                    log.log(Level.INFO, "message = {0}", message);
+                }
+            };
     private Lock resultLock;
     private Lock cancelLock;
     private Condition resultReceivedCondition;
@@ -163,20 +136,11 @@ public final class ControlChannelCancelInvocationTest {
     private RpcController servingController;
 
     @Before
-    public void setUp() throws
-            NoSuchMethodException,
-            IllegalAccessException,
-            IllegalArgumentException,
-            InvocationTargetException,
-            IOException,
-            SecurityException,
-            IllegalStateException,
-            ExecutionServiceException {
+    public void setUp() {
 
         cancelMessageWasReceived = new BooleanHolder();
         cancelMessageWasReceived.setValue(false);
 
-        // XXX Setting up the locks and conditions
         resultLock = new ReentrantLock();
         resultReceivedCondition = resultLock.newCondition();
 
@@ -185,25 +149,11 @@ public final class ControlChannelCancelInvocationTest {
         cancellationSent = cancelLock.newCondition();
         remoteInvokeStarted = cancelLock.newCondition();
 
-        port = Net.getFreePort();
+        startClientAndServer(rpcMessageListener);
 
-        final RpcExecutionService executionService;
-        executionService = new RpcExecutionServiceImpl(
-                "Test service in class " + this.getClass().getName(),
-                new ServiceTestItem(),
-                Testservice.RpcService.Interface.class);
-
-        final RpcClient client = RpcSetup.newClient(new InetSocketAddress(HOST, port));
-        client.addProtobuferRpcInterface(Testservice.RpcService.newReflectiveService(null));
-
-        RpcSetup.deprecatedNewServer(port, executionService, rpcMessageListener);
-
-        client.start();
-
-        clientChannel = client.newClientRpcChannel();
-        clientController = client.newController();
+        clientChannel = csf.getClient().newClientRpcChannel();
+        clientController = csf.getClient().newController();
     }
-
     @Mock
     Receiver<String> callbackResponse;
 
@@ -215,7 +165,7 @@ public final class ControlChannelCancelInvocationTest {
                 new RpcCallback<Testservice.RpcResult>() {
                     public void run(final Testservice.RpcResult response) {
                         callbackResponse.receive(response.getReturnvalue());
-                        signalCondition(
+                        Conditions.signalCondition(
                                 "resultReceivedCondition",
                                 resultLock,
                                 resultReceivedCondition);
@@ -239,15 +189,13 @@ public final class ControlChannelCancelInvocationTest {
 
         new Thread(testRun).start();
 
-
         // Signal that cancel is sent, then wait for
         // the things to propagate to all the places they need to propagate
         // to.
-        waitForCondition("main:remoteInvokeStarted", cancelLock, remoteInvokeStarted);
+        Conditions.waitForCondition("main:remoteInvokeStarted", cancelLock, remoteInvokeStarted);
         clientController.startCancel();
-        signalCondition("main:cancellationSent", cancelLock, cancellationSent);
-        waitForCondition("main:cancellationReceived", cancelLock, cancellationReceived);
-
+        Conditions.signalCondition("main:cancellationSent", cancelLock, cancellationSent);
+        Conditions.waitForCondition("main:cancellationReceived", cancelLock, cancellationReceived);
 
         // Pass the test if we didn't get a callback response.
         verifyZeroInteractions(callbackResponse);

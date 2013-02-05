@@ -17,6 +17,7 @@ package no.rmz.blobee.rpc;
 
 import java.util.logging.Logger;
 import no.rmz.blobee.rpc.peer.RpcMessageListener;
+import no.rmz.blobee.serviceimpls.SampleServerImpl;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import no.rmz.testtools.Receiver;
 import org.jboss.netty.channel.ChannelHandlerContext;
@@ -42,7 +43,7 @@ public final class RpcPeerStartupAndShutdownTest {
     private ClientServerFixture csf;
 
     private void startClientAndServer(final RpcMessageListener ml) {
-        csf = new ClientServerFixture(ml);
+        csf = new ClientServerFixture(new SampleServerImpl(), ml);
     }
 
     @After
@@ -78,7 +79,7 @@ public final class RpcPeerStartupAndShutdownTest {
                 }
             }
         };
-        
+
         startClientAndServer(ml);
 
         sleepHalfASec();

@@ -27,7 +27,6 @@ import no.rmz.blobee.rpc.peer.RpcPeerPipelineFactory;
 import no.rmz.blobee.rpc.server.ExecutionServiceListener;
 import no.rmz.blobee.rpc.server.RpcExecutionService;
 import no.rmz.blobee.rpc.server.RpcExecutionServiceImpl;
-import no.rmz.blobee.rpc.server.RpcServer;
 import no.rmz.blobee.rpc.server.RpcServerImpl;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
@@ -88,31 +87,6 @@ public final class RpcSetup {
         clientBootstrap.setPipelineFactory(clientPipelineFactory);
         return rpcClient;
     }
-
-    @Deprecated
-    public static RpcServer deprecatedNewServer(
-            final InetSocketAddress socket,
-            final RpcExecutionService executionService,
-            final RpcMessageListener listener) {
-
-        checkNotNull(socket);
-        checkNotNull(executionService);
-        checkNotNull(listener);
-
-        final RpcServer server =
-                new RpcServerImpl(socket, executionService, listener);
-        server.start();
-        return server;
-    }
-
-    @Deprecated
-    public static RpcServer deprecatedNewServer(
-            final int port,
-            final RpcExecutionService executionService,
-            final RpcMessageListener listener) {
-        return deprecatedNewServer(new InetSocketAddress(port), executionService, listener);
-    }
-
 
     public static RpcServerImpl newServer(
             final InetSocketAddress inetSocketAddress,

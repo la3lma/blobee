@@ -15,7 +15,7 @@ public final class ClientServerFixture {
     private final RpcClient rpcclient;
     private final int port;
 
-    public ClientServerFixture(final RpcMessageListener ml) {
+    public ClientServerFixture(final Testservice.RpcService service, final RpcMessageListener ml) {
         try {
             port = Net.getFreePort();
         }
@@ -25,7 +25,7 @@ public final class ClientServerFixture {
         this.rpcServer = RpcSetup
                 .newServer(new InetSocketAddress(HOST, port), ml)
                 .addImplementation(
-                    new SampleServerImpl(),
+                    service,
                     Testservice.RpcService.Interface.class)
                 .start();
         this.rpcclient = RpcSetup.newClient(new InetSocketAddress(HOST, port))
@@ -36,5 +36,9 @@ public final class ClientServerFixture {
     public void stop() {
         rpcclient.stop();
         rpcServer.stop();
+    }
+
+    public RpcClient getClient() {
+        return rpcclient;
     }
 }
