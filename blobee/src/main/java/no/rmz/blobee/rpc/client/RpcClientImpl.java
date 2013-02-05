@@ -448,14 +448,15 @@ public final class RpcClientImpl implements RpcClient {
             runningLock.unlock();
         }
 
-        if (channel.isOpen()) {
+        if (channel.isOpen() && channel.isBound()) {
             try {
                 log.info("about to close stuff");
-                channel.close();
+                /// XXXX
+                // For some reason this fails, and the catch below doesn't work.
+         //       channel.close();
             } catch (Throwable e) {
                 log.log(Level.SEVERE, "Something went wrong when closing channel:  " + channel, e);
             }
         }
     }
-
 }
