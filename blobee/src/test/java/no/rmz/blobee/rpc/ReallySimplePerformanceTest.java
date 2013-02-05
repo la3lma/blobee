@@ -34,7 +34,7 @@ import no.rmz.testtools.Net;
 
 public class ReallySimplePerformanceTest {
 
-    private final static int ROUNDTRIPS = 400000;
+    private final static int ROUNDTRIPS = 100000000;
     private static final Logger log = Logger.getLogger(
             no.rmz.blobee.rpc.RpcPeerInvocationTest.class.getName());
     private final static String HOST = "localhost";
