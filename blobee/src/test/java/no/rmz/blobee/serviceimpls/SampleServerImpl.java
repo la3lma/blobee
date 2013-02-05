@@ -17,9 +17,10 @@ package no.rmz.blobee.serviceimpls;
 
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcController;
-import no.rmz.blobeeprototest.api.proto.Testservice.RpcParam;
-import no.rmz.blobeeprototest.api.proto.Testservice.RpcResult;
-import no.rmz.blobeeprototest.api.proto.Testservice.RpcService;
+import no.rmz.blobeetestproto.api.proto.Testservice.RpcParam;
+import no.rmz.blobeetestproto.api.proto.Testservice.RpcResult;
+import no.rmz.blobeetestproto.api.proto.Testservice.RpcService;
+
 
 public  final class SampleServerImpl extends RpcService {
 

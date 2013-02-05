@@ -32,7 +32,7 @@ import no.rmz.blobee.rpc.peer.RpcMessageListener;
 import no.rmz.blobee.rpc.server.ExecutionServiceException;
 import no.rmz.blobee.rpc.server.RpcServer;
 import no.rmz.blobee.serviceimpls.SampleServerImpl;
-import no.rmz.blobeeprototest.api.proto.Testservice;
+import no.rmz.blobeetestproto.api.proto.Testservice;
 import no.rmz.testtools.Net;
 import no.rmz.testtools.Receiver;
 import org.jboss.netty.channel.ChannelHandlerContext;
@@ -56,6 +56,11 @@ public final class RpcPeerInvocationTest {
     private Testservice.RpcParam request = Testservice.RpcParam.newBuilder().build();
     private RpcController clientController;
 
+
+    private Lock lock;
+    private Condition resultReceived;
+    private RpcController servingController;
+
     RpcMessageListener rpcMessageListener = new RpcMessageListener() {
         public void receiveMessage(
                 final Object message,
@@ -63,9 +68,7 @@ public final class RpcPeerInvocationTest {
             log.log(Level.INFO, "message = {0}", message);
         }
     };
-    private Lock lock;
-    private Condition resultReceived;
-    private RpcController servingController;
+
 
     private void signalResultReceived() {
         try {

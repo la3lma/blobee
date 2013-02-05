@@ -16,14 +16,14 @@
 package no.rmz.blobeetestproto.api.proto;
 option optimize_for = SPEED;
 
-message RpcPar {
+message RpcParam {
 	 optional string parameter = 1;
 }
 
-message RpcRes {
+message RpcResult {
 	 required string returnvalue = 1;
 }
 
-service RpcServ {
-  rpc Invoke (RpcPar) returns (RpcRes);
+service RpcService {
+  rpc Invoke (RpcParam) returns (RpcResult);
 }

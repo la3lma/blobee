@@ -15,40 +15,36 @@
  */
 package no.rmz.blobee.rpc;
 
-import no.rmz.blobee.rpc.client.ConnectingRpcClientImpl;
-import no.rmz.blobee.rpc.client.SingeltonClientFactory;
-import no.rmz.blobee.rpc.peer.RpcMessageListener;
-import no.rmz.blobee.rpc.server.ExecutionServiceListener;
-import no.rmz.blobee.rpc.server.RpcServerImpl;
-import no.rmz.blobee.rpc.server.RpcServer;
-import no.rmz.blobee.rpc.server.RpcExecutionService;
-import no.rmz.blobee.rpc.server.RpcExecutionServiceImpl;
-import no.rmz.blobee.rpc.peer.RpcPeerPipelineFactory;
-import no.rmz.blobee.rpc.client.RpcClientFactory;
-import no.rmz.blobee.rpc.client.RpcClient;
 import static com.google.common.base.Preconditions.checkNotNull;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
+import no.rmz.blobee.rpc.client.ConnectingRpcClientImpl;
+import no.rmz.blobee.rpc.client.RpcClient;
+import no.rmz.blobee.rpc.client.RpcClientFactory;
+import no.rmz.blobee.rpc.client.SingeltonClientFactory;
+import no.rmz.blobee.rpc.peer.RpcMessageListener;
+import no.rmz.blobee.rpc.peer.RpcPeerPipelineFactory;
+import no.rmz.blobee.rpc.server.ExecutionServiceListener;
+import no.rmz.blobee.rpc.server.RpcExecutionService;
+import no.rmz.blobee.rpc.server.RpcExecutionServiceImpl;
+import no.rmz.blobee.rpc.server.RpcServer;
+import no.rmz.blobee.rpc.server.RpcServerImpl;
 import org.jboss.netty.bootstrap.ClientBootstrap;
-import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 
 /**
  * Setting up an RPC endpoint is about doing these three things:
  *
- * o Make a client instance that can be used to send and accept requests. o Make
- * a service instance that can be used to serve and return requests. o Either -
+ * Make a client instance that can be used to send and accept requests. Make
+ * a service instance that can be used to serve and return requests. Either -
  * Either connect to a server accepting incoming connection and use that
- * connection to exchange RPC calls. - Or set up a server accepting incoming
- * connections and use those connections to serve incoming requests.
+ * connection to exchange RPC calls. Alternatively, set up a server
+ * accepting incoming connections and use those connections to
+ * serve incoming requests.
  *
  * So you see, there is a great deal of symmetry here. A client is also a server
- * and a server is also a client. This symmetry is not currently reflected in
- * the way we build the server and client instances, but it should. There should
- * be -very- little difference between the two.
+ * and a server is also a client.
  *
- * Perhaps the main construct should be an "RpcPeer" and then secondarily we
- * should extract either a client or a server depending on our needs?
  */
 public final class RpcSetup {
 

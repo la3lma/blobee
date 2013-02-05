@@ -32,7 +32,7 @@ import no.rmz.blobee.rpc.peer.RpcMessageListener;
 import no.rmz.blobee.rpc.server.ExecutionServiceException;
 import no.rmz.blobee.rpc.server.RpcExecutionService;
 import no.rmz.blobee.rpc.server.RpcExecutionServiceImpl;
-import no.rmz.blobeeprototest.api.proto.Testservice;
+import no.rmz.blobeetestproto.api.proto.Testservice;
 import no.rmz.testtools.Net;
 import no.rmz.testtools.Receiver;
 import org.jboss.netty.channel.ChannelHandlerContext;

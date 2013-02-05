@@ -25,8 +25,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.logging.Logger;
 import no.rmz.blobee.rpc.client.RpcClient;
 import no.rmz.blobee.rpc.server.RpcServer;
-import no.rmz.blobeeprototest.api.proto.Testservice;
-import no.rmz.blobeeprototest.api.proto.Testservice.RpcResult;
+import no.rmz.blobeetestproto.api.proto.Testservice;
+import no.rmz.blobeetestproto.api.proto.Testservice.RpcResult;
 import no.rmz.testtools.Net;
 
 
@@ -239,7 +239,7 @@ public final class ReallySimplePerformanceTest {
      * @param argv
      * @throws Exception
      */
-    public final static void main(final String argv[])  throws Exception {
+    public static void main(final String argv[])  throws Exception {
         final ReallySimplePerformanceTest tst = new ReallySimplePerformanceTest();
         tst.setUp();
         tst.testRpcInvocation();

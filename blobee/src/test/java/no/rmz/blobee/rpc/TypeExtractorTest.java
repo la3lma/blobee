@@ -22,7 +22,7 @@ import com.google.protobuf.Message;
 import java.util.List;
 import java.util.logging.Logger;
 import no.rmz.blobee.serviceimpls.SampleServerImpl;
-import no.rmz.blobeeprototest.api.proto.Testservice;
+import no.rmz.blobeetestproto.api.proto.Testservice;
 import org.junit.Test;
 
 
