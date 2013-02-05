@@ -253,14 +253,7 @@ public final class ReallySimplePerformanceTest {
         tst.setUp();
         tst.testRpcInvocation();
 
-        // XXX This shouldn't be necessary, we should shut down the
-        //     server and the client in an orderly fashion and then we should
-        //     just quit.
-
         tst.rpcClient.stop();
-        log.info("Successfully stopped rpc client");
-        // tst.rpcServer.stop();
-
-        System.exit(0);
+        tst.rpcServer.stop();
     }
 }

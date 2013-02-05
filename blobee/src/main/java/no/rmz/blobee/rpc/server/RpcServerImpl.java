@@ -90,4 +90,8 @@ public final class RpcServerImpl implements RpcServer {
         }
         return this;
     }
+
+    public void stop() {
+        bootstrap.shutdown();
+    }
 }

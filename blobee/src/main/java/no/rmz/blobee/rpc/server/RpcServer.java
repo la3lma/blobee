@@ -20,4 +20,6 @@ public interface RpcServer {
 
     public RpcServer start();
 
+    public void stop();
+
 }
