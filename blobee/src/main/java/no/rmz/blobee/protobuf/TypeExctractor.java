@@ -24,7 +24,7 @@ import java.lang.reflect.Method;
 
 public final class TypeExctractor {
     public static final String GET_RESPONSE_PROTOTYPE_METHODNAME = "getResponsePrototype";
-    public static final String GET_REQUEST_PROTOTYPE_METHODNAME = "getRequestPrototype";
+    public static final String GET_REQUEST_PROTOTYPE_METHODNAME  = "getRequestPrototype";
 
     public static Message getReqestPrototype(final Object instance, final MethodDescriptor md) throws MethodTypeException {
         final Method method = findMethod(instance.getClass(), GET_REQUEST_PROTOTYPE_METHODNAME);
@@ -42,6 +42,7 @@ public final class TypeExctractor {
         return findMethod(clazz.getMethods(), methodName);
     }
 
+    // XXX Linear search should be our last choice, so why is it our first?
     public static Method findMethod(final Method[] methods, final String methodName) {
         checkNotNull(methods);
         checkNotNull(methodName);
@@ -54,7 +55,10 @@ public final class TypeExctractor {
         return null;
     }
 
-    public static Message applyMethodToMethodDescriptor(final Object instance, final Method method, final MethodDescriptor md) throws MethodTypeException {
+    public static Message applyMethodToMethodDescriptor(
+            final Object instance,
+            final Method method,
+            final MethodDescriptor md) throws MethodTypeException {
         checkNotNull(instance);
         checkNotNull(method);
         checkNotNull(md);

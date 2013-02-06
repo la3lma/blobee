@@ -48,12 +48,16 @@ public final class ControlChannelFailedInvocationTest {
 
     private static final Logger log = Logger.getLogger(
             no.rmz.blobee.rpc.ControlChannelFailedInvocationTest.class.getName());
-
     private RpcChannel clientChannel;
     private Testservice.RpcParam request = Testservice.RpcParam.newBuilder().build();
     private RpcController clientController;
     private final static String FAILED_TEXT = "The computation failed";
     private ClientServerFixture csf;
+    private Lock lock;
+    private Condition resultReceived;
+    private Condition failedSent;
+    @Mock
+    private Receiver<String> callbackResponse;
 
     private void startClientAndServer(final RpcMessageListener ml) {
         csf = new ClientServerFixture(new ServiceTestItem(), ml);
@@ -93,9 +97,7 @@ public final class ControlChannelFailedInvocationTest {
             log.log(Level.INFO, "message = {0}", message);
         }
     };
-    private Lock lock;
-    private Condition resultReceived;
-    private Condition failedSent;
+
 
 
     @Before
@@ -111,8 +113,7 @@ public final class ControlChannelFailedInvocationTest {
         clientController = csf.getClient().newController();
     }
 
-    @Mock
-    Receiver<String> callbackResponse;
+
 
     @Test(timeout=10000)
     @SuppressWarnings("WA_AWAIT_NOT_IN_LOOP")

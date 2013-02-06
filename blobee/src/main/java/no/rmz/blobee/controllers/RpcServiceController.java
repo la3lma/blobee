@@ -21,5 +21,4 @@ import com.google.protobuf.RpcController;
 public interface RpcServiceController extends RpcController {
 
     void invokeCancelledCallback();
-
 }
