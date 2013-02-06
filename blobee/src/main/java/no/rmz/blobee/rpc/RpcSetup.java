@@ -47,7 +47,15 @@ import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
  */
 public final class RpcSetup {
 
-    public final static int DEFAULT_BUFFER_SIZE = 100;
+    /**
+     * The default buffer size for the client.  This turns out
+     * to be quite significant for the performance. If this queue
+     * is too small, the queue will stall and performance will suffer.
+     * It seems that 1000 is large enough, but I don't know exactly
+     * what the optimal value is, or even better, if it can be calculated
+     * dynamically at runtime.
+     */
+    public final static int DEFAULT_BUFFER_SIZE = 1000;
 
 
     /**
