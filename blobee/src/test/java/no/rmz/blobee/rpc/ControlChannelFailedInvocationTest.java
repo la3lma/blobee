@@ -96,7 +96,6 @@ public final class ControlChannelFailedInvocationTest {
     private Lock lock;
     private Condition resultReceived;
     private Condition failedSent;
-    private RpcController servingController;
 
 
     @Before
