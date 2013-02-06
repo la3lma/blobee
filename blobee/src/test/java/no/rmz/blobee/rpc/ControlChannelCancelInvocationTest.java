@@ -43,7 +43,6 @@ import org.mockito.runners.MockitoJUnitRunner;
  * various kinds of messages over it, such as error messages, instructions to
  * halt execution of an ongoing computation etc.
  */
-
 // XXX This test is way way way to complex.
 @RunWith(MockitoJUnitRunner.class)
 public final class ControlChannelCancelInvocationTest {
@@ -52,12 +51,12 @@ public final class ControlChannelCancelInvocationTest {
             no.rmz.blobee.rpc.ControlChannelCancelInvocationTest.class.getName());
     private final static String HOST = "localhost";
     public final static String RETURN_VALUE = "Going home";
-    private int port;
     private RpcChannel clientChannel;
     private Testservice.RpcParam request = Testservice.RpcParam.newBuilder().build();
     private RpcController clientController;
     private final static String FAILED_TEXT = "The computation failed";
     private ClientServerFixture csf;
+    private volatile boolean cancelMessageWasReceived;
 
     private void startClientAndServer(final RpcMessageListener ml) {
         csf = new ClientServerFixture(new ServiceTestItem(), ml);
@@ -67,6 +66,7 @@ public final class ControlChannelCancelInvocationTest {
     public void shutDown() {
         csf.stop();
     }
+    volatile boolean zot = false;
 
     /**
      * The service instance that we will use to communicate over the controller
@@ -87,7 +87,7 @@ public final class ControlChannelCancelInvocationTest {
             controller.notifyOnCancel(new RpcCallback<Object>() {
                 public void run(Object parameter) {
                     if (controller.isCanceled()) {
-                        cancelMessageWasReceived.setValue(true);
+                        cancelMessageWasReceived = true;
                     }
                     Conditions.signalCondition("service:cancellationReceived", cancelLock, cancellationReceived);
                 }
@@ -103,22 +103,6 @@ public final class ControlChannelCancelInvocationTest {
             done.run(result);
         }
     }
-    private BooleanHolder cancelMessageWasReceived;
-
-    // XXX Use volatile instead?
-    public final static class BooleanHolder {
-
-        private boolean value;
-
-        public void setValue(final boolean value) {
-            this.value = value;
-        }
-
-        public boolean getValue() {
-            return value;
-        }
-    }
-
     private final RpcMessageListener rpcMessageListener =
             new RpcMessageListener() {
                 public void receiveMessage(
@@ -138,8 +122,7 @@ public final class ControlChannelCancelInvocationTest {
     @Before
     public void setUp() {
 
-        cancelMessageWasReceived = new BooleanHolder();
-        cancelMessageWasReceived.setValue(false);
+        cancelMessageWasReceived = false;
 
         resultLock = new ReentrantLock();
         resultReceivedCondition = resultLock.newCondition();
@@ -199,6 +182,6 @@ public final class ControlChannelCancelInvocationTest {
 
         // Pass the test if we didn't get a callback response.
         verifyZeroInteractions(callbackResponse);
-        assertTrue(cancelMessageWasReceived.getValue());
+        assertTrue(cancelMessageWasReceived);
     }
 }

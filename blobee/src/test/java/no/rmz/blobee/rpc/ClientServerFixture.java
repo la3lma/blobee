@@ -5,17 +5,22 @@ import java.net.InetSocketAddress;
 import no.rmz.blobee.rpc.client.RpcClient;
 import no.rmz.blobee.rpc.peer.RpcMessageListener;
 import no.rmz.blobee.rpc.server.RpcServer;
-import no.rmz.blobee.serviceimpls.SampleServerImpl;
 import no.rmz.blobeetestproto.api.proto.Testservice;
 import no.rmz.testtools.Net;
 
+/**
+ * Sets up a simple server/client fixture that is  useful in a lot of
+ * test scenarios.
+ */
 public final class ClientServerFixture {
     private final static String HOST = "localhost";
     private final RpcServer rpcServer;
     private final RpcClient rpcclient;
     private final int port;
 
-    public ClientServerFixture(final Testservice.RpcService service, final RpcMessageListener ml) {
+    public ClientServerFixture(
+            final Testservice.RpcService service,
+            final RpcMessageListener ml) {
         try {
             port = Net.getFreePort();
         }
