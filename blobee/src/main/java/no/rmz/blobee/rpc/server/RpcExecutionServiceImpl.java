@@ -15,6 +15,7 @@
  */
 package no.rmz.blobee.rpc.server;
 
+import no.rmz.blobee.threads.ErrorLoggingThreadFactory;
 import com.google.common.base.Objects;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -51,7 +52,7 @@ public final class RpcExecutionServiceImpl
     private final static Logger log =
             Logger.getLogger(RpcExecutionServiceImpl.class.getName());
 
-    
+
     /**
      * A thread pool using the EXCEPTION_HANDLER that is used to
      * execute incoming RPC requests.

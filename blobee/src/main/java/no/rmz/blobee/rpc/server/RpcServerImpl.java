@@ -19,14 +19,20 @@ package no.rmz.blobee.rpc.server;
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.Service;
 import java.net.InetSocketAddress;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Logger;
 import no.rmz.blobee.rpc.client.MultiChannelClientFactory;
 import no.rmz.blobee.rpc.peer.RpcMessageListener;
 import no.rmz.blobee.rpc.peer.RpcPeerPipelineFactory;
+import no.rmz.blobee.threads.ErrorLoggingThreadFactory;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 
 public final class RpcServerImpl implements RpcServer {
+
+    private final static Logger log =
+            Logger.getLogger(RpcServerImpl.class.getName());
 
     private final InetSocketAddress socket;
     private final RpcExecutionService executionService;
@@ -59,10 +65,17 @@ public final class RpcServerImpl implements RpcServer {
         this.socket = checkNotNull(socket);
         this.executionService = checkNotNull(executionService);
         this.listener = listener; // XXX Nullable
+
+        final ExecutorService bossExecutor = Executors.newCachedThreadPool(
+                new ErrorLoggingThreadFactory("RpcServerImpl bossExecutor", log));
+
+        final ExecutorService workerExcecutor = Executors.newCachedThreadPool(
+                new ErrorLoggingThreadFactory("RpcServerImpl workerExcecutor", log));
+
         this.bootstrap = new ServerBootstrap(
                 new NioServerSocketChannelFactory(
-                    Executors.newCachedThreadPool(),  // XXX Set up using thread factory
-                    Executors.newCachedThreadPool()));
+                    bossExecutor,
+                    workerExcecutor));
         final String name = "RPC Server at " + socket.toString();
         final RpcPeerPipelineFactory serverChannelPipelineFactory =
                 new RpcPeerPipelineFactory(name, executionService, new MultiChannelClientFactory(), listener);

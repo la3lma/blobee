@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package no.rmz.blobee.rpc.server;
+package no.rmz.blobee.threads;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import java.lang.Thread.UncaughtExceptionHandler;
@@ -52,7 +52,7 @@ public final class ErrorLoggingThreadFactory implements ThreadFactory {
      */
     public ErrorLoggingThreadFactory(final String name, final Logger log) {
 
-        this.name = checkNotNull(name);;
+        this.name = checkNotNull(name);
         this.log = checkNotNull(log);
         this.exceptionHandler = new UncaughtExceptionHandler() {
             public void uncaughtException(final Thread t, final Throwable e) {

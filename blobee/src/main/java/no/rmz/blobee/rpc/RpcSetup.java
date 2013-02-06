@@ -17,13 +17,16 @@ package no.rmz.blobee.rpc;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import java.net.InetSocketAddress;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Logger;
 import no.rmz.blobee.rpc.client.ConnectingRpcClientImpl;
 import no.rmz.blobee.rpc.client.RpcClient;
 import no.rmz.blobee.rpc.client.RpcClientFactory;
 import no.rmz.blobee.rpc.client.SingeltonClientFactory;
 import no.rmz.blobee.rpc.peer.RpcMessageListener;
 import no.rmz.blobee.rpc.peer.RpcPeerPipelineFactory;
+import no.rmz.blobee.threads.ErrorLoggingThreadFactory;
 import no.rmz.blobee.rpc.server.ExecutionServiceListener;
 import no.rmz.blobee.rpc.server.RpcExecutionService;
 import no.rmz.blobee.rpc.server.RpcExecutionServiceImpl;
@@ -46,6 +49,8 @@ import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
  *
  */
 public final class RpcSetup {
+
+    public final static Logger log = Logger.getLogger(RpcSetup.class.getName());
 
     /**
      * The default buffer size for the client.  This turns out
@@ -73,13 +78,19 @@ public final class RpcSetup {
         final RpcExecutionService executor =
                 new RpcExecutionServiceImpl("Client execution service");
 
+        final ExecutorService bossExecutor = Executors.newCachedThreadPool(
+                new ErrorLoggingThreadFactory("RpcClient bossExecutor", log));
+
+        final ExecutorService workerExcecutor = Executors.newCachedThreadPool(
+                new ErrorLoggingThreadFactory("RpcClient workerExcecutor", log));
+
         // Configure the client.
         // XXX Use a thread factory to catch throws that are not
         //     caught by anyone else.
         final ClientBootstrap clientBootstrap = new ClientBootstrap(
                 new NioClientSocketChannelFactory(
-                Executors.newCachedThreadPool(),
-                Executors.newCachedThreadPool()));
+                bossExecutor,
+                workerExcecutor));
 
         final RpcClient rpcClient =
                 new ConnectingRpcClientImpl(clientBootstrap, socketAddress);
