@@ -24,9 +24,8 @@ import org.jboss.netty.channel.Channel;
 
 public final class MultiChannelClientFactory implements RpcClientFactory {
 
-    private final static int DEFAULT_QUEUE_LENGTH = 1; // XXX SHould be larger.
     private final Object monitor = new Object();
-    private Channel channel;
+
     private final MethodSignatureResolver resolver;
     private Map<Channel, RpcClient> channelClientMap;
 

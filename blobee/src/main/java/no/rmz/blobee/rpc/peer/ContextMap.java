@@ -16,7 +16,6 @@
 
 package no.rmz.blobee.rpc.peer;
 
-import no.rmz.blobee.rpc.peer.RemoteExecutionContext;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.Map;

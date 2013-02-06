@@ -2,7 +2,6 @@ package no.rmz.blobee.rpc.server;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import no.rmz.blobee.controllers.RpcServiceController;

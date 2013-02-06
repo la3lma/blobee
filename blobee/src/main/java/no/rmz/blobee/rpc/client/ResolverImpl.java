@@ -23,9 +23,10 @@ import com.google.protobuf.Message;
 import com.google.protobuf.MessageLite;
 import java.util.HashMap;
 import java.util.Map;
-import no.rmz.blobee.rpc.client.MethodSignatureResolver;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
+
+// XXX This is one mean, ugly class.
 
 public final class ResolverImpl implements MethodSignatureResolver{
 
@@ -112,6 +113,4 @@ public final class ResolverImpl implements MethodSignatureResolver{
             return methodDescriptorByMethodSignature.get(signature);
         }
     }
-
-
 }

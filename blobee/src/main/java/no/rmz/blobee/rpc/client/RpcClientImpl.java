@@ -124,13 +124,13 @@ public final class RpcClientImpl implements RpcClient {
                 sendFirstAvailableOutgoingInvocation();
             }
 
-          try {
-            runningLock.lock();
-            noLongerRunning.signal();
-          } finally {
-              runningLock.unlock();
-          }
-
+            try {
+                runningLock.lock();
+                noLongerRunning.signal();
+            }
+            finally {
+                runningLock.unlock();
+            }
         }
     };
 
