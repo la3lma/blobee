@@ -178,7 +178,10 @@ public final class RpcPeerHandler
             }
         }
         catch (RpcPeerHandlerException ex) {
-            Logger.getLogger(RpcPeerHandler.class.getName()).log(Level.SEVERE, null, ex);
+            log.log(Level.SEVERE,
+                      "Caught exception while handling "
+                    + " message, shutting down connection", ex);
+             e.getChannel().close();
         }
     }
 
