@@ -47,35 +47,17 @@ import org.jboss.netty.channel.ChannelHandlerContext;
 public final class RpcExecutionServiceImpl
         implements RpcExecutionService {
 
+
     private final static Logger log =
             Logger.getLogger(RpcExecutionServiceImpl.class.getName());
 
-    /**
-     * An exeption handler that logs exceptions as severe to the
-     * logger.
-     */
-    private final static UncaughtExceptionHandler EXCEPTION_HANDLER =
-            new UncaughtExceptionHandler() {
-                public void uncaughtException(final Thread t, final Throwable e) {
-                    log.log(Level.SEVERE, "Uncaught exception in thrad " + t, e);
-                }
-            };
-
-
+    
     /**
      * A thread pool using the EXCEPTION_HANDLER that is used to
      * execute incoming RPC requests.
      */
     private final ExecutorService threadPool = Executors.newCachedThreadPool(
-            new ThreadFactory() {
-                public Thread newThread(Runnable r) {
-
-                    final Thread thread = new Thread(r, "Executor thread for RpcExecutionServiceImpl");
-                    thread.setUncaughtExceptionHandler(EXCEPTION_HANDLER);
-                    return thread;
-                }
-            });
-
+            new ErrorLoggingThreadFactory("Executor thread for RpcExecutionServiceImpl", log));
 
     private Object implementation;
     private final Map<MethodSignature, Method> mmap;
