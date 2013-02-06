@@ -48,8 +48,7 @@ public final class ControlChannelFailedInvocationTest {
 
     private static final Logger log = Logger.getLogger(
             no.rmz.blobee.rpc.ControlChannelFailedInvocationTest.class.getName());
-    private final static String HOST = "localhost";
-    private int port;
+
     private RpcChannel clientChannel;
     private Testservice.RpcParam request = Testservice.RpcParam.newBuilder().build();
     private RpcController clientController;
@@ -86,7 +85,8 @@ public final class ControlChannelFailedInvocationTest {
             done.run(result);
         }
     }
-    RpcMessageListener rpcMessageListener = new RpcMessageListener() {
+
+    private final RpcMessageListener rpcMessageListener = new RpcMessageListener() {
         public void receiveMessage(
                 final Object message,
                 final ChannelHandlerContext ctx) {
@@ -129,27 +129,13 @@ public final class ControlChannelFailedInvocationTest {
 
         final Testservice.RpcService myService = Testservice.RpcService.newStub(clientChannel);
         myService.invoke(clientController, request, callback);
-        log.info("zot");
 
-        try {
-            lock.lock();
-            log.info("Awaiting failedSent.");
-            failedSent.await();
-            log.info("   Just received failedSent.");
-        }
-        finally {
-            lock.unlock();
-            log.info("unlocked, test passed");
-        }
+        Conditions.waitForCondition("failedSent", lock, failedSent);
 
-        log.info("yup");
         verifyZeroInteractions(callbackResponse);
-        log.info("yup");
+
         // XXX This may actually fail due to synchronization issues.
         assertTrue(clientController.failed());
-
-        log.info("yap");
         assertEquals(FAILED_TEXT, clientController.errorText());
-        log.info("zap");
     }
 }
