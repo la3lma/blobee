@@ -10,6 +10,11 @@ public final class Conditions {
 
     private final static Logger log = Logger.getLogger(Conditions.class.getName());
 
+    /**
+     * Utility class! No public constructor for you!
+     */
+    private Conditions() {}
+
     public static void waitForCondition(final String description, final Lock lock, final Condition condition) {
         try {
             lock.lock();
