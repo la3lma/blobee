@@ -41,7 +41,7 @@ public final class ErrorLoggingThreadFactory implements ThreadFactory {
      */
     final String name;
     /**
-     * An exeption handler that logs exceptions as severe to the logger.
+     * An exception handler that logs exceptions as severe to the logger.
      */
     private final UncaughtExceptionHandler exceptionHandler;
 
@@ -51,9 +51,8 @@ public final class ErrorLoggingThreadFactory implements ThreadFactory {
      * @param log  The log to log exceptions to.
      */
     public ErrorLoggingThreadFactory(final String name, final Logger log) {
-
         this.name = checkNotNull(name);
-        this.log = checkNotNull(log);
+        this.log  = checkNotNull(log);
         this.exceptionHandler = new UncaughtExceptionHandler() {
             public void uncaughtException(final Thread t, final Throwable e) {
                 log.log(Level.SEVERE, "Uncaught exception in thrad " + t, e);
@@ -61,6 +60,7 @@ public final class ErrorLoggingThreadFactory implements ThreadFactory {
         };
     }
 
+    @Override
     public Thread newThread(final Runnable r) {
         checkNotNull(r);
         final Thread thread = new Thread(r, name);

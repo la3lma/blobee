@@ -1,17 +1,17 @@
 /**
- * Copyright 2013  Bjørn Remseth (la3lma@gmail.com)
+ * Copyright 2013 Bjørn Remseth (la3lma@gmail.com)
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 package no.rmz.blobee.rpc.peer;
 
@@ -43,8 +43,6 @@ public final class RpcPeerHandler
 
     private static final Logger log =
             Logger.getLogger(RpcPeerHandler.class.getName());
-
-
     private final DynamicProtobufDecoder protbufDecoder;
     /**
      * Used to listen in to incoming messages. Intended for debugging purposes.
@@ -63,18 +61,14 @@ public final class RpcPeerHandler
      * incoming responses to the callers.
      */
     private final RpcClientFactory rcf;
-
     /**
      * For each ChannelHandlerContext, this map keeps track of the
      * RemoteExecution context being processed.
      */
     private ContextMap contextMap = new ContextMap();
-
     private HeartbeatMonitor heartbeatMonitor;
-
-
     final Map<Channel, Object> lockMap = new WeakHashMap<Channel, Object>();
-
+    private final MethodSignatureResolver clientResolver;
 
     protected RpcPeerHandler(
             final DynamicProtobufDecoder protbufDecoder,
@@ -82,7 +76,7 @@ public final class RpcPeerHandler
             final RpcExecutionService executionService,
             final RpcClientFactory rcf) {
 
-        this.clientResolver = checkNotNull(clientResolver); // XXXX This is where the work starts
+        this.clientResolver = checkNotNull(clientResolver);
         this.protbufDecoder = checkNotNull(protbufDecoder);
         this.executionService = checkNotNull(executionService);
         this.rcf = checkNotNull(rcf);
@@ -106,10 +100,9 @@ public final class RpcPeerHandler
 
     // For clients there will only be only client, but for servers
     // there will (paradoxically :-) be many clients.
-
     private void registerChannel(final Channel channel) {
         checkNotNull(channel);
-        }
+    }
 
     // Stopgap solution to ensure that the client we use is
     // actually the one that is associated with the channel in
@@ -119,11 +112,9 @@ public final class RpcPeerHandler
         return rcf.getClientFor(channel);
     }
 
-
     private void nextMessageIsControl() {
         protbufDecoder.putNextPrototype(Rpc.RpcControl.getDefaultInstance());
     }
-
 
     public void runListener(final ChannelHandlerContext ctx, Object message) {
         synchronized (listenerLock) {
@@ -132,46 +123,62 @@ public final class RpcPeerHandler
             }
         }
     }
+
     @Override
     public void messageReceived(
-            final ChannelHandlerContext ctx, final MessageEvent e) {
+            final ChannelHandlerContext ctx,
+            final MessageEvent e) {
 
-        final Object message = e.getMessage();
+        final Object object = e.getMessage();
+        if (!( object instanceof Message )) {
+            throw new RuntimeException("Unknown type of incoming message in "
+                    + this
+                    + ".  Type of message was "
+                    + object.getClass().getName());
+        }
+
+        final Message message = (Message) object;
 
         // Run listener, if any (only for debugging).
         runListener(ctx, message);
 
-        // Then parse it the regular way.
-        if (message instanceof Rpc.RpcControl) {
+        try {
+            // Then parse it the regular way.
+            if (message instanceof Rpc.RpcControl) {
 
-            final Rpc.RpcControl msg = (Rpc.RpcControl) e.getMessage();
-            final Rpc.MessageType messageType = msg.getMessageType();
+                final Rpc.RpcControl msg = (Rpc.RpcControl) e.getMessage();
+                final Rpc.MessageType messageType = msg.getMessageType();
 
-            switch (messageType) {
-                case HEARTBEAT:
-                    processHeartbeatMessage();
-                    break;
-                case RPC_INVOCATION:
-                    processInvocationMessage(msg, ctx);
-                    break;
-                case RPC_RETURNVALUE:
-                    processReturnValueMessage(msg, ctx);
-                    break;
-                case SHUTDOWN:
-                    processChannelShutdownMessage(ctx);
-                    break;
-                case INVOCATION_FAILED:
-                    processInvocationFailedMessage(ctx.getChannel(), msg);
-                    break;
-                case RPC_CANCEL:
-                    processCancelMessage(msg, ctx);
-                    break;
-                default:
-                    nextMessageIsControl();
-                    log.warning("Unknown type of control message: " + message);
+                switch (messageType) {
+                    case HEARTBEAT:
+                        processHeartbeatMessage();
+                        break;
+                    case RPC_INVOCATION:
+                        processInvocationMessage(msg, ctx);
+                        break;
+                    case RPC_RETURNVALUE:
+                        processReturnValueMessage(msg, ctx);
+                        break;
+                    case SHUTDOWN:
+                        processChannelShutdownMessage(ctx);
+                        break;
+                    case INVOCATION_FAILED:
+                        processInvocationFailedMessage(ctx.getChannel(), msg);
+                        break;
+                    case RPC_CANCEL:
+                        processCancelMessage(msg, ctx);
+                        break;
+                    default:
+                        nextMessageIsControl();
+                        log.warning("Unknown type of control message: " + message);
+                }
+            } else {
+
+                processPayloadMessage(message, ctx);
             }
-        } else {
-            processPayloadMessage(message, ctx);
+        }
+        catch (RpcPeerHandlerException ex) {
+            Logger.getLogger(RpcPeerHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -193,7 +200,8 @@ public final class RpcPeerHandler
         rcf.removeClientFor(ctx.getChannel());
     }
 
-    private MessageLite getPrototypeForMessageClass(final Class theClass) {
+    private MessageLite getPrototypeForMessageClass(final Class theClass)
+            throws RpcPeerHandlerException {
         checkNotNull(theClass);
         try {
             final Method[] methods = theClass.getMethods();
@@ -206,22 +214,18 @@ public final class RpcPeerHandler
             }
         }
         catch (Exception ex) {
-            throw new RuntimeException(ex); // XXX FIXME
+            throw new RpcPeerHandlerException(ex);
         }
-        throw new RuntimeException("Couldn't find getDefaultIntance method for class " + theClass);
+        throw new RpcPeerHandlerException("Couldn't find getDefaultIntance method for class " + theClass);
     }
 
-
     // XXX The executor service should also be a resolver
-    private MessageLite getPrototypeForParameter(final MethodSignature methodSignature) {
+    private MessageLite getPrototypeForParameter(final MethodSignature methodSignature) throws RpcPeerHandlerException {
         checkNotNull(methodSignature);
         final Class parameterType = executionService.getParameterType(methodSignature);
         checkNotNull(parameterType);
         return getPrototypeForMessageClass(parameterType);
     }
-
-
-   private final MethodSignatureResolver clientResolver;  // XXX For the client
 
     private MessageLite getPrototypeForReturnValue(final MethodSignature methodSignature) {
         checkNotNull(methodSignature);
@@ -252,7 +256,6 @@ public final class RpcPeerHandler
                 .write(invocationControl, result);
     }
 
-
     private Object getChannelLock(final Channel channel) {
         synchronized (lockMap) {
             if (lockMap.containsKey(channel)) {
@@ -265,15 +268,15 @@ public final class RpcPeerHandler
         }
     }
 
-
-
-    private void processPayloadMessage(final Object message, final ChannelHandlerContext ctx) throws IllegalStateException {
+    private void processPayloadMessage(
+            final Message message,
+            final ChannelHandlerContext ctx) throws IllegalStateException, RpcPeerHandlerException {
         nextMessageIsControl();
 
         final RemoteExecutionContext dc = contextMap.get(ctx);
 
         if (dc == null) {
-            throw new IllegalStateException("Protocol decoding error 3");
+            throw new RpcPeerHandlerException("Protocol decoding error 3");
         }
 
         if (dc.getDirection() == RpcDirection.INVOKING) {
@@ -282,7 +285,7 @@ public final class RpcPeerHandler
             final Message msg = (Message) message;
             getRpcChannel(ctx.getChannel()).returnCall(dc, msg);
         } else {
-            throw new IllegalStateException("Unknown RpcDirection = " + dc.getDirection());
+            throw new RpcPeerHandlerException("Unknown RpcDirection = " + dc.getDirection());
         }
         contextMap.remove(ctx);
     }
@@ -291,7 +294,7 @@ public final class RpcPeerHandler
             final RpcControl msg,
             final ChannelHandlerContext ctx) {
         nextMessageIsControl();
-        final long   rpcIndex = msg.getRpcIndex();
+        final long rpcIndex = msg.getRpcIndex();
         executionService.startCancel(ctx, rpcIndex);
     }
 
@@ -300,7 +303,7 @@ public final class RpcPeerHandler
         checkNotNull(msg);
         nextMessageIsControl();
         final String errorMessage = msg.getFailed();
-        final long   rpcIndex = msg.getRpcIndex();
+        final long rpcIndex = msg.getRpcIndex();
         getRpcChannel(channel).failInvocation(rpcIndex, errorMessage);
     }
 
@@ -311,7 +314,7 @@ public final class RpcPeerHandler
 
     private void processReturnValueMessage(
             final RpcControl msg,
-            final ChannelHandlerContext ctx) throws IllegalStateException {
+            final ChannelHandlerContext ctx) throws RpcPeerHandlerException {
         final MethodSignature methodSignature = msg.getMethodSignature();
         final long rpcIndex = msg.getRpcIndex();
         final MessageLite prototypeForReturnValue =
@@ -323,14 +326,15 @@ public final class RpcPeerHandler
         //     be null before setting it to anything else than null?
         final RemoteExecutionContext dc = contextMap.get(ctx);
         if (dc != null) {
-            throw new IllegalStateException("Protocol decoding error 1");
+            throw new RpcPeerHandlerException("Could not find RemoteExecutionContext for " + ctx);
         }
         contextMap.put(ctx,
                 new RemoteExecutionContext(this, ctx, methodSignature, rpcIndex,
                 RpcDirection.RETURNING));
     }
 
-    private void processInvocationMessage(final RpcControl msg, final ChannelHandlerContext ctx) throws IllegalStateException {
+    private void processInvocationMessage(final RpcControl msg, final ChannelHandlerContext ctx)
+            throws RpcPeerHandlerException {
         final MethodSignature methodSignature = msg.getMethodSignature();
         final long rpcIndex = msg.getRpcIndex();
         final MessageLite prototypeForParameter =
@@ -339,7 +343,7 @@ public final class RpcPeerHandler
 
         final RemoteExecutionContext dc = contextMap.get(ctx);
         if (dc != null) {
-            throw new IllegalStateException("Protocol decoding error 1");
+            throw new RpcPeerHandlerException("Could not find RemoteExecutionContext for " + ctx);
         }
 
         final RemoteExecutionContext rec = new RemoteExecutionContext(this, ctx,

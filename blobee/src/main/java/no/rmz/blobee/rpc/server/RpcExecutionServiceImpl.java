@@ -15,13 +15,11 @@
  */
 package no.rmz.blobee.rpc.server;
 
-import no.rmz.blobee.threads.ErrorLoggingThreadFactory;
 import com.google.common.base.Objects;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.Descriptors;
-import java.lang.Thread.UncaughtExceptionHandler;
-import java.lang.reflect.InvocationTargetException;
+import com.google.protobuf.Message;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -32,12 +30,12 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.rmz.blobee.controllers.RpcServiceController;
 import no.rmz.blobee.rpc.client.ResolverImpl;
 import no.rmz.blobee.rpc.peer.RemoteExecutionContext;
+import no.rmz.blobee.threads.ErrorLoggingThreadFactory;
 import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
 import org.jboss.netty.channel.ChannelHandlerContext;
 
@@ -101,24 +99,16 @@ public final class RpcExecutionServiceImpl
     @Deprecated
     public RpcExecutionServiceImpl(
             final String name,
-            final Object implementation, final Class... interfaceClasses)
-            throws
-            NoSuchMethodException,
-            IllegalAccessException,
-            IllegalArgumentException,
-            InvocationTargetException,
-            SecurityException,
-            IllegalStateException,
-            ExecutionServiceException {
+            final Object implementation, final Class... interfaceClasses) throws ExecutionServiceException
+            {
         this(name);
         addImplementation(implementation, interfaceClasses);
     }
 
+    @Override
     public void addImplementation(
             final Object implementation,
-            final Class interfaceClasses) throws SecurityException,
-            IllegalStateException, InvocationTargetException, NoSuchMethodException,
-            IllegalAccessException, IllegalArgumentException, ExecutionServiceException {
+            final Class interfaceClasses)  throws ExecutionServiceException {
 
         addImplementation(implementation, new Class[]{interfaceClasses});
     }
@@ -126,7 +116,7 @@ public final class RpcExecutionServiceImpl
 
     public void addImplementation(
             final Object implementation,
-            final Class[] interfaceClasses) throws SecurityException, IllegalStateException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, IllegalArgumentException, ExecutionServiceException {
+            final Class[] interfaceClasses) throws ExecutionServiceException {
         this.implementation = checkNotNull(implementation);
 
         final Collection<Class> ifaces = new HashSet<Class>();
@@ -157,8 +147,14 @@ public final class RpcExecutionServiceImpl
 
 
                 final Descriptors.MethodDescriptor descriptor;
-                descriptor = ServiceAnnotationMapper.getMethodDescriptor(
-                        implementation.getClass(), name);
+                try {
+                    descriptor = ServiceAnnotationMapper.getMethodDescriptor(
+                            implementation.getClass(), name);
+                }
+                catch (Exception ex) {
+                    throw new ExecutionServiceException(ex);
+                }
+
                 final MethodSignature methodSignature =
                         ResolverImpl.getMethodSignatureFromMethodDescriptor(descriptor);
 
@@ -233,12 +229,11 @@ public final class RpcExecutionServiceImpl
         }
     }
 
+    @Override
     public void execute(
             final RemoteExecutionContext dc,
             final ChannelHandlerContext ctx, // XXX Redundant? dc.getCtx or something
-            final Object parameter) {
-
-
+            final Message parameter) {
 
         final Runnable runnable =
                 new MethodInvokingRunnable(implementation, dc, ctx, parameter, controllerStorage, this);
@@ -281,5 +276,4 @@ public final class RpcExecutionServiceImpl
     public void storeController(ChannelHandlerContext ctx, long rpcIdx, RpcServiceController controller) {
         controllerStorage.storeController(ctx, rpcIdx, controller);
     }
-    // XXX Gjør denne ekstern.
 }

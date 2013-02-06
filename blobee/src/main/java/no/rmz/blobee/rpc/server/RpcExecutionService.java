@@ -15,26 +15,30 @@
  */
 package no.rmz.blobee.rpc.server;
 
-import java.lang.reflect.InvocationTargetException;
+import com.google.protobuf.Message;
 import no.rmz.blobee.rpc.peer.RemoteExecutionContext;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import org.jboss.netty.channel.ChannelHandlerContext;
 
 /**
- * A service that is used to
+ * Execute incoming requests for remote procedure executions.
  */
 public interface RpcExecutionService {
 
+    /// XXX Does this method need to be in this interface?
     /**
      * Look Find the return type associated with a method signature.
+     *
      * @param sig The signature
      * @return The return type of a method signature.
      */
     Class getReturnType(final Rpc.MethodSignature sig);
 
+    /// XXX Does this method need to be in this interface?
 
-      /**
+    /**
      * Look Find the parameter type associated with a method signature.
+     *
      * @param sig The signature
      * @return The parameter type of a method signature.
      */
@@ -42,14 +46,16 @@ public interface RpcExecutionService {
 
     /**
      * Execute a method coming in over the wire.
+     *
      * @param dc XXXX
      * @param ctx
-     * @param message  The parameter object.
+     * @param message The parameter object.
      */
-    void execute(RemoteExecutionContext dc, ChannelHandlerContext ctx, Object message);
+    void execute(RemoteExecutionContext dc, ChannelHandlerContext ctx, Message message);
 
     /**
      * Cancel an invocation.
+     *
      * @param ctx
      * @param rpcIndex
      */
@@ -57,19 +63,11 @@ public interface RpcExecutionService {
 
     /**
      * Add an implementation of an interface.
+     *
      * @param implementation The instance implementing the RPC interface.
      * @param interfaceClass The class defining the RPC interface.
-     * @throws SecurityException XXX A complete abominiation.
-     * @throws IllegalStateException
-     * @throws InvocationTargetException
-     * @throws NoSuchMethodException
-     * @throws IllegalAccessException
-     * @throws IllegalArgumentException
-     * @throws ExecutionServiceException
      */
     void addImplementation(
             final Object implementation,
-            final Class interfaceClass)
-            throws SecurityException, IllegalStateException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, IllegalArgumentException, ExecutionServiceException;
-
+            final Class interfaceClass) throws ExecutionServiceException;
 }
