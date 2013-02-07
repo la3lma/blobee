@@ -23,6 +23,12 @@ import org.jboss.netty.channel.Channel;
 
 public final class MessageWireImpl implements MessageWire {
 
+    /**
+     * A constant used when sending heartbeats.
+     */
+    private static final Rpc.RpcControl HEARTBEAT =
+            Rpc.RpcControl.newBuilder().setMessageType(Rpc.MessageType.HEARTBEAT).build();
+
     final Object monitor = new Object();
     private final Channel channel;
 
@@ -89,5 +95,10 @@ public final class MessageWireImpl implements MessageWire {
                 .setMethodSignature(methodSignature)
                 .build();
         write(invocationControl, result);
+    }
+
+
+    public void sendHeartbeat() {
+        write(HEARTBEAT);
     }
 }

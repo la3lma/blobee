@@ -34,4 +34,6 @@ public interface MessageWire {
             final long rpcIndex,
             final Rpc.MethodSignature methodSignature,
             final Message result);
+
+     public void sendHeartbeat();
 }

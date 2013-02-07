@@ -15,9 +15,9 @@
  */
 package no.rmz.blobee.rpc.peer;
 
-import no.rmz.blobee.rpc.peer.wireprotocol.WireFactory;
 import static com.google.common.base.Preconditions.checkNotNull;
-import no.rmz.blobeeproto.api.proto.Rpc;
+import no.rmz.blobee.rpc.peer.wireprotocol.MessageWire;
+import no.rmz.blobee.rpc.peer.wireprotocol.WireFactory;
 import org.jboss.netty.channel.Channel;
 
 /**
@@ -25,20 +25,17 @@ import org.jboss.netty.channel.Channel;
  * the thing in the other end seems to be hard to get hold of.
  */
 public final class HeartbeatMonitor {
-    /**
-     * A constant used when sending heartbeats.
-     */
-    private static final Rpc.RpcControl HEARTBEAT =
-            Rpc.RpcControl.newBuilder().setMessageType(Rpc.MessageType.HEARTBEAT).build();
-    final Channel channel;
+
+    private final MessageWire wire;
 
     public HeartbeatMonitor(final Channel channel) {
-        this.channel = checkNotNull(channel);
+        checkNotNull(channel);
+        this.wire =  WireFactory.getWireForChannel(channel);
         sendHeartbeat();
     }
 
     public void sendHeartbeat() {
-        WireFactory.getWireForChannel(channel).write(HEARTBEAT);
+        wire.sendHeartbeat();
     }
 
     public void receiveHeartbeat() {
