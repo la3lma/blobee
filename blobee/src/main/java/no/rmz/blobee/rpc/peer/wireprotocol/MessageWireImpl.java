@@ -13,35 +13,34 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+
 package no.rmz.blobee.rpc.peer.wireprotocol;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.Message;
-import java.util.Map;
-import java.util.WeakHashMap;
-import java.util.logging.Logger;
 import org.jboss.netty.channel.Channel;
 
-public final class WireFactory {
+public final class MessageWireImpl implements MessageWire {
+    final Object monitor = new Object();
+    private final Channel channel;
 
-    private final static Logger log = Logger.getLogger(WireFactory.class.getName());
-
-    private static final Map<Channel, MessageWire> wireMap = new WeakHashMap<Channel, MessageWire>();
-
-    private WireFactory() {
+    public MessageWireImpl(final Channel channel) {
+        this.channel = checkNotNull(channel);
     }
 
-    public static MessageWire getWireForChannel(final Channel channel) {
-        // XXX Another layer of synchronization first perhaps, to get
-        //     a lock-object that nobody else can do anything (including locking)
-        //     on?
-        synchronized (channel) {
-            MessageWire wire = wireMap.get(channel);
-            if (wire == null) {
-                wire = new MessageWireImpl(channel);
-                wireMap.put(channel, wire);
-            }
-            return wire;
+    public void write(final Message msg1, final Message msg2) {
+        checkNotNull(msg1);
+        checkNotNull(msg2);
+        synchronized (monitor) {
+            channel.write(msg1);
+            channel.write(msg2);
+        }
+    }
+
+    public void write(final Message msg1) {
+        checkNotNull(msg1);
+        synchronized (monitor) {
+            channel.write(msg1);
         }
     }
 }
