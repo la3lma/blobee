@@ -42,6 +42,7 @@ import no.rmz.blobee.controllers.RpcClientControllerImpl;
 import no.rmz.blobee.protobuf.MethodTypeException;
 import no.rmz.blobee.protobuf.TypeExctractor;
 import no.rmz.blobee.rpc.peer.RemoteExecutionContext;
+import no.rmz.blobee.rpc.peer.wireprotocol.MessageWire;
 import no.rmz.blobee.rpc.peer.wireprotocol.WireFactory;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
@@ -63,8 +64,9 @@ public final class RpcClientImpl implements RpcClient {
     //     should be removed.
     private final Map<Long, RpcClientSideInvocation> invocations =
                 new TreeMap <Long, RpcClientSideInvocation>();
-            // new HashMap<Long, RpcClientSideInvocation>();
 
+
+    private MessageWire wire;
     private long nextIndex;
     private Channel channel;
     private final Object mutationMonitor = new Object();
@@ -161,34 +163,7 @@ public final class RpcClientImpl implements RpcClient {
             final RpcClientController rcci = (RpcClientController) invocation.getController();
 
             rcci.setClientAndIndex(this, currentIndex);
-
-            // Then creating the protobuf representation of
-            // the invocation, in preparation of sending it
-            // down the wire.
-
-            final MethodDescriptor md = invocation.getMethod();
-            final String methodName = md.getFullName();
-            final String inputType = md.getInputType().getFullName();
-            final String outputType = md.getOutputType().getFullName();
-
-            final MethodSignature ms = Rpc.MethodSignature.newBuilder()
-                    .setMethodName(methodName)
-                    .setInputType(inputType)
-                    .setOutputType(outputType)
-                    .build();
-
-            final RpcControl invocationControl =
-                    Rpc.RpcControl.newBuilder()
-                    .setMessageType(Rpc.MessageType.RPC_INVOCATION)
-                    .setRpcIndex(currentIndex)
-                    .setMethodSignature(ms)
-                    .build();
-
-            // Then send the invocation down the wire.
-            WireFactory.getWireForChannel(channel)
-                    .write(
-                    invocationControl,
-                    invocation.getRequest());
+            sendInvocation(invocation, currentIndex);
         }
         catch (InterruptedException ex) {
             log.warning("Something went south");
@@ -220,6 +195,7 @@ public final class RpcClientImpl implements RpcClient {
                 throw new IllegalStateException("Can't set channel since channel is already set");
             }
             this.channel = checkNotNull(channel);
+            this.wire  = WireFactory.getWireForChannel(channel);
         }
     }
 
@@ -458,5 +434,49 @@ public final class RpcClientImpl implements RpcClient {
                 log.log(Level.SEVERE, "Something went wrong when closing channel:  " + channel, e);
             }
         }
+    }
+
+    private void sendInvocation(
+            final RpcClientSideInvocation invocation,
+            final Long rpcIndex) {
+        checkNotNull(invocation);
+        checkArgument(rpcIndex >= 0);
+        // Then creating the protobuf representation of
+        // the invocation, in preparation of sending it
+        // down the wire.
+
+        final MethodDescriptor md = invocation.getMethod();
+        final String methodName = md.getFullName();
+        final String inputType = md.getInputType().getFullName();
+        final String outputType = md.getOutputType().getFullName();
+        final Message request = invocation.getRequest();
+        sendInvocationOverTheWire(
+                methodName,
+                inputType, outputType, rpcIndex, request);
+    }
+
+    private  void sendInvocationOverTheWire(
+            final String methodName,
+            final String inputType,
+            final String outputType,
+            final Long rpcIndex,
+            final Message request) {
+        final MethodSignature ms = Rpc.MethodSignature.newBuilder()
+                .setMethodName(methodName)
+                .setInputType(inputType)
+                .setOutputType(outputType)
+                .build();
+
+        final RpcControl invocationControl =
+                Rpc.RpcControl.newBuilder()
+                .setMessageType(Rpc.MessageType.RPC_INVOCATION)
+                .setRpcIndex(rpcIndex)
+                .setMethodSignature(ms)
+                .build();
+
+        // Then send the invocation down the wire.
+        wire.write(
+                invocationControl,
+                request);
     }
 }
