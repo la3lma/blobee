@@ -15,6 +15,7 @@
  */
 package no.rmz.blobee.rpc.peer;
 
+import no.rmz.blobee.rpc.peer.wireprotocol.WireFactory;
 import static com.google.common.base.Preconditions.checkNotNull;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import org.jboss.netty.channel.Channel;

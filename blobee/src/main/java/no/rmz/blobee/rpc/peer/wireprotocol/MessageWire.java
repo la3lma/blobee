@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package no.rmz.blobee.rpc.peer;
+package no.rmz.blobee.rpc.peer.wireprotocol;
 
 import com.google.protobuf.Message;
 

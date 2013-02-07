@@ -42,7 +42,7 @@ import no.rmz.blobee.controllers.RpcClientControllerImpl;
 import no.rmz.blobee.protobuf.MethodTypeException;
 import no.rmz.blobee.protobuf.TypeExctractor;
 import no.rmz.blobee.rpc.peer.RemoteExecutionContext;
-import no.rmz.blobee.rpc.peer.WireFactory;
+import no.rmz.blobee.rpc.peer.wireprotocol.WireFactory;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
 import no.rmz.blobeeproto.api.proto.Rpc.RpcControl;
