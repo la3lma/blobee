@@ -22,6 +22,8 @@ import no.rmz.blobeeproto.api.proto.Rpc;
 import no.rmz.blobeeproto.api.proto.Rpc.RpcControl;
 import org.jboss.netty.channel.Channel;
 
+// XXX The name is now inappropriate, and there should be
+//     a class comment.
 public final class MessageWireImpl implements MessageWire {
 
     /**
@@ -29,7 +31,17 @@ public final class MessageWireImpl implements MessageWire {
      */
     private static final Rpc.RpcControl HEARTBEAT =
             Rpc.RpcControl.newBuilder().setMessageType(Rpc.MessageType.HEARTBEAT).build();
-    final Object monitor = new Object();
+
+    /**
+     * Monitor used to ensure that message sends, both
+     * single and double, are not interleaved with other
+     * writes.
+     */
+    private final Object monitor = new Object();
+
+    /**
+     * The channel we are sending messages over.
+     */
     private final Channel channel;
 
     public MessageWireImpl(final Channel channel) {
@@ -45,10 +57,10 @@ public final class MessageWireImpl implements MessageWire {
         }
     }
 
-    public void write(final Message msg1) {
-        checkNotNull(msg1);
+    private void write(final Message msg ) {
+        checkNotNull(msg);
         synchronized (monitor) {
-            channel.write(msg1);
+            channel.write(msg);
         }
     }
 
@@ -62,12 +74,12 @@ public final class MessageWireImpl implements MessageWire {
             final String inputType,
             final String outputType,
             final Long rpcIndex,
-            final Message request) {
+            final Message rpParameter) {
 
         checkNotNull(methodName);
         checkNotNull(inputType);
         checkNotNull(outputType);
-        checkNotNull(request);
+        checkNotNull(rpParameter);
         checkArgument(rpcIndex >= 0);
 
         final Rpc.MethodSignature ms = Rpc.MethodSignature.newBuilder()
@@ -76,15 +88,14 @@ public final class MessageWireImpl implements MessageWire {
                 .setOutputType(outputType)
                 .build();
 
-        final Rpc.RpcControl invocationControl =
+        final Rpc.RpcControl rpcInvocationMessage =
                 Rpc.RpcControl.newBuilder()
                 .setMessageType(Rpc.MessageType.RPC_INVOCATION)
                 .setRpcIndex(rpcIndex)
                 .setMethodSignature(ms)
                 .build();
 
-        // Then send the invocation down the wire.
-        write(invocationControl, request);
+        write(rpcInvocationMessage, rpParameter);
     }
 
     @Override
@@ -92,14 +103,16 @@ public final class MessageWireImpl implements MessageWire {
             final long rpcIndex,
             final Rpc.MethodSignature methodSignature,
             final Message result) {
-        final Rpc.RpcControl invocationControl =
+
+
+        final Rpc.RpcControl returnValueMessage =
                 Rpc.RpcControl.newBuilder()
                 .setMessageType(Rpc.MessageType.RPC_RETURNVALUE)
                 .setStat(Rpc.StatusCode.OK)
                 .setRpcIndex(rpcIndex)
                 .setMethodSignature(methodSignature)
                 .build();
-        write(invocationControl, result);
+        write(returnValueMessage, result);
     }
 
     public void sendHeartbeat() {
@@ -109,25 +122,25 @@ public final class MessageWireImpl implements MessageWire {
     @Override
     public void sendCancelMessage(long rpcIndex) {
 
-        final RpcControl cancelRequest =
+        final RpcControl cancelMessage =
                 Rpc.RpcControl.newBuilder()
                 .setMessageType(Rpc.MessageType.RPC_CANCEL)
                 .setRpcIndex(rpcIndex)
                 .build();
 
-        sendControlMessage(cancelRequest);
+        sendControlMessage(cancelMessage);
     }
 
     public void sendInvocationFailedMessage(final long rpcIndex, final String reason) {
         checkNotNull(reason);
         checkArgument(rpcIndex >= 0);
 
-        final RpcControl msg = RpcControl.newBuilder()
+        final RpcControl failedMessage = RpcControl.newBuilder()
                 .setMessageType(Rpc.MessageType.INVOCATION_FAILED)
                 .setRpcIndex(rpcIndex)
                 .setFailed(reason)
                 .build();
 
-        sendControlMessage(msg);
+        sendControlMessage(failedMessage);
     }
 }
