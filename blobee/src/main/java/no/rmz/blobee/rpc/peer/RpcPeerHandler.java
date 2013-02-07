@@ -27,7 +27,7 @@ import no.rmz.blobee.protobuf.DynamicProtobufDecoder;
 import no.rmz.blobee.rpc.client.MethodSignatureResolver;
 import no.rmz.blobee.rpc.client.RpcClient;
 import no.rmz.blobee.rpc.client.RpcClientFactory;
-import no.rmz.blobee.rpc.peer.wireprotocol.MessageWire;
+import no.rmz.blobee.rpc.peer.wireprotocol.OutgoingRpcWire;
 import no.rmz.blobee.rpc.peer.wireprotocol.WireFactory;
 import no.rmz.blobee.rpc.server.RpcExecutionService;
 import no.rmz.blobeeproto.api.proto.Rpc;
@@ -239,7 +239,7 @@ public final class RpcPeerHandler
         final long rpcIndex = context.getRpcIndex();
         final MethodSignature methodSignature = context.getMethodSignature();
         final Channel channel = context.getCtx().getChannel();
-        final MessageWire wire = WireFactory.getWireForChannel(channel);
+        final OutgoingRpcWire wire = WireFactory.getWireForChannel(channel);
 
         wire.returnRpcResult(rpcIndex, methodSignature, result);
     }

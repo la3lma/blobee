@@ -42,7 +42,7 @@ import no.rmz.blobee.controllers.RpcClientControllerImpl;
 import no.rmz.blobee.protobuf.MethodTypeException;
 import no.rmz.blobee.protobuf.TypeExctractor;
 import no.rmz.blobee.rpc.peer.RemoteExecutionContext;
-import no.rmz.blobee.rpc.peer.wireprotocol.MessageWire;
+import no.rmz.blobee.rpc.peer.wireprotocol.OutgoingRpcWire;
 import no.rmz.blobee.rpc.peer.wireprotocol.WireFactory;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
@@ -66,7 +66,7 @@ public final class RpcClientImpl implements RpcClient {
                 new TreeMap <Long, RpcClientSideInvocation>();
 
 
-    private MessageWire wire;
+    private OutgoingRpcWire wire;
     private long nextIndex;
     private Channel channel;
     private final Object mutationMonitor = new Object();
@@ -316,7 +316,7 @@ public final class RpcClientImpl implements RpcClient {
         }
 
         wire.sendCancelMessage(rpcIndex);
-        
+
         deactivateInvocation(rpcIndex);
     }
 

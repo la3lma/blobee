@@ -18,7 +18,7 @@ package no.rmz.blobee.rpc.peer.wireprotocol;
 import com.google.protobuf.Message;
 import no.rmz.blobeeproto.api.proto.Rpc;
 
-public interface MessageWire {
+public interface OutgoingRpcWire {
 
     void sendInvocation(
             final String methodName,

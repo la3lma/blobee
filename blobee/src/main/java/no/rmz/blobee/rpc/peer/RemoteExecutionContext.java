@@ -20,7 +20,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.Message;
 import no.rmz.blobee.controllers.RpcServiceController;
 import no.rmz.blobee.controllers.RpcServiceControllerImpl;
-import no.rmz.blobee.rpc.peer.wireprotocol.MessageWire;
+import no.rmz.blobee.rpc.peer.wireprotocol.OutgoingRpcWire;
 import no.rmz.blobee.rpc.peer.wireprotocol.WireFactory;
 import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
 import no.rmz.blobeeproto.api.proto.Rpc.RpcControl;
@@ -35,7 +35,7 @@ public final class RemoteExecutionContext {
     private final ChannelHandlerContext ctx;
     private final RpcDirection direction;
     private final RpcServiceController controller;
-    private final MessageWire wire;
+    private final OutgoingRpcWire wire;
 
     public RemoteExecutionContext(
             final RpcPeerHandler peerHandler,

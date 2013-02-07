@@ -25,8 +25,8 @@ public final class WireFactory {
     private final static Logger log =
             Logger.getLogger(WireFactory.class.getName());
 
-    private static final Map<Channel, MessageWire> wireMap =
-            new WeakHashMap<Channel, MessageWire>();
+    private static final Map<Channel, OutgoingRpcWire> wireMap =
+            new WeakHashMap<Channel, OutgoingRpcWire>();
 
     /**
      * Utility class, no public constructor.
@@ -34,14 +34,14 @@ public final class WireFactory {
     private WireFactory() {
     }
 
-    public static MessageWire getWireForChannel(final Channel channel) {
+    public static OutgoingRpcWire getWireForChannel(final Channel channel) {
         // XXX Another layer of synchronization first perhaps, to get
         //     a lock-object that nobody else can do anything (including locking)
         //     on?
         synchronized (channel) {
-            MessageWire wire = wireMap.get(channel);
+            OutgoingRpcWire wire = wireMap.get(channel);
             if (wire == null) {
-                wire = new MessageWireImpl(channel);
+                wire = new OutgoingRpcWireImpl(channel);
                 wireMap.put(channel, wire);
             }
             return wire;

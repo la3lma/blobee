@@ -24,7 +24,7 @@ import org.jboss.netty.channel.Channel;
 
 // XXX The name is now inappropriate, and there should be
 //     a class comment.
-public final class MessageWireImpl implements MessageWire {
+public final class OutgoingRpcWireImpl implements OutgoingRpcWire {
 
     /**
      * A constant used when sending heartbeats.
@@ -44,7 +44,7 @@ public final class MessageWireImpl implements MessageWire {
      */
     private final Channel channel;
 
-    public MessageWireImpl(final Channel channel) {
+    public OutgoingRpcWireImpl(final Channel channel) {
         this.channel = checkNotNull(channel);
     }
 
@@ -103,7 +103,6 @@ public final class MessageWireImpl implements MessageWire {
             final long rpcIndex,
             final Rpc.MethodSignature methodSignature,
             final Message result) {
-
 
         final Rpc.RpcControl returnValueMessage =
                 Rpc.RpcControl.newBuilder()
