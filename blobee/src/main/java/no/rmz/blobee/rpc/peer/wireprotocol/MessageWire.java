@@ -23,5 +23,4 @@ public interface MessageWire {
     public void write(Message msg1, Message msg2);
 
     public void write(Message msg1);
-
 }

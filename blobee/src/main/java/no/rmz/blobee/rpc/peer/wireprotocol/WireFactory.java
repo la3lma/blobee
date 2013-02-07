@@ -15,8 +15,6 @@
  */
 package no.rmz.blobee.rpc.peer.wireprotocol;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import com.google.protobuf.Message;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Logger;
@@ -24,10 +22,15 @@ import org.jboss.netty.channel.Channel;
 
 public final class WireFactory {
 
-    private final static Logger log = Logger.getLogger(WireFactory.class.getName());
+    private final static Logger log =
+            Logger.getLogger(WireFactory.class.getName());
 
-    private static final Map<Channel, MessageWire> wireMap = new WeakHashMap<Channel, MessageWire>();
+    private static final Map<Channel, MessageWire> wireMap =
+            new WeakHashMap<Channel, MessageWire>();
 
+    /**
+     * Utility class, no public constructor.
+     */
     private WireFactory() {
     }
 
