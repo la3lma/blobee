@@ -20,8 +20,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.Message;
 import no.rmz.blobee.controllers.RpcServiceController;
 import no.rmz.blobee.controllers.RpcServiceControllerImpl;
+import no.rmz.blobee.rpc.peer.wireprotocol.MessageWire;
+import no.rmz.blobee.rpc.peer.wireprotocol.WireFactory;
 import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
 import no.rmz.blobeeproto.api.proto.Rpc.RpcControl;
+import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 
 
@@ -31,7 +34,8 @@ public final class RemoteExecutionContext {
     private final RpcPeerHandler peerHandler;
     private final ChannelHandlerContext ctx;
     private final RpcDirection direction;
-    final RpcServiceController controller;
+    private final RpcServiceController controller;
+    private final MessageWire wire;
 
     public RemoteExecutionContext(
             final RpcPeerHandler peerHandler,
@@ -45,6 +49,9 @@ public final class RemoteExecutionContext {
         this.rpcIndex = checkNotNull(rpcIndex);
         this.direction = checkNotNull(direction);
         this.controller= new RpcServiceControllerImpl(this);
+
+        final Channel channel = this.getCtx().getChannel();
+        this.wire = WireFactory.getWireForChannel(channel);
     }
 
     public RpcDirection getDirection() {
@@ -65,11 +72,6 @@ public final class RemoteExecutionContext {
 
     public ChannelHandlerContext getCtx() {
         return ctx;
-    }
-
-    public void sendControlMessage(final RpcControl msg) {
-        checkNotNull(msg);
-        peerHandler.sendControlMessage(this, msg);
     }
 
     public void startCancel() {

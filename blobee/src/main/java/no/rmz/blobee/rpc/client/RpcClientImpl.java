@@ -315,15 +315,8 @@ public final class RpcClientImpl implements RpcClient {
             }
         }
 
-        final RpcControl cancelRequest =
-                Rpc.RpcControl.newBuilder()
-                .setMessageType(Rpc.MessageType.RPC_CANCEL)
-                .setRpcIndex(rpcIndex)
-                .build();
-
-        WireFactory.getWireForChannel(channel)
-                .write(cancelRequest);
-
+        wire.sendCancelMessage(rpcIndex);
+        
         deactivateInvocation(rpcIndex);
     }
 

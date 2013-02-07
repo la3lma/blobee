@@ -15,7 +15,6 @@
  */
 package no.rmz.blobee.rpc.peer;
 
-import no.rmz.blobee.rpc.peer.wireprotocol.WireFactory;
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.Message;
 import com.google.protobuf.MessageLite;
@@ -29,6 +28,7 @@ import no.rmz.blobee.rpc.client.MethodSignatureResolver;
 import no.rmz.blobee.rpc.client.RpcClient;
 import no.rmz.blobee.rpc.client.RpcClientFactory;
 import no.rmz.blobee.rpc.peer.wireprotocol.MessageWire;
+import no.rmz.blobee.rpc.peer.wireprotocol.WireFactory;
 import no.rmz.blobee.rpc.server.RpcExecutionService;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
@@ -233,14 +233,6 @@ public final class RpcPeerHandler
     private MessageLite getPrototypeForReturnValue(final MethodSignature methodSignature) {
         checkNotNull(methodSignature);
         return clientResolver.getPrototypeForReturnValue(methodSignature);
-    }
-
-    public void sendControlMessage(
-            final RemoteExecutionContext context,
-            final RpcControl control) {
-        final Channel channel = context.getCtx().getChannel();
-        WireFactory.getWireForChannel(channel)
-                .write(control);
     }
 
     public void returnResult(final RemoteExecutionContext context, final Message result) {

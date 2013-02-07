@@ -19,6 +19,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.Message;
 import no.rmz.blobeeproto.api.proto.Rpc;
+import no.rmz.blobeeproto.api.proto.Rpc.RpcControl;
 import org.jboss.netty.channel.Channel;
 
 public final class MessageWireImpl implements MessageWire {
@@ -28,7 +29,6 @@ public final class MessageWireImpl implements MessageWire {
      */
     private static final Rpc.RpcControl HEARTBEAT =
             Rpc.RpcControl.newBuilder().setMessageType(Rpc.MessageType.HEARTBEAT).build();
-
     final Object monitor = new Object();
     private final Channel channel;
 
@@ -50,6 +50,11 @@ public final class MessageWireImpl implements MessageWire {
         synchronized (monitor) {
             channel.write(msg1);
         }
+    }
+
+    private void sendControlMessage(final RpcControl msg) {
+        checkNotNull(channel);
+        write(msg);
     }
 
     public void sendInvocation(
@@ -97,8 +102,32 @@ public final class MessageWireImpl implements MessageWire {
         write(invocationControl, result);
     }
 
-
     public void sendHeartbeat() {
         write(HEARTBEAT);
+    }
+
+    @Override
+    public void sendCancelMessage(long rpcIndex) {
+
+        final RpcControl cancelRequest =
+                Rpc.RpcControl.newBuilder()
+                .setMessageType(Rpc.MessageType.RPC_CANCEL)
+                .setRpcIndex(rpcIndex)
+                .build();
+
+        sendControlMessage(cancelRequest);
+    }
+
+    public void sendInvocationFailedMessage(final long rpcIndex, final String reason) {
+        checkNotNull(reason);
+        checkArgument(rpcIndex >= 0);
+
+        final RpcControl msg = RpcControl.newBuilder()
+                .setMessageType(Rpc.MessageType.INVOCATION_FAILED)
+                .setRpcIndex(rpcIndex)
+                .setFailed(reason)
+                .build();
+
+        sendControlMessage(msg);
     }
 }

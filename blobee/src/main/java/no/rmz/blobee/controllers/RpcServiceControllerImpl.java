@@ -18,6 +18,8 @@ package no.rmz.blobee.controllers;
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.RpcCallback;
 import no.rmz.blobee.rpc.peer.RemoteExecutionContext;
+import no.rmz.blobee.rpc.peer.wireprotocol.MessageWire;
+import no.rmz.blobee.rpc.peer.wireprotocol.WireFactory;
 import no.rmz.blobeeproto.api.proto.Rpc.MessageType;
 import no.rmz.blobeeproto.api.proto.Rpc.RpcControl;
 
@@ -29,9 +31,11 @@ public final class RpcServiceControllerImpl implements RpcServiceController {
     private boolean startCancelInvokedAlready = false;
     private boolean cancelled = false;
     private RpcCallback<Object> callbackOnFailure;
+    private MessageWire wire;
 
     public RpcServiceControllerImpl(final RemoteExecutionContext dc) {
         this.executionContext = checkNotNull(dc);
+        this.wire = WireFactory.getWireForChannel(executionContext.getCtx().getChannel());
     }
 
     @Override
@@ -85,13 +89,8 @@ public final class RpcServiceControllerImpl implements RpcServiceController {
     public void setFailed(final String reason) {
         checkNotNull(reason);
         failed = true;
-        final RpcControl msg = RpcControl.newBuilder()
-                .setMessageType(MessageType.INVOCATION_FAILED)
-                .setRpcIndex(executionContext.getRpcIndex())
-                .setFailed(reason)
-                .build();
-
-        executionContext.sendControlMessage(msg);
+        final long rpcIndex = executionContext.getRpcIndex();
+        wire.sendInvocationFailedMessage(rpcIndex, reason);
     }
 
     @Override
