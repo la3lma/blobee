@@ -173,11 +173,9 @@ public final class RpcPeerHandler
                         log.warning("Unknown type of control message: " + message);
                 }
             } else {
-
                 processPayloadMessage(message, ctx);
             }
-        }
-        catch (RpcPeerHandlerException ex) {
+        } catch (Exception ex) {
             log.log(Level.SEVERE,
                       "Caught exception while handling "
                     + " message, shutting down connection", ex);
@@ -186,7 +184,7 @@ public final class RpcPeerHandler
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) {
+    public void exceptionCaught(final ChannelHandlerContext ctx, final ExceptionEvent e) {
         // Close the connection when an exception is raised.
         log.log(Level.WARNING, "Unexpected exception from downstream.", e.getCause());
         e.getChannel().close();
