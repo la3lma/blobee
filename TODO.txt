@@ -1,28 +1,26 @@
 MAKE THE BASICS WORK
 =====================
 
-o Get a handle on the memory leak that makes the thing
-  freak out when it handles large amounts of messags.
+o Get someone else to use the API and offer feedback.
 
-    -> Add instrumentation to the Maps, since
-       it's most likely one of them that is the
-       culrprit.  What we're looking for is 
-       covariation in allocations with the 
-       long-lived memory objects.
+o Upload to maven central.
 
-o Make a pretty client API.
+o Fix the wire protocol
+   -> Review the protobuffer code.
+   -> Isolate the wire protocol into a few very sharply
+        isolated classes.
+   -> Make a test to see if a single type of message
+         (instead of the two-step method we use today)
+         is comparable in speed with what we do now.
+
 
 o Generally increase neatness:
    -> Test coverage.
-   -> Make tests cleaner.  Currently they have a mix
-      of old and new code, and that makes them much less
-      readable than they should be.
-
-o Make some nice examples 
-   - Get rid of some of the ugly ones.
-
-o Get someone else to use the API and offer feedback.
-
+   -> Comments
+   -> General ugliness
+   -> Inner classes that shouldn't be inner classes.
+   -> Collections of hashes that should be refactored
+        into fewer hashes.
 
 o Make another test that is a bit more complex to 
   make sure the implementation is actually minimally
