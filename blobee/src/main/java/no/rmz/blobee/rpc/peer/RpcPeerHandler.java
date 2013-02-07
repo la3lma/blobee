@@ -28,6 +28,7 @@ import no.rmz.blobee.protobuf.DynamicProtobufDecoder;
 import no.rmz.blobee.rpc.client.MethodSignatureResolver;
 import no.rmz.blobee.rpc.client.RpcClient;
 import no.rmz.blobee.rpc.client.RpcClientFactory;
+import no.rmz.blobee.rpc.peer.wireprotocol.MessageWire;
 import no.rmz.blobee.rpc.server.RpcExecutionService;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
@@ -243,19 +244,12 @@ public final class RpcPeerHandler
     }
 
     public void returnResult(final RemoteExecutionContext context, final Message result) {
-
-        final Rpc.RpcControl invocationControl =
-                Rpc.RpcControl.newBuilder()
-                .setMessageType(Rpc.MessageType.RPC_RETURNVALUE)
-                .setStat(Rpc.StatusCode.OK)
-                .setRpcIndex(context.getRpcIndex())
-                .setMethodSignature(context.getMethodSignature())
-                .build();
-
+        final long rpcIndex = context.getRpcIndex();
+        final MethodSignature methodSignature = context.getMethodSignature();
         final Channel channel = context.getCtx().getChannel();
+        final MessageWire wire = WireFactory.getWireForChannel(channel);
 
-        WireFactory.getWireForChannel(channel)
-                .write(invocationControl, result);
+        wire.returnRpcResult(rpcIndex, methodSignature, result);
     }
 
     private Object getChannelLock(final Channel channel) {

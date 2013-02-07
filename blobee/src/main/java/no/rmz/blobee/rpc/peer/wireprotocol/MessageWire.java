@@ -17,10 +17,9 @@
 package no.rmz.blobee.rpc.peer.wireprotocol;
 
 import com.google.protobuf.Message;
+import no.rmz.blobeeproto.api.proto.Rpc;
 
 public interface MessageWire {
-
-    public void write(Message msg1, Message msg2);
 
     public void write(Message msg1);
 
@@ -30,4 +29,9 @@ public interface MessageWire {
             final String outputType,
             final Long rpcIndex,
             final Message request);
+
+     public void returnRpcResult(
+            final long rpcIndex,
+            final Rpc.MethodSignature methodSignature,
+            final Message result);
 }

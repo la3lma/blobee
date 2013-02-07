@@ -1,19 +1,18 @@
 /**
- * Copyright 2013  Bjørn Remseth (la3lma@gmail.com)
+ * Copyright 2013 Bjørn Remseth (la3lma@gmail.com)
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
-
 package no.rmz.blobee.rpc.peer.wireprotocol;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -23,6 +22,7 @@ import no.rmz.blobeeproto.api.proto.Rpc;
 import org.jboss.netty.channel.Channel;
 
 public final class MessageWireImpl implements MessageWire {
+
     final Object monitor = new Object();
     private final Channel channel;
 
@@ -30,7 +30,7 @@ public final class MessageWireImpl implements MessageWire {
         this.channel = checkNotNull(channel);
     }
 
-    public void write(final Message msg1, final Message msg2) {
+    private void write(final Message msg1, final Message msg2) {
         checkNotNull(msg1);
         checkNotNull(msg2);
         synchronized (monitor) {
@@ -73,6 +73,21 @@ public final class MessageWireImpl implements MessageWire {
                 .build();
 
         // Then send the invocation down the wire.
-       write(invocationControl, request);
+        write(invocationControl, request);
+    }
+
+    @Override
+    public void returnRpcResult(
+            final long rpcIndex,
+            final Rpc.MethodSignature methodSignature,
+            final Message result) {
+        final Rpc.RpcControl invocationControl =
+                Rpc.RpcControl.newBuilder()
+                .setMessageType(Rpc.MessageType.RPC_RETURNVALUE)
+                .setStat(Rpc.StatusCode.OK)
+                .setRpcIndex(rpcIndex)
+                .setMethodSignature(methodSignature)
+                .build();
+        write(invocationControl, result);
     }
 }
