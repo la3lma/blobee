@@ -6,9 +6,14 @@ o Get someone else to use the API and offer feedback.
 o Upload to maven central.
 
 o Fix the wire protocol
-   -> Review the protobuffer code.
+
    -> Isolate the wire protocol into a few very sharply
-        isolated classes.
+        isolated classes.  Presently I'm doing that by bloating
+        the MessageWire/MessageWireImpl interface/class.
+        When that's done, changing the wire protocol should
+        almost (modulo  some RpcPeerHandler changes)
+        be an one-class fix.
+   -> Review the protobuffer code.
    -> Make a test to see if a single type of message
          (instead of the two-step method we use today)
          is comparable in speed with what we do now.

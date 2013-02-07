@@ -23,4 +23,11 @@ public interface MessageWire {
     public void write(Message msg1, Message msg2);
 
     public void write(Message msg1);
+
+    void sendInvocation(
+            final String methodName,
+            final String inputType,
+            final String outputType,
+            final Long rpcIndex,
+            final Message request);
 }

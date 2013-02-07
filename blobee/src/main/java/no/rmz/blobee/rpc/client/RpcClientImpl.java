@@ -450,33 +450,8 @@ public final class RpcClientImpl implements RpcClient {
         final String inputType = md.getInputType().getFullName();
         final String outputType = md.getOutputType().getFullName();
         final Message request = invocation.getRequest();
-        sendInvocationOverTheWire(
+        wire.sendInvocation(
                 methodName,
                 inputType, outputType, rpcIndex, request);
-    }
-
-    private  void sendInvocationOverTheWire(
-            final String methodName,
-            final String inputType,
-            final String outputType,
-            final Long rpcIndex,
-            final Message request) {
-        final MethodSignature ms = Rpc.MethodSignature.newBuilder()
-                .setMethodName(methodName)
-                .setInputType(inputType)
-                .setOutputType(outputType)
-                .build();
-
-        final RpcControl invocationControl =
-                Rpc.RpcControl.newBuilder()
-                .setMessageType(Rpc.MessageType.RPC_INVOCATION)
-                .setRpcIndex(rpcIndex)
-                .setMethodSignature(ms)
-                .build();
-
-        // Then send the invocation down the wire.
-        wire.write(
-                invocationControl,
-                request);
     }
 }

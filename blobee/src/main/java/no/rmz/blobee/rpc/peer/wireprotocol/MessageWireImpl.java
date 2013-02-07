@@ -16,8 +16,10 @@
 
 package no.rmz.blobee.rpc.peer.wireprotocol;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.Message;
+import no.rmz.blobeeproto.api.proto.Rpc;
 import org.jboss.netty.channel.Channel;
 
 public final class MessageWireImpl implements MessageWire {
@@ -42,5 +44,35 @@ public final class MessageWireImpl implements MessageWire {
         synchronized (monitor) {
             channel.write(msg1);
         }
+    }
+
+    public void sendInvocation(
+            final String methodName,
+            final String inputType,
+            final String outputType,
+            final Long rpcIndex,
+            final Message request) {
+
+        checkNotNull(methodName);
+        checkNotNull(inputType);
+        checkNotNull(outputType);
+        checkNotNull(request);
+        checkArgument(rpcIndex >= 0);
+
+        final Rpc.MethodSignature ms = Rpc.MethodSignature.newBuilder()
+                .setMethodName(methodName)
+                .setInputType(inputType)
+                .setOutputType(outputType)
+                .build();
+
+        final Rpc.RpcControl invocationControl =
+                Rpc.RpcControl.newBuilder()
+                .setMessageType(Rpc.MessageType.RPC_INVOCATION)
+                .setRpcIndex(rpcIndex)
+                .setMethodSignature(ms)
+                .build();
+
+        // Then send the invocation down the wire.
+       write(invocationControl, request);
     }
 }
