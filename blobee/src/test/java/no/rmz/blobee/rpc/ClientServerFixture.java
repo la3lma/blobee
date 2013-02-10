@@ -2,9 +2,12 @@ package no.rmz.blobee.rpc;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import no.rmz.blobee.rpc.client.RpcClient;
 import no.rmz.blobee.rpc.peer.RpcMessageListener;
 import no.rmz.blobee.rpc.server.RpcServer;
+import no.rmz.blobee.rpc.server.RpcServerException;
 import no.rmz.blobeetestproto.api.proto.Testservice;
 import no.rmz.testtools.Net;
 
@@ -27,12 +30,17 @@ public final class ClientServerFixture {
         catch (IOException ex) {
             throw new RuntimeException(ex);
         }
-        this.rpcServer = RpcSetup
-                .newServer(new InetSocketAddress(HOST, port), ml)
-                .addImplementation(
-                    service,
-                    Testservice.RpcService.Interface.class)
-                .start();
+        try {
+            this.rpcServer = RpcSetup
+                    .newServer(new InetSocketAddress(HOST, port), ml)
+                    .addImplementation(
+                        service,
+                        Testservice.RpcService.Interface.class)
+                    .start();
+        }
+        catch (RpcServerException ex) {
+            throw new RuntimeException(ex);
+        }
         this.rpcclient = RpcSetup.newClient(new InetSocketAddress(HOST, port))
                 .addInterface(Testservice.RpcService.class)
                 .start();

@@ -20,7 +20,6 @@ import com.google.protobuf.RpcChannel;
 import com.google.protobuf.RpcController;
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -29,8 +28,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.rmz.blobee.rpc.client.RpcClient;
 import no.rmz.blobee.rpc.peer.RpcMessageListener;
-import no.rmz.blobee.rpc.server.ExecutionServiceException;
 import no.rmz.blobee.rpc.server.RpcServer;
+import no.rmz.blobee.rpc.server.RpcServerException;
 import no.rmz.blobee.serviceimpls.SampleServerImpl;
 import no.rmz.blobeetestproto.api.proto.Testservice;
 import no.rmz.testtools.Net;
@@ -81,15 +80,8 @@ public final class RpcPeerInvocationTest {
     }
 
     @Before
-    public void setUp() throws
-            NoSuchMethodException,
-            IllegalAccessException,
-            IllegalArgumentException,
-            InvocationTargetException,
-            IOException,
-            SecurityException,
-            IllegalStateException,
-            ExecutionServiceException {
+    public void setUp()
+           throws RpcServerException, IOException {
 
         lock = new ReentrantLock();
         resultReceived = lock.newCondition();

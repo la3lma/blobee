@@ -69,5 +69,5 @@ public interface RpcExecutionService {
      */
     void addImplementation(
             final Object implementation,
-            final Class interfaceClass) throws ExecutionServiceException;
+            final Class interfaceClass) throws RpcServerException;
 }

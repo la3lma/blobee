@@ -38,6 +38,7 @@ import no.rmz.blobee.rpc.peer.RpcMessageListener;
 import no.rmz.blobee.rpc.server.ExecutionServiceException;
 import no.rmz.blobee.rpc.server.ExecutionServiceListener;
 import no.rmz.blobee.rpc.server.RpcServer;
+import no.rmz.blobee.rpc.server.RpcServerException;
 import no.rmz.blobeetestproto.api.proto.Testservice;
 import no.rmz.blobeetestproto.api.proto.Testservice.RpcResult;
 import no.rmz.testtools.Net;
@@ -90,7 +91,7 @@ public class SimplePerformanceTest {
 
 
     @Before
-    public void setUp() throws IOException  {
+    public void setUp() throws IOException, RpcServerException  {
 
         port = Net.getFreePort();
 

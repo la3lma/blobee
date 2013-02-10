@@ -20,6 +20,7 @@ import com.google.protobuf.Descriptors.MethodDescriptor;
 import com.google.protobuf.Descriptors.ServiceDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public final class ServiceAnnotationMapper {
@@ -32,18 +33,35 @@ public final class ServiceAnnotationMapper {
 
     public static MethodDescriptor getMethodDescriptor(
             final Class serviceInterface,
-            final String methodName) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        checkNotNull(methodName);
-        checkNotNull(serviceInterface);
+            final String methodName) throws RpcServerException   {
+        try {
+            checkNotNull(methodName);
+            checkNotNull(serviceInterface);
 
-        final String rectifiedMethodName = methodName.substring(0, 1).toUpperCase() + // XXX VERY UGLY
-                methodName.substring(1);
+            final String rectifiedMethodName = methodName.substring(0, 1).toUpperCase() + // XXX VERY UGLY
+                    methodName.substring(1);
 
-        final Method getDescriptor = serviceInterface.getMethod("getDescriptor");
-        final ServiceDescriptor serviceDescriptor =
-                (ServiceDescriptor) getDescriptor.invoke(null);
-        final MethodDescriptor methodDesc =
-                serviceDescriptor.findMethodByName(rectifiedMethodName);
-        return methodDesc;
+            final Method getDescriptor = serviceInterface.getMethod("getDescriptor");
+            final ServiceDescriptor serviceDescriptor =
+                    (ServiceDescriptor) getDescriptor.invoke(null);
+            final MethodDescriptor methodDesc =
+                    serviceDescriptor.findMethodByName(rectifiedMethodName);
+            return methodDesc;
+        }
+        catch (IllegalAccessException ex) {
+             throw new RpcServerException(ex);
+        }
+        catch (IllegalArgumentException ex) {
+             throw new RpcServerException(ex);
+        }
+        catch (InvocationTargetException ex) {
+            throw new RpcServerException(ex);
+        }
+        catch (NoSuchMethodException ex) {
+           throw new RpcServerException(ex);
+        }
+        catch (SecurityException ex) {
+           throw new RpcServerException(ex);
+        }
     }
 }

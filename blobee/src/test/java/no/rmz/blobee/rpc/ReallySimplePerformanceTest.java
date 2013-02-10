@@ -25,6 +25,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.logging.Logger;
 import no.rmz.blobee.rpc.client.RpcClient;
 import no.rmz.blobee.rpc.server.RpcServer;
+import no.rmz.blobee.rpc.server.RpcServerException;
 import no.rmz.blobeetestproto.api.proto.Testservice;
 import no.rmz.blobeetestproto.api.proto.Testservice.RpcResult;
 import no.rmz.testtools.Net;
@@ -123,7 +124,7 @@ public final class ReallySimplePerformanceTest {
      * This is where we set up the server and the client
      * and start them up.
      */
-    public void setUp()  {
+    public void setUp() throws RpcServerException  {
         try {
             // First we find a free port
             port = Net.getFreePort();

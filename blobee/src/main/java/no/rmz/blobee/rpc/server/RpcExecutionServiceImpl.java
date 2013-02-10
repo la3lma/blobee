@@ -81,6 +81,7 @@ public final class RpcExecutionServiceImpl
         checkNotNull(sig);
         return pmtypes.get(sig);
     }
+    
     final String name;
 
     public RpcExecutionServiceImpl(final String name) {
@@ -96,19 +97,12 @@ public final class RpcExecutionServiceImpl
         this.listener = listener;
     }
 
-    @Deprecated
-    public RpcExecutionServiceImpl(
-            final String name,
-            final Object implementation, final Class... interfaceClasses) throws ExecutionServiceException
-            {
-        this(name);
-        addImplementation(implementation, interfaceClasses);
-    }
+
 
     @Override
     public void addImplementation(
             final Object implementation,
-            final Class interfaceClasses)  throws ExecutionServiceException {
+            final Class interfaceClasses)   throws RpcServerException {
 
         addImplementation(implementation, new Class[]{interfaceClasses});
     }
@@ -116,7 +110,7 @@ public final class RpcExecutionServiceImpl
 
     public void addImplementation(
             final Object implementation,
-            final Class[] interfaceClasses) throws ExecutionServiceException {
+            final Class[] interfaceClasses) throws RpcServerException {
         this.implementation = checkNotNull(implementation);
 
         final Collection<Class> ifaces = new HashSet<Class>();
@@ -127,7 +121,7 @@ public final class RpcExecutionServiceImpl
 
         for (final Class ic : interfaceClasses) {
             if (implementations.containsKey(ic)) {
-                throw new ExecutionServiceException("Interface " + ic + " already has an implementation");
+                throw new RpcServerException("Interface " + ic + " already has an implementation");
             }
         }
 
@@ -135,7 +129,7 @@ public final class RpcExecutionServiceImpl
         for (final Class iface : interfaceClasses) {
 
             if (!ifaces.contains(iface)) {
-                throw new IllegalArgumentException(
+                throw new RpcServerException(
                         "The implementation " + implementation + "does not implement interface " + iface);
             }
 
@@ -152,7 +146,7 @@ public final class RpcExecutionServiceImpl
                             implementation.getClass(), name);
                 }
                 catch (Exception ex) {
-                    throw new ExecutionServiceException(ex);
+                    throw new RpcServerException(ex);
                 }
 
                 final MethodSignature methodSignature =

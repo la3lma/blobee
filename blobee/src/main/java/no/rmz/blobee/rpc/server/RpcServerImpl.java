@@ -83,8 +83,13 @@ public final class RpcServerImpl implements RpcServer {
         bootstrap.setPipelineFactory(serverChannelPipelineFactory);
     }
 
+
+    /**
+     * Bind to bootstrap socket and start accepting incoming
+     * connections and requests.
+     * @return this
+     */
     public RpcServer start() {
-        // Bind and start to accept incoming connections.
         bootstrap.bind(socket);
         return this;
     }
@@ -96,15 +101,12 @@ public final class RpcServerImpl implements RpcServer {
      * @param iface
      * @return
      */
-    public RpcServer addImplementation(final Service service, final Class iface) {
+    public RpcServer addImplementation(
+            final Service service,
+            final Class iface) throws RpcServerException {
         checkNotNull(service);
         checkNotNull(iface);
-        try {
-            executionService.addImplementation(service, iface);
-        }
-        catch (Exception ex) {
-            throw new RuntimeException(ex); // XXX
-        }
+        executionService.addImplementation(service, iface);
         return this;
     }
 
