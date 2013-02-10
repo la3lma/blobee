@@ -1,6 +1,5 @@
 package no.rmz.blobee.rpc.server;
 import static com.google.common.base.Preconditions.checkNotNull;
-
 import com.google.protobuf.Message;
 import com.google.protobuf.RpcCallback;
 import java.lang.reflect.InvocationTargetException;
@@ -16,10 +15,16 @@ final class MethodInvokingRunnable implements Runnable {
     private final RemoteExecutionContext dc;
     private final ChannelHandlerContext ctx;
     private final Object parameter;
-    private final RpcExecutionServiceImpl executor; // XXX Impl, not interface!!!
-    // XXX Impl, not interface!!!
+    private final RpcExecutionServiceImpl executor;
 
-    public MethodInvokingRunnable(final Object implementation, final RemoteExecutionContext dc, final ChannelHandlerContext ctx, final Object parameter, final ControllerStorage ctStor, final RpcExecutionServiceImpl executor) {
+
+    public MethodInvokingRunnable(
+            final Object implementation,
+            final RemoteExecutionContext dc,
+            final ChannelHandlerContext ctx,
+            final Object parameter,
+            final ControllerStorage ctStor,
+            final RpcExecutionServiceImpl executor) {
         this.implementation = checkNotNull(implementation);
         this.dc = checkNotNull(dc);
         this.ctx = checkNotNull(ctx);
@@ -50,8 +55,9 @@ final class MethodInvokingRunnable implements Runnable {
         }
         catch (InvocationTargetException ex) {
             throw new RuntimeException(ex);
+        } finally {
+            executor.removeController(ctx, dc.getRpcIndex());
         }
-        executor.removeController(ctx, dc.getRpcIndex());
     }
 
 }
