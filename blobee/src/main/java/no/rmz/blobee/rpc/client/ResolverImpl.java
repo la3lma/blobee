@@ -25,52 +25,12 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
 
-// XXX This is one mean, ugly class.
-// XXXX This class the main focus of the refactoring effort.
+
 public final class ResolverImpl implements MethodSignatureResolver {
 
-    private final Object monitor = new Object();
-    private final Map<MethodDescriptor, Function<Message, Message>> methodsByMethodDescriptor =
-            new HashMap<MethodDescriptor, Function<Message, Message>>();
-
-    // XX Use this class instead of the cruft below.
-    public final static class MethodDesc {
-
-        private Function<Message, Message> function;
-        private MethodDescriptor descriptor;
-        private MessageLite inputType;
-        private MessageLite outputType;
-
-        public MethodDesc(
-                final Function<Message, Message> function,
-                final MethodDescriptor descriptor,
-                final MessageLite inputType,
-                final MessageLite outputType) {
-            this.function = function;
-            this.descriptor = checkNotNull(descriptor);
-            this.inputType = checkNotNull(inputType);
-            this.outputType = checkNotNull(outputType);
-        }
-
-        public Function<Message, Message> getFunction() {
-            return function;
-        }
-
-        public MethodDescriptor getDescriptor() {
-            return descriptor;
-        }
-
-        public MessageLite getInputType() {
-            return inputType;
-        }
-
-        public MessageLite getOutputType() {
-            return outputType;
-        }
-    }
+   
     private final Map<MethodSignature, MethodDesc> mmap =
             new ConcurrentHashMap<MethodSignature, MethodDesc>();
-
 
     public ResolverImpl() {
     }
@@ -85,10 +45,16 @@ public final class ResolverImpl implements MethodSignatureResolver {
         return mmap.get(methodSignature).getOutputType();
     }
 
-    public void addTypes(final MethodDescriptor md, MessageLite inputType, MessageLite outputType) {
+    public void addTypes(
+            final MethodDescriptor md,
+            final MessageLite inputType,
+            final MessageLite outputType) {
+        checkNotNull(inputType);
+        checkNotNull(outputType);
+        checkNotNull(md);
         final MethodSignature ms = getMethodSignatureFromMethodDescriptor(md);
 
-        final MethodDesc methodDesc = new MethodDesc(null, md, inputType, outputType);
+        final MethodDesc methodDesc = new MethodDesc(md, inputType, outputType);
         mmap.put(ms, methodDesc);
     }
 
@@ -102,24 +68,5 @@ public final class ResolverImpl implements MethodSignatureResolver {
                 .setOutputType(key.getOutputType().getFullName().toString())
                 .build();
         return signature;
-    }
-
-    public Function<Message, Message> getByMethodDescriptor(
-            final MethodDescriptor key) {
-        checkNotNull(key);
-        synchronized (monitor) {
-            return methodsByMethodDescriptor.get(key);
-        }
-    }
-
-    public Function<Message, Message> getByMethodSignature(
-            final MethodSignature key) {
-        checkNotNull(key);
-        return mmap.get(key).getFunction();
-    }
-
-    public MethodDescriptor getMethodDescriptorFromMethodSignature(
-            final MethodSignature signature) {
-        return mmap.get(signature).getDescriptor();
     }
 }

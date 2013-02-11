@@ -26,6 +26,8 @@ public interface MethodSignatureResolver {
 
     MessageLite getPrototypeForReturnValue(final MethodSignature methodSignature);
 
-    // XXX ???
-    void addTypes(final Descriptors.MethodDescriptor md, final MessageLite inputType, final MessageLite outputType);
+    void addTypes(
+            final Descriptors.MethodDescriptor md,
+            final MessageLite inputType,
+            final MessageLite outputType);
 }
