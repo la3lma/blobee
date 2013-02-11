@@ -237,18 +237,18 @@ public final class RpcExecutionServiceImpl
         final Runnable runnable =
                 new MethodInvokingRunnable(implementation, dc, ctx, parameter, controllerStorage, this);
         try {
-            // For some reason not all the invocations
-            // that are submitted are actually run.  The ones that are run
-            // does seem to always work correctly though
-            // this is a big XXXX
             threadPool.submit(runnable);
         }
         catch (Exception e) {
-            log.log(Level.SEVERE, "Couldn't execute runnable.  That's awful!", e);
+            log.log(Level.SEVERE, "Couldn't submit runnable.  That's awful!", e);
         }
     }
 
-    public void startCancel(final ChannelHandlerContext ctx, final long rpcIndex) {
+    public void startCancel(
+            final ChannelHandlerContext ctx,
+            final long rpcIndex) {
+        checkNotNull(ctx);
+        checkArgument(rpcIndex >= 0);
         // XXX Bogus error handling
         controllerStorage.getController(ctx, rpcIndex).startCancel();
         controllerStorage.removeController(ctx, rpcIndex);
@@ -269,6 +269,7 @@ public final class RpcExecutionServiceImpl
     }
 
     public Method getMethod(final MethodSignature ms) {
+        checkNotNull(ms);
         final MethodDesc item = xmap.get(ms);
         if (item != null) {
             return item.getMethod();
@@ -277,7 +278,13 @@ public final class RpcExecutionServiceImpl
         }
     }
 
-    public void storeController(ChannelHandlerContext ctx, long rpcIdx, RpcServiceController controller) {
+    public void storeController(
+            final ChannelHandlerContext ctx,
+            final long rpcIdx,
+            final RpcServiceController controller) {
+        checkArgument(rpcIdx >= 0);
+        checkNotNull(controller);
+        checkNotNull(ctx);
         controllerStorage.storeController(ctx, rpcIdx, controller);
     }
 }
