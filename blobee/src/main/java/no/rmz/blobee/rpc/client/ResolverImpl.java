@@ -15,12 +15,9 @@
  */
 package no.rmz.blobee.rpc.client;
 
-import com.google.common.base.Function;
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.Descriptors.MethodDescriptor;
-import com.google.protobuf.Message;
 import com.google.protobuf.MessageLite;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
@@ -28,7 +25,7 @@ import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
 
 public final class ResolverImpl implements MethodSignatureResolver {
 
-   
+
     private final Map<MethodSignature, MethodDesc> mmap =
             new ConcurrentHashMap<MethodSignature, MethodDesc>();
 
