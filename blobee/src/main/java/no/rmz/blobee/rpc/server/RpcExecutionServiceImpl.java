@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -40,7 +41,7 @@ import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
 import org.jboss.netty.channel.ChannelHandlerContext;
 
 /**
- * The implementation object implements one or more intefaces each of those
+ * The implementation object implements one or more interfaces each of those
  * interfaces present methods that can be served through
  */
 public final class RpcExecutionServiceImpl
@@ -58,10 +59,47 @@ public final class RpcExecutionServiceImpl
     private final ExecutorService threadPool = Executors.newCachedThreadPool(
             new ErrorLoggingThreadFactory("Executor thread for RpcExecutionServiceImpl", log));
 
+
+    // XXX Work in progress, this will eventually become
+    //     a description of an implementing method and it will
+    //     replace the hodgepodge of maps used for the same
+    //     purpose below.
+    public final class MethodDesc {
+        private final Method method;
+        private final Class returnType;
+        private final Class pmType;
+
+        public MethodDesc(Method method, Class returnType, Class pmType) {
+            this.method = checkNotNull(method);
+            this.returnType = checkNotNull(returnType);
+            this.pmType = checkNotNull(pmType);
+        }
+
+        public Method getMethod() {
+            return method;
+        }
+
+        public Class getReturnType() {
+            return returnType;
+        }
+
+        public Class getPmType() {
+            return pmType;
+        }
+    }
+
+    private Map<MethodSignature, MethodDesc> xmap =
+            new ConcurrentHashMap<MethodSignature, MethodDesc>();
+
     private Object implementation;
+
+    @Deprecated
     private final Map<MethodSignature, Method> mmap;
+    @Deprecated
     private final Map<MethodSignature, Class<?>> returnTypes;
+    @Deprecated
     private final Map<MethodSignature, Class<?>> pmtypes;
+
     private Map<Class, Object> implementations = new HashMap<Class, Object>();
 
     private final ControllerStorage controllerStorage = new ControllerStorage();
@@ -69,9 +107,9 @@ public final class RpcExecutionServiceImpl
     public Class getReturnType(final MethodSignature sig) {
         // Preconditions
         checkNotNull(sig);
-        checkArgument(!returnTypes.isEmpty());
-        final Class<?> result = returnTypes.get(sig);
-
+        // checkArgument(!returnTypes.isEmpty());
+        // final Class<?> result = returnTypes.get(sig);
+        final Class<?> result = xmap.get(sig).getReturnType();
         // Postcondition
         checkNotNull(result);
         return result;
@@ -79,9 +117,15 @@ public final class RpcExecutionServiceImpl
 
     public Class getParameterType(final MethodSignature sig) {
         checkNotNull(sig);
-        return pmtypes.get(sig);
+
+        final MethodDesc ms = xmap.get(sig);
+        if (ms != null) {
+            return ms.getPmType();
+        } else {
+            return null;
+        }
     }
-    
+
     final String name;
 
     public RpcExecutionServiceImpl(final String name) {
@@ -98,7 +142,6 @@ public final class RpcExecutionServiceImpl
     }
 
 
-
     @Override
     public void addImplementation(
             final Object implementation,
@@ -108,7 +151,7 @@ public final class RpcExecutionServiceImpl
     }
 
 
-    public void addImplementation(
+    private void addImplementation(
             final Object implementation,
             final Class[] interfaceClasses) throws RpcServerException {
         this.implementation = checkNotNull(implementation);
@@ -139,13 +182,11 @@ public final class RpcExecutionServiceImpl
 
                 final String name = interfaceMethod.getName();
 
-
                 final Descriptors.MethodDescriptor descriptor;
                 try {
                     descriptor = ServiceAnnotationMapper.getMethodDescriptor(
                             implementation.getClass(), name);
-                }
-                catch (Exception ex) {
+                } catch (Exception ex) { // XXX Bad habit
                     throw new RpcServerException(ex);
                 }
 
@@ -160,12 +201,30 @@ public final class RpcExecutionServiceImpl
                 mmap.put(methodSignature, implementationMethod);
 
                 // XXX I need to grok this
-                final Class<?>[] parameterTypes = implementationMethod.getParameterTypes();
-                final Class pmtype = parameterTypes[1];
-                final Type typeOfReturnvalue = extractCallbackParamType(interfaceMethod);
 
-                returnTypes.put(methodSignature, (Class) typeOfReturnvalue);
+                // First we get the list of parameters for the implementation,
+                // the length of this array should be exactly 3: The first parameter
+                // is the controller, the second is the parameter and the
+                // third is the  callback method, that takes the
+                // return type as its parameter.
+                final Class<?>[] parameterTypes = implementationMethod.getParameterTypes();
+
+                // So this would then be the type of the callback
+                final Class pmtype = parameterTypes[1];
                 pmtypes.put(methodSignature, pmtype);
+
+                // Then we get the
+                final Type typeOfReturnvalue = extractCallbackParamType(interfaceMethod);
+                returnTypes.put(methodSignature, (Class) typeOfReturnvalue);
+                /// this is the new way
+                final MethodDesc methodDesc =
+                        new MethodDesc(implementationMethod, (Class)typeOfReturnvalue, pmtype);
+                xmap.put(methodSignature, methodDesc);
+
+                // afaikt at this point the type of typeOfReturnValue should
+                // be identical to pmtype
+
+                implementations.put(iface, implementation);
             }
         }
     }
@@ -264,7 +323,13 @@ public final class RpcExecutionServiceImpl
     }
 
     public Method getMethod(final MethodSignature ms) {
-        return mmap.get(ms);
+        final MethodDesc item = xmap.get(ms);
+     if (item != null) {
+            return item.getMethod();
+        } else {
+            return null;
+        }
+       // return mmap.get(ms);
     }
 
     public void storeController(ChannelHandlerContext ctx, long rpcIdx, RpcServiceController controller) {
