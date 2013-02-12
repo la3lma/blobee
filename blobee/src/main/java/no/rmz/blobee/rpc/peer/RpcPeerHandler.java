@@ -95,8 +95,6 @@ public final class RpcPeerHandler
     public void channelConnected(
             final ChannelHandlerContext ctx,
             final ChannelStateEvent e) {
-        // XXX Check that there is no heartbeat monitor there
-        //     already, because if it is,  that is an error situation.
         this.heartbeatMonitor = new HeartbeatMonitor(e.getChannel());
         registerChannel(ctx.getChannel());
     }
@@ -360,46 +358,6 @@ public final class RpcPeerHandler
         }
     }
 
-    @Deprecated
-      private void oldProcessReturnValueMessage(
-            final RpcControl msg,
-            final ChannelHandlerContext ctx) throws RpcPeerHandlerException {
-        final MethodSignature methodSignature = msg.getMethodSignature();
-        final long rpcIndex = msg.getRpcIndex();
-        final MessageLite prototypeForReturnValue =
-                getPrototypeForReturnValue(methodSignature);
-        checkNotNull(prototypeForReturnValue);
-        protbufDecoder.putNextPrototype(prototypeForReturnValue);
-
-        // XXX Perhaps make an abstraction that requires the value to
-        //     be null before setting it to anything else than null?
-        final RemoteExecutionContext dc = contextMap.get(ctx);
-        if (dc != null) {
-            throw new RpcPeerHandlerException("Could not find RemoteExecutionContext for " + ctx);
-        }
-        contextMap.put(ctx,
-                new RemoteExecutionContext(this, ctx, methodSignature, rpcIndex,
-                RpcDirection.RETURNING));
-    }
-
-    @Deprecated
-    private void oldProcessInvocationMessage(final RpcControl msg, final ChannelHandlerContext ctx)
-            throws RpcPeerHandlerException {
-        final MethodSignature methodSignature = msg.getMethodSignature();
-        final long rpcIndex = msg.getRpcIndex();
-        final MessageLite prototypeForParameter =
-                getPrototypeForParameter(methodSignature);
-        protbufDecoder.putNextPrototype(prototypeForParameter);
-
-        final RemoteExecutionContext dc = contextMap.get(ctx);
-        if (dc != null) {
-            throw new RpcPeerHandlerException("Could not find RemoteExecutionContext for " + ctx);
-        }
-
-        final RemoteExecutionContext rec = new RemoteExecutionContext(this, ctx,
-                methodSignature, rpcIndex, RpcDirection.INVOKING);
-        contextMap.put(ctx, rec);
-    }
 
     private void processHeartbeatMessage() {
         nextMessageIsControl();

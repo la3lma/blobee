@@ -44,9 +44,6 @@ import no.rmz.blobee.protobuf.TypeExctractor;
 import no.rmz.blobee.rpc.peer.RemoteExecutionContext;
 import no.rmz.blobee.rpc.peer.wireprotocol.OutgoingRpcWire;
 import no.rmz.blobee.rpc.peer.wireprotocol.WireFactory;
-import no.rmz.blobeeproto.api.proto.Rpc;
-import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
-import no.rmz.blobeeproto.api.proto.Rpc.RpcControl;
 import org.jboss.netty.channel.Channel;
 
 public final class RpcClientImpl implements RpcClient {
