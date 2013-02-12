@@ -17,7 +17,6 @@
 package no.rmz.blobee.rpc.client;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-
 import com.google.protobuf.Descriptors.MethodDescriptor;
 import com.google.protobuf.MessageLite;
 

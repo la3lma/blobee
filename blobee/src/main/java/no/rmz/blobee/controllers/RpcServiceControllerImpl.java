@@ -20,8 +20,6 @@ import com.google.protobuf.RpcCallback;
 import no.rmz.blobee.rpc.peer.RemoteExecutionContext;
 import no.rmz.blobee.rpc.peer.wireprotocol.OutgoingRpcWire;
 import no.rmz.blobee.rpc.peer.wireprotocol.WireFactory;
-import no.rmz.blobeeproto.api.proto.Rpc.MessageType;
-import no.rmz.blobeeproto.api.proto.Rpc.RpcControl;
 
 public final class RpcServiceControllerImpl implements RpcServiceController {
 
