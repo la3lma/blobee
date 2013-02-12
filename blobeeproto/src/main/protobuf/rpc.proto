@@ -20,7 +20,6 @@ message RpcControl {
 
   required MessageType messageType = 1;
 
-
   // For handling RPC requests;
   optional int64 rpcIndex    = 2;
   optional MethodSignature methodSignature = 3;
@@ -28,6 +27,9 @@ message RpcControl {
   // For handling Controller messages
   optional string failed = 4;
 
+  // Carries protobuf-encoded
+  // input paramaters and return values from
+  // RPC invocations.
   optional bytes payload = 5;
 }
 
@@ -38,12 +40,12 @@ message MethodSignature {
 }
 
 enum MessageType {
-        HEARTBEAT       = 1;
-        SHUTDOWN        = 2;
+        HEARTBEAT         = 1;
+        SHUTDOWN          = 2;
         INVOCATION_FAILED = 3;
-        RPC_CANCEL      = 4;
-        RPC_INV         = 5;
-        RPC_RET         = 6;
+        RPC_CANCEL        = 4;
+        RPC_INV           = 5;
+        RPC_RET           = 6;
 }
 
 
