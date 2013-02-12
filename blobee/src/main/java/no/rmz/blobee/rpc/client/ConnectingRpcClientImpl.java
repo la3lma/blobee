@@ -75,6 +75,8 @@ public final class ConnectingRpcClientImpl implements RpcClient {
     }
 
     public void returnCall(final RemoteExecutionContext dc, final Message message) {
+        checkNotNull(dc);
+        checkNotNull(message);
         rpcClient.returnCall(dc, message);
     }
 

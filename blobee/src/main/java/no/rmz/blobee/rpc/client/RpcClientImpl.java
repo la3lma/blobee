@@ -79,6 +79,8 @@ public final class RpcClientImpl implements RpcClient {
     public void returnCall(
             final RemoteExecutionContext dc,
             final Message message) {
+        checkNotNull(dc);
+        checkNotNull(message);
         synchronized (invocations) {
             final long rpcIndex = dc.getRpcIndex();
             final RpcClientSideInvocation invocation =

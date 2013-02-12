@@ -28,6 +28,8 @@ message RpcControl {
 
   // For handling Controller messages
   optional string failed = 5;
+
+  optional bytes payload = 6;
 }
 
 message MethodSignature {
@@ -43,6 +45,8 @@ enum MessageType {
         SHUTDOWN        = 4;
         INVOCATION_FAILED = 5;
         RPC_CANCEL      = 6;
+        RPC_INV         = 7;
+        RPC_RET         = 8;
 }
 
 enum StatusCode {

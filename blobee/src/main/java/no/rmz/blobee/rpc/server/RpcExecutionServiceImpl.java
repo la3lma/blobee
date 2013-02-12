@@ -233,6 +233,9 @@ public final class RpcExecutionServiceImpl
             final RemoteExecutionContext dc,
             final ChannelHandlerContext ctx, // XXX Redundant? dc.getCtx or something
             final Message parameter) {
+        checkNotNull(dc);
+        checkNotNull(ctx);
+        checkNotNull(parameter);
 
         final Runnable runnable =
                 new MethodInvokingRunnable(implementation, dc, ctx, parameter, controllerStorage, this);

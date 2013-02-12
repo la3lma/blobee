@@ -53,7 +53,7 @@ public final class ReallySimplePerformanceTest {
     /**
      * The number of iterations we should run during the test.
      */
-    private final static int ROUNDTRIPS = 1000000;
+    private final static int ROUNDTRIPS = 1000;
 
     /**
      * The host where we set up the server.

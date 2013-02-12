@@ -39,6 +39,10 @@ public final class RpcServerImpl implements RpcServer {
     private final RpcMessageListener listener;
     private final ServerBootstrap bootstrap;
 
+      final ExecutorService bossExecutor;
+
+        final ExecutorService workerExcecutor;
+
     public RpcServerImpl(
             final InetSocketAddress socket,
             final RpcMessageListener listener) {
@@ -66,16 +70,16 @@ public final class RpcServerImpl implements RpcServer {
         this.executionService = checkNotNull(executionService);
         this.listener = listener; // XXX Nullable
 
-        final ExecutorService bossExecutor = Executors.newCachedThreadPool(
+        bossExecutor = Executors.newCachedThreadPool(
                 new ErrorLoggingThreadFactory("RpcServerImpl bossExecutor", log));
 
-        final ExecutorService workerExcecutor = Executors.newCachedThreadPool(
+        workerExcecutor = Executors.newCachedThreadPool(
                 new ErrorLoggingThreadFactory("RpcServerImpl workerExcecutor", log));
 
         this.bootstrap = new ServerBootstrap(
                 new NioServerSocketChannelFactory(
-                    bossExecutor,
-                    workerExcecutor));
+                bossExecutor,
+                workerExcecutor));
         final String name = "RPC Server at " + socket.toString();
         final RpcPeerPipelineFactory serverChannelPipelineFactory =
                 new RpcPeerPipelineFactory(name, executionService, new MultiChannelClientFactory(), listener);
@@ -112,5 +116,7 @@ public final class RpcServerImpl implements RpcServer {
 
     public void stop() {
         bootstrap.shutdown();
+        bossExecutor.shutdownNow();
+        workerExcecutor.shutdownNow();
     }
 }

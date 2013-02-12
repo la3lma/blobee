@@ -16,6 +16,7 @@
 package no.rmz.blobee.rpc.peer;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.google.protobuf.MessageLite;
 import java.lang.reflect.Method;
@@ -155,10 +156,10 @@ public final class RpcPeerHandler
                     case HEARTBEAT:
                         processHeartbeatMessage();
                         break;
-                    case RPC_INVOCATION:
+                    case RPC_INV:
                         processInvocationMessage(msg, ctx);
                         break;
-                    case RPC_RETURNVALUE:
+                    case RPC_RET:
                         processReturnValueMessage(msg, ctx);
                         break;
                     case SHUTDOWN:
@@ -303,6 +304,66 @@ public final class RpcPeerHandler
     private void processReturnValueMessage(
             final RpcControl msg,
             final ChannelHandlerContext ctx) throws RpcPeerHandlerException {
+
+        nextMessageIsControl();
+        final MethodSignature methodSignature = msg.getMethodSignature();
+        final long rpcIndex = msg.getRpcIndex();
+        final MessageLite prototypeForReturnValue =
+                getPrototypeForReturnValue(methodSignature);
+        checkNotNull(prototypeForReturnValue);
+
+        final RemoteExecutionContext dc =
+                new RemoteExecutionContext(this, ctx, methodSignature, rpcIndex,
+                RpcDirection.RETURNING);
+
+        final MessageLite payload;
+        try {
+            payload = prototypeForReturnValue.newBuilderForType().mergeFrom(msg.getPayload()).build();
+        }
+        catch (InvalidProtocolBufferException ex) {
+            throw new RpcPeerHandlerException(ex);
+        }
+        checkNotNull(payload);
+
+        final Message pld = (Message) payload;
+        checkNotNull(dc);
+
+        getRpcChannel(ctx.getChannel()).returnCall(dc, pld);
+    }
+
+    private void processInvocationMessage(final RpcControl msg, final ChannelHandlerContext ctx)
+            throws RpcPeerHandlerException {
+        try {
+            nextMessageIsControl();
+            final MethodSignature methodSignature = msg.getMethodSignature();
+            final long rpcIndex = msg.getRpcIndex();
+            final MessageLite prototypeForParameter =
+                    getPrototypeForParameter(methodSignature);
+
+
+            final RemoteExecutionContext rec = new RemoteExecutionContext(this, ctx,
+                    methodSignature, rpcIndex, RpcDirection.INVOKING);
+            checkNotNull(rec);
+
+
+            final MessageLite payload =
+                    prototypeForParameter.newBuilderForType().mergeFrom(msg.getPayload()).build();
+            checkNotNull(payload);
+            // XXX Bug here
+            final Message pld = (Message) payload;
+
+            checkNotNull(ctx);
+            executionService.execute(rec, ctx, pld);
+        }
+        catch (InvalidProtocolBufferException ex) {
+            throw new RpcPeerHandlerException(ex);
+        }
+    }
+
+    @Deprecated
+      private void oldProcessReturnValueMessage(
+            final RpcControl msg,
+            final ChannelHandlerContext ctx) throws RpcPeerHandlerException {
         final MethodSignature methodSignature = msg.getMethodSignature();
         final long rpcIndex = msg.getRpcIndex();
         final MessageLite prototypeForReturnValue =
@@ -321,7 +382,8 @@ public final class RpcPeerHandler
                 RpcDirection.RETURNING));
     }
 
-    private void processInvocationMessage(final RpcControl msg, final ChannelHandlerContext ctx)
+    @Deprecated
+    private void oldProcessInvocationMessage(final RpcControl msg, final ChannelHandlerContext ctx)
             throws RpcPeerHandlerException {
         final MethodSignature methodSignature = msg.getMethodSignature();
         final long rpcIndex = msg.getRpcIndex();

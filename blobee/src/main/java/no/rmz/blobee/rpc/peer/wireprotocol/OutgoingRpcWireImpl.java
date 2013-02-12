@@ -17,7 +17,12 @@ package no.rmz.blobee.rpc.peer.wireprotocol;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import com.google.protobuf.ByteString;
 import com.google.protobuf.Message;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import no.rmz.blobeeproto.api.proto.Rpc.RpcControl;
 import org.jboss.netty.channel.Channel;
@@ -25,6 +30,8 @@ import org.jboss.netty.channel.Channel;
 // XXX The name is now inappropriate, and there should be
 //     a class comment.
 public final class OutgoingRpcWireImpl implements OutgoingRpcWire {
+
+    private final static Logger log = Logger.getLogger(OutgoingRpcWireImpl.class.getName());
 
     /**
      * A constant used when sending heartbeats.
@@ -69,7 +76,9 @@ public final class OutgoingRpcWireImpl implements OutgoingRpcWire {
         write(msg);
     }
 
-    public void sendInvocation(
+
+
+    public void sendInvocationTheOldWay(
             final String methodName,
             final String inputType,
             final String outputType,
@@ -81,6 +90,8 @@ public final class OutgoingRpcWireImpl implements OutgoingRpcWire {
         checkNotNull(outputType);
         checkNotNull(rpParameter);
         checkArgument(rpcIndex >= 0);
+
+
 
         final Rpc.MethodSignature ms = Rpc.MethodSignature.newBuilder()
                 .setMethodName(methodName)
@@ -98,8 +109,75 @@ public final class OutgoingRpcWireImpl implements OutgoingRpcWire {
         write(rpcInvocationMessage, rpParameter);
     }
 
+
+    private ByteString messageToByteString(final Message msg) {
+        checkNotNull(msg);
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream(msg.getSerializedSize());
+        try {
+            msg.writeTo(baos);
+            baos.close();
+        }
+        catch (IOException ex) {
+            log.log(Level.SEVERE, "Couldn't serialize payload", ex);
+        }
+        ByteString payload;
+        payload = ByteString.copyFrom(baos.toByteArray());
+        checkNotNull(payload);
+        return payload;
+    }
+
+
+    @Override
+    public void sendInvocation(
+            final String methodName,
+            final String inputType,
+            final String outputType,
+            final Long rpcIndex,
+            final Message rpParameter) {
+
+        checkNotNull(methodName);
+        checkNotNull(inputType);
+        checkNotNull(outputType);
+        checkNotNull(rpParameter);
+        checkArgument(rpcIndex >= 0);
+
+        final ByteString payload =  messageToByteString(rpParameter);
+        final Rpc.MethodSignature ms = Rpc.MethodSignature.newBuilder()
+                .setMethodName(methodName)
+                .setInputType(inputType)
+                .setOutputType(outputType)
+                .build();
+
+        final Rpc.RpcControl rpcInvocationMessage =
+                Rpc.RpcControl.newBuilder()
+                .setMessageType(Rpc.MessageType.RPC_INV)
+                .setRpcIndex(rpcIndex)
+                .setMethodSignature(ms)
+                .setPayload(payload)
+                .build();
+
+        write(rpcInvocationMessage);
+    }
+
     @Override
     public void returnRpcResult(
+            final long rpcIndex,
+            final Rpc.MethodSignature methodSignature,
+            final Message result) {
+
+        final ByteString payload =  messageToByteString(result);
+        final Rpc.RpcControl returnValueMessage =
+                Rpc.RpcControl.newBuilder()
+                .setMessageType(Rpc.MessageType.RPC_RET)
+                .setStat(Rpc.StatusCode.OK)
+                .setRpcIndex(rpcIndex)
+                .setPayload(payload)
+                .setMethodSignature(methodSignature)
+                .build();
+        write(returnValueMessage);
+    }
+
+    public void returnRpcResultTheOldWay(
             final long rpcIndex,
             final Rpc.MethodSignature methodSignature,
             final Message result) {
