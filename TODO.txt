@@ -1,23 +1,24 @@
 MAKE THE BASICS WORK
 =====================
 
+o Upload to maven central.
+   -> Make this into one maven package.  Make test dependencies
+      far sweeter.  How to do that with generated sources from multiple
+      protobuf-generated pieces of code I don't know, but that
+      will have to be managed.
+   -> Use the release plugin & let it rip.
+
 o Get someone else to use the API and offer feedback.
 
-o Upload to maven central.
+o Set up a demo server somewhere on the intertubes.
 
-o Fix the wire protocol
+o Write an implementation in something else that talks to this
+  server written in one or more of:
 
-   -> Isolate the wire protocol into a few very sharply
-        isolated classes.  Presently I'm doing that by bloating
-        the MessageWire/MessageWireImpl interface/class.
-        When that's done, changing the wire protocol should
-        almost (modulo  some RpcPeerHandler changes)
-        be an one-class fix.
-   -> Review the protobuffer code.
-   -> Make a test to see if a single type of message
-         (instead of the two-step method we use today)
-         is comparable in speed with what we do now.
-
+      - C, because it's minimal.
+      - Objective C, because it's so Apple.
+      - Haskell because it's awsome.
+      - Python because it is useful.
 
 o Generally increase neatness:
    -> Test coverage.
