@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import no.rmz.blobee.protobuf.DynamicProtobufDecoder;
 import no.rmz.blobee.rpc.client.MethodSignatureResolver;
 import no.rmz.blobee.rpc.client.RpcClient;
 import no.rmz.blobee.rpc.client.RpcClientFactory;
@@ -46,7 +45,7 @@ public final class RpcPeerHandler
 
     private static final Logger log =
             Logger.getLogger(RpcPeerHandler.class.getName());
-    private final DynamicProtobufDecoder protbufDecoder;
+
     /**
      * Used to listen in to incoming messages. Intended for debugging purposes.
      */
@@ -74,13 +73,11 @@ public final class RpcPeerHandler
     private final MethodSignatureResolver clientResolver;
 
     protected RpcPeerHandler(
-            final DynamicProtobufDecoder protbufDecoder,
             final MethodSignatureResolver clientResolver,
             final RpcExecutionService executionService,
             final RpcClientFactory rcf) {
 
         this.clientResolver = checkNotNull(clientResolver);
-        this.protbufDecoder = checkNotNull(protbufDecoder);
         this.executionService = checkNotNull(executionService);
         this.rcf = checkNotNull(rcf);
     }
@@ -111,10 +108,6 @@ public final class RpcPeerHandler
     private RpcClient getRpcChannel(final Channel channel) {
         checkNotNull(channel);
         return rcf.getClientFor(channel);
-    }
-
-    private void nextMessageIsControl() {
-        protbufDecoder.putNextPrototype(Rpc.RpcControl.getDefaultInstance());
     }
 
     public void runListener(final ChannelHandlerContext ctx, Object message) {
@@ -170,7 +163,6 @@ public final class RpcPeerHandler
                         processCancelMessage(msg, ctx);
                         break;
                     default:
-                        nextMessageIsControl();
                         log.warning("Unknown type of control message: " + message);
                 }
             } else {
@@ -258,7 +250,6 @@ public final class RpcPeerHandler
     private void processPayloadMessage(
             final Message message,
             final ChannelHandlerContext ctx) throws IllegalStateException, RpcPeerHandlerException {
-        nextMessageIsControl();
 
         final RemoteExecutionContext dc = contextMap.get(ctx);
 
@@ -280,7 +271,6 @@ public final class RpcPeerHandler
     private void processCancelMessage(
             final RpcControl msg,
             final ChannelHandlerContext ctx) {
-        nextMessageIsControl();
         final long rpcIndex = msg.getRpcIndex();
         executionService.startCancel(ctx, rpcIndex);
     }
@@ -288,14 +278,12 @@ public final class RpcPeerHandler
     private void processInvocationFailedMessage(final Channel channel, final RpcControl msg) {
         checkNotNull(channel);
         checkNotNull(msg);
-        nextMessageIsControl();
         final String errorMessage = msg.getFailed();
         final long rpcIndex = msg.getRpcIndex();
         getRpcChannel(channel).failInvocation(rpcIndex, errorMessage);
     }
 
     private void processChannelShutdownMessage(final ChannelHandlerContext ctx) {
-        nextMessageIsControl();
         ctx.getChannel().close();
     }
 
@@ -303,7 +291,6 @@ public final class RpcPeerHandler
             final RpcControl msg,
             final ChannelHandlerContext ctx) throws RpcPeerHandlerException {
 
-        nextMessageIsControl();
         final MethodSignature methodSignature = msg.getMethodSignature();
         final long rpcIndex = msg.getRpcIndex();
         final MessageLite prototypeForReturnValue =
@@ -332,7 +319,6 @@ public final class RpcPeerHandler
     private void processInvocationMessage(final RpcControl msg, final ChannelHandlerContext ctx)
             throws RpcPeerHandlerException {
         try {
-            nextMessageIsControl();
             final MethodSignature methodSignature = msg.getMethodSignature();
             final long rpcIndex = msg.getRpcIndex();
             final MessageLite prototypeForParameter =
@@ -360,7 +346,6 @@ public final class RpcPeerHandler
 
 
     private void processHeartbeatMessage() {
-        nextMessageIsControl();
         heartbeatMonitor.receiveHeartbeat();
     }
 }

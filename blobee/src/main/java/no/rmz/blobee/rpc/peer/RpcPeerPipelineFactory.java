@@ -16,9 +16,6 @@
 package no.rmz.blobee.rpc.peer;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import com.google.protobuf.MessageLite;
-import java.util.WeakHashMap;
-import no.rmz.blobee.protobuf.DynamicProtobufDecoder;
 import no.rmz.blobee.rpc.client.MethodSignatureResolver;
 import no.rmz.blobee.rpc.client.RpcClientFactory;
 import no.rmz.blobee.rpc.server.RpcExecutionService;
@@ -26,6 +23,7 @@ import no.rmz.blobeeproto.api.proto.Rpc;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import static org.jboss.netty.channel.Channels.pipeline;
+import org.jboss.netty.handler.codec.protobuf.ProtobufDecoder;
 import org.jboss.netty.handler.codec.protobuf.ProtobufEncoder;
 import org.jboss.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import org.jboss.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
@@ -37,11 +35,6 @@ public final class RpcPeerPipelineFactory implements ChannelPipelineFactory {
      * is.
      */
     private final String name;
-
-    // XXX
-    private final WeakHashMap<ChannelPipeline, DynamicProtobufDecoder>
-            decoderMap =
-            new WeakHashMap<ChannelPipeline, DynamicProtobufDecoder>();
 
     /**
      * For debugging purposes we can insert a listener
@@ -56,6 +49,7 @@ public final class RpcPeerPipelineFactory implements ChannelPipelineFactory {
      */
     private final RpcExecutionService executionService;
 
+    // XXX Missing javadoc
     private final MethodSignatureResolver clientResolver;
 
     /**
@@ -87,32 +81,21 @@ public final class RpcPeerPipelineFactory implements ChannelPipelineFactory {
     }
 
 
-    public void putNextPrototype(
-            final ChannelPipeline pipeline,
-            final MessageLite prototype) {
-        if (decoderMap.containsKey(pipeline)) {
-            decoderMap.get(pipeline).putNextPrototype(prototype.getDefaultInstanceForType());
-        } else {
-            // XXX Don't use runtime exception, use a checkable exception
-            throw new RuntimeException("This is awful");
-        }
-    }
-
     // XXX Eventually this thing should get things like
     //     compression, ssl, http, whatever, but for not it's just
     //     the simplest possible pipeline I could get away with, and it's
     //     complex enough already.
     public ChannelPipeline getPipeline() throws Exception {
-        final DynamicProtobufDecoder protbufDecoder = new DynamicProtobufDecoder();
+        final ProtobufDecoder protbufDecoder;
+        protbufDecoder = new ProtobufDecoder(Rpc.RpcControl.getDefaultInstance());
         final ChannelPipeline p = pipeline();
-        decoderMap.put(p, protbufDecoder);
+
         p.addLast("frameDecoder", new ProtobufVarint32FrameDecoder());
         p.addLast("protobufDecoder", protbufDecoder);
         p.addLast("frameEncoder", new ProtobufVarint32LengthFieldPrepender());
         p.addLast("protobufEncoder", new ProtobufEncoder());
         final RpcPeerHandler handler =
                 new RpcPeerHandler(
-                    protbufDecoder,
                     clientResolver,
                     executionService,
                     rcf);
@@ -123,9 +106,6 @@ public final class RpcPeerPipelineFactory implements ChannelPipelineFactory {
 
         p.addLast("handler", handler);
 
-        // The first message to receive is always a control message,
-        // so we set the pipeline up to expect that.
-        putNextPrototype(p, Rpc.RpcControl.getDefaultInstance());
         return p;
     }
 }
