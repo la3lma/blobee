@@ -20,16 +20,15 @@ message RpcControl {
 
   required MessageType messageType = 1;
 
-  optional StatusCode Stat   = 2;
 
   // For handling RPC requests;
-  optional int64 rpcIndex    = 3;
-  optional MethodSignature methodSignature = 4;
+  optional int64 rpcIndex    = 2;
+  optional MethodSignature methodSignature = 3;
 
   // For handling Controller messages
-  optional string failed = 5;
+  optional string failed = 4;
 
-  optional bytes payload = 6;
+  optional bytes payload = 5;
 }
 
 message MethodSignature {
@@ -39,19 +38,12 @@ message MethodSignature {
 }
 
 enum MessageType {
-        RPC_INVOCATION  = 1;
-        RPC_RETURNVALUE = 2;
-        HEARTBEAT       = 3;
-        SHUTDOWN        = 4;
-        INVOCATION_FAILED = 5;
-        RPC_CANCEL      = 6;
-        RPC_INV         = 7;
-        RPC_RET         = 8;
+        HEARTBEAT       = 1;
+        SHUTDOWN        = 2;
+        INVOCATION_FAILED = 3;
+        RPC_CANCEL      = 4;
+        RPC_INV         = 5;
+        RPC_RET         = 6;
 }
 
-enum StatusCode {
-        NO_HANDLER = 1;
-        HANDLER_FAILURE = 2;
-        OK = 3;
-}
 

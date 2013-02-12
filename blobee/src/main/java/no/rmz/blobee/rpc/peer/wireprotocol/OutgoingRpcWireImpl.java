@@ -77,39 +77,6 @@ public final class OutgoingRpcWireImpl implements OutgoingRpcWire {
     }
 
 
-
-    public void sendInvocationTheOldWay(
-            final String methodName,
-            final String inputType,
-            final String outputType,
-            final Long rpcIndex,
-            final Message rpParameter) {
-
-        checkNotNull(methodName);
-        checkNotNull(inputType);
-        checkNotNull(outputType);
-        checkNotNull(rpParameter);
-        checkArgument(rpcIndex >= 0);
-
-
-
-        final Rpc.MethodSignature ms = Rpc.MethodSignature.newBuilder()
-                .setMethodName(methodName)
-                .setInputType(inputType)
-                .setOutputType(outputType)
-                .build();
-
-        final Rpc.RpcControl rpcInvocationMessage =
-                Rpc.RpcControl.newBuilder()
-                .setMessageType(Rpc.MessageType.RPC_INVOCATION)
-                .setRpcIndex(rpcIndex)
-                .setMethodSignature(ms)
-                .build();
-
-        write(rpcInvocationMessage, rpParameter);
-    }
-
-
     private ByteString messageToByteString(final Message msg) {
         checkNotNull(msg);
         final ByteArrayOutputStream baos = new ByteArrayOutputStream(msg.getSerializedSize());
@@ -169,7 +136,6 @@ public final class OutgoingRpcWireImpl implements OutgoingRpcWire {
         final Rpc.RpcControl returnValueMessage =
                 Rpc.RpcControl.newBuilder()
                 .setMessageType(Rpc.MessageType.RPC_RET)
-                .setStat(Rpc.StatusCode.OK)
                 .setRpcIndex(rpcIndex)
                 .setPayload(payload)
                 .setMethodSignature(methodSignature)
@@ -177,20 +143,7 @@ public final class OutgoingRpcWireImpl implements OutgoingRpcWire {
         write(returnValueMessage);
     }
 
-    public void returnRpcResultTheOldWay(
-            final long rpcIndex,
-            final Rpc.MethodSignature methodSignature,
-            final Message result) {
 
-        final Rpc.RpcControl returnValueMessage =
-                Rpc.RpcControl.newBuilder()
-                .setMessageType(Rpc.MessageType.RPC_RETURNVALUE)
-                .setStat(Rpc.StatusCode.OK)
-                .setRpcIndex(rpcIndex)
-                .setMethodSignature(methodSignature)
-                .build();
-        write(returnValueMessage, result);
-    }
 
     public void sendHeartbeat() {
         write(HEARTBEAT);
