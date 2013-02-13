@@ -67,7 +67,7 @@ public final class RpcPeerHandler
      * For each ChannelHandlerContext, this map keeps track of the
      * RemoteExecution context being processed.
      */
-    private ContextMap contextMap = new ContextMap();
+
     private HeartbeatMonitor heartbeatMonitor;
     final Map<Channel, Object> lockMap = new WeakHashMap<Channel, Object>();
     private final MethodSignatureResolver clientResolver;
@@ -166,7 +166,9 @@ public final class RpcPeerHandler
                         log.warning("Unknown type of control message: " + message);
                 }
             } else {
-                processPayloadMessage(message, ctx);
+               log.log(Level.SEVERE,
+                      "Unknown message type detected, shutting down channel", message);
+             e.getChannel().close();
             }
         } catch (Exception ex) {
             log.log(Level.SEVERE,
@@ -247,26 +249,6 @@ public final class RpcPeerHandler
         }
     }
 
-    private void processPayloadMessage(
-            final Message message,
-            final ChannelHandlerContext ctx) throws IllegalStateException, RpcPeerHandlerException {
-
-        final RemoteExecutionContext dc = contextMap.get(ctx);
-
-        if (dc == null) {
-            throw new RpcPeerHandlerException("Protocol decoding error 3");
-        }
-
-        if (dc.getDirection() == RpcDirection.INVOKING) {
-            executionService.execute(dc, ctx, message);
-        } else if (dc.getDirection() == RpcDirection.RETURNING) {
-            final Message msg = (Message) message;
-            getRpcChannel(ctx.getChannel()).returnCall(dc, msg);
-        } else {
-            throw new RpcPeerHandlerException("Unknown RpcDirection = " + dc.getDirection());
-        }
-        contextMap.remove(ctx);
-    }
 
     private void processCancelMessage(
             final RpcControl msg,

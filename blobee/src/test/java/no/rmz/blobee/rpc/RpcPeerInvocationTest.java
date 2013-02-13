@@ -87,6 +87,7 @@ public final class RpcPeerInvocationTest {
         resultReceived = lock.newCondition();
         port = Net.getFreePort();
 
+        // XXX Use the fixture instead?
         final RpcServer rpcServer =
                 RpcSetup.newServer(
                     new InetSocketAddress(HOST, port),

@@ -24,6 +24,7 @@ import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcChannel;
 import com.google.protobuf.RpcController;
 import com.google.protobuf.Service;
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -106,8 +107,7 @@ public final class RpcClientImpl implements RpcClient {
                 throw new IllegalStateException("Couldn't find call stub for invocation " + index);
             }
 
-            // XXX Checking that the size decreases
-            final long pre = invocations.keySet().size();
+
             invocations.remove(index);
             if (invocations.containsKey(index)) {
                 log.info("Removal of index did not succeed for index " + index);
@@ -404,6 +404,7 @@ public final class RpcClientImpl implements RpcClient {
     }
 
     @Override
+    @SuppressWarnings("WA_AWAIT_NOT_IN_LOOP")
     public void stop() {
         running = false;
 

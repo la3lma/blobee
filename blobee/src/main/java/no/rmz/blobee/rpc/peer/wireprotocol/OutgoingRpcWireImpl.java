@@ -55,15 +55,7 @@ public final class OutgoingRpcWireImpl implements OutgoingRpcWire {
         this.channel = checkNotNull(channel);
     }
 
-    private void write(final Message msg1, final Message msg2) {
-        checkNotNull(msg1);
-        checkNotNull(msg2);
-        synchronized (monitor) {
-            channel.write(msg1);
-            channel.write(msg2);
-        }
-    }
-
+    // XXX This could be inlined, it isn't really necessary any longer.
     private void write(final Message msg ) {
         checkNotNull(msg);
         synchronized (monitor) {

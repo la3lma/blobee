@@ -47,8 +47,7 @@ import org.junit.Test;
 
 public class SimplePerformanceTest {
 
-    final int ROUNDTRIPS = 40000;
-    final int DELTA = 0;
+    private static final int ROUNDTRIPS = 40000;
 
     private static final Logger log = Logger.getLogger(
             no.rmz.blobee.rpc.RpcPeerInvocationTest.class.getName());
@@ -57,8 +56,7 @@ public class SimplePerformanceTest {
     private int port;
 
     private RpcChannel clientChannel;
-    private Testservice.RpcParam request = Testservice.RpcParam.newBuilder().build();
-
+   
     private CountDownLatch targetLatch;
 
     RpcClient rpcclient;
@@ -175,7 +173,7 @@ public class SimplePerformanceTest {
         final long startTime = System.currentTimeMillis();
 
 
-        for (int i = 0; i < ROUNDTRIPS + DELTA ; i++) {
+        for (int i = 0; i < ROUNDTRIPS ; i++) {
             final RpcController clientController = rpcclient.newController();
             final String paramstring = Integer.toString(i);
             final Testservice.RpcParam request =
@@ -193,12 +191,10 @@ public class SimplePerformanceTest {
         //     get all the way around, or they are dropped on the way
         //     in.  Is there any pattern to this?
 
-        final double expectedTime = 0.025 * ROUNDTRIPS * 12;
-
-        final long expectedMillis = (long) expectedTime;
+        final long expectedMillis = (long) (0.025 * ROUNDTRIPS * 12);
         log.info("This shouldn't take more than " + expectedMillis + " millis");
 
-        latch.await((long) expectedTime, TimeUnit.MILLISECONDS);
+        latch.await(expectedMillis, TimeUnit.MILLISECONDS);
         final long endTime = System.currentTimeMillis();
         final long duration = endTime - startTime;
         final double millisPerRoundtrip = (double)duration / (double)ROUNDTRIPS;

@@ -18,6 +18,7 @@ package no.rmz.blobee.rpc;
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcChannel;
 import com.google.protobuf.RpcController;
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.BrokenBarrierException;
@@ -170,7 +171,7 @@ public final class ReallySimplePerformanceTest {
      * @throws InterruptedException
      * @throws BrokenBarrierException
      */
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings("WA_AWAIT_NOT_IN_LOOP")
+    @SuppressWarnings({"WA_AWAIT_NOT_IN_LOOP", "DLS_DEAD_LOCAL_STORE"})
     public void testRpcInvocation() throws InterruptedException, BrokenBarrierException {
 
         // The test is done when we've counted down the
@@ -204,8 +205,8 @@ public final class ReallySimplePerformanceTest {
         // long the user should expect this to take and inform her
         // through the log.
         final int marginFactor = 2;
-        final double expectedTime = 0.025 * ROUNDTRIPS * marginFactor;
-        final long expectedMillis = (long) expectedTime;
+
+        final long expectedMillis = (long) (0.025 * ROUNDTRIPS * marginFactor);
         log.info("This shouldn't take more than "
                 + expectedMillis
                 + " millis (margin factor = "

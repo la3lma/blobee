@@ -3,7 +3,7 @@
     <groupId>no.rmz</groupId>
     <artifactId>blobee</artifactId>
     <packaging>jar</packaging>
-    <version>1.0</version>
+    <version>0.1</version>
     <name>Blobee</name>
     <url>https://github.com/la3lma/blobee</url>
     <description>

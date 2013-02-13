@@ -2,6 +2,7 @@ package no.rmz.maputils;
 
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
@@ -9,9 +10,13 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 
 
 public final class InstrumentedMapRegistry {
+
+    private final static Logger log = Logger.getLogger(InstrumentedMapRegistry.class.getName());
+
     private static final Set<InstrumentedHashMap> maps = new HashSet<InstrumentedHashMap>();
 
 
@@ -23,7 +28,7 @@ public final class InstrumentedMapRegistry {
     }
 
 
-    public final static void log(final InstrumentedHashMap map, long size) {
+    public static final  void log(final InstrumentedHashMap map, long size) {
         final Runtime rt = Runtime.getRuntime();
         final long    usedMemory = rt.totalMemory() - rt.freeMemory();
         final String  name = map.getName();
@@ -44,6 +49,7 @@ public final class InstrumentedMapRegistry {
     private final static Map<String, PrintStream> printstreams =
             new ConcurrentHashMap<String, PrintStream>();
 
+    @SuppressWarnings("JLM_JSR166_UTILCONCURRENT_MONITORENTER")
     private static PrintStream getPrintStream(final String classname, final String name) {
         checkNotNull(name);
         checkNotNull(classname);
@@ -58,6 +64,7 @@ public final class InstrumentedMapRegistry {
         }
     }
 
+    @SuppressWarnings("JLM_JSR166_UTILCONCURRENT_MONITORENTER")
     public static void close() {
         synchronized (printstreams) {
             for (final PrintStream ps : printstreams.values()) {
@@ -74,7 +81,10 @@ public final class InstrumentedMapRegistry {
         try {
             final File file = new File(logdir  + "/" + name + ".csv");
             if (file.exists()) {
-                file.delete();
+                boolean delete = file.delete();
+                if (!delete) {
+                    log.info("Did not manage to delete file " + file);
+                }
             }
             final  PrintStream printStream = new PrintStream(file);
             return printStream;
