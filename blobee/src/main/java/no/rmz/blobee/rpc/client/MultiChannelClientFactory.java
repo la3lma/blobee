@@ -41,7 +41,9 @@ public final class MultiChannelClientFactory implements RpcClientFactory {
                 return channelClientMap.get(channel);
             } else {
                 final RpcClient result =
-                        new RpcClientImpl(RpcSetup.DEFAULT_BUFFER_SIZE, resolver);
+                        new RpcClientImpl(
+                            RpcSetup.DEFAULT_BUFFER_SIZE,
+                            resolver);
                 channelClientMap.put(channel, result);
                 return result;
             }

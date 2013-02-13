@@ -23,7 +23,6 @@ import no.rmz.blobee.controllers.RpcServiceControllerImpl;
 import no.rmz.blobee.rpc.peer.wireprotocol.OutgoingRpcWire;
 import no.rmz.blobee.rpc.peer.wireprotocol.WireFactory;
 import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
-import no.rmz.blobeeproto.api.proto.Rpc.RpcControl;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 
@@ -48,7 +47,7 @@ public final class RemoteExecutionContext {
         this.methodSignature = checkNotNull(methodSignature);
         this.rpcIndex = checkNotNull(rpcIndex);
         this.direction = checkNotNull(direction);
-        this.controller= new RpcServiceControllerImpl(this);
+        this.controller = new RpcServiceControllerImpl(this);
 
         final Channel channel = this.getCtx().getChannel();
         this.wire = WireFactory.getWireForChannel(channel);

@@ -19,11 +19,11 @@ package no.rmz.blobee.rpc.server;
 
 public final class ExecutionServiceException extends Exception {
 
-    public ExecutionServiceException(String string) {
+    public ExecutionServiceException(final String string) {
         super(string);
     }
 
-    public ExecutionServiceException(Exception ex) {
+    public ExecutionServiceException(final Exception ex) {
         super(ex);
     }
 }

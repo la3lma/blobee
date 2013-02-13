@@ -45,25 +45,25 @@ import org.junit.Before;
 import org.junit.Test;
 
 
-public class SimplePerformanceTest {
+public final class SimplePerformanceTest {
 
     private static final int ROUNDTRIPS = 40000;
 
     private static final Logger log = Logger.getLogger(
             no.rmz.blobee.rpc.RpcPeerInvocationTest.class.getName());
-    private final static String HOST = "localhost";
+    private static final  String HOST = "localhost";
 
     private int port;
 
     private RpcChannel clientChannel;
-   
+
     private CountDownLatch targetLatch;
 
-    RpcClient rpcclient;
+    private RpcClient rpcclient;
 
     public final class TestServiceXX extends Testservice.RpcService {
 
-        public final static String RETURN_VALUE = "Going home";
+        public static  final String RETURN_VALUE = "Going home";
         private final Testservice.RpcResult result =
                 Testservice.RpcResult.newBuilder().setReturnvalue(RETURN_VALUE).build();
         private final CountDownLatch targetLatch;
@@ -97,9 +97,9 @@ public class SimplePerformanceTest {
                     new InetSocketAddress(HOST, port),
                     new RpcMessageListener() {
 
-                    public void receiveMessage(Object message, ChannelHandlerContext ctx) {
+                    public void receiveMessage(final Object message, final ChannelHandlerContext ctx) {
                         if (message instanceof Testservice.RpcParam) {
-                            Testservice.RpcParam param =(Testservice.RpcParam) message;
+                            Testservice.RpcParam param = (Testservice.RpcParam) message;
                                 final String parameter = param.getParameter();
                             serverReceiverMap.remove(parameter);
                         }
@@ -107,13 +107,14 @@ public class SimplePerformanceTest {
 
                     }, new ExecutionServiceListener() {
 
+                        // XXX This is terrible, get rid of it.
                     public void listen(
-                            ExecutorService ex,
-                            Object method,
-                            Object implementation,
-                            Object controller,
-                            Object parameter,
-                            Object callback) {
+                            final ExecutorService ex,
+                            final Object method,
+                            final Object implementation,
+                            final Object controller,
+                            final Object parameter,
+                            final Object callback) {
                        final Testservice.RpcParam trp = (Testservice.RpcParam) parameter;
                        final String paramString = trp.getParameter();
                        serverExecutorMap.remove(paramString);
@@ -143,9 +144,9 @@ public class SimplePerformanceTest {
         clientChannel    = rpcclient.newClientRpcChannel();
     }
 
-    final Map<String, Boolean> serverExecutorMap = new ConcurrentHashMap<String, Boolean>();
-    final Map<String, Boolean> clientSenderMap = new ConcurrentHashMap<String, Boolean>();
-    final Map<String, Boolean> serverReceiverMap = new ConcurrentHashMap<String, Boolean>();
+    private final Map<String, Boolean> serverExecutorMap = new ConcurrentHashMap<String, Boolean>();
+    private final Map<String, Boolean> clientSenderMap = new ConcurrentHashMap<String, Boolean>();
+    private final Map<String, Boolean> serverReceiverMap = new ConcurrentHashMap<String, Boolean>();
 
 
     @edu.umd.cs.findbugs.annotations.SuppressWarnings("WA_AWAIT_NOT_IN_LOOP")
@@ -173,7 +174,7 @@ public class SimplePerformanceTest {
         final long startTime = System.currentTimeMillis();
 
 
-        for (int i = 0; i < ROUNDTRIPS ; i++) {
+        for (int i = 0; i < ROUNDTRIPS; i++) {
             final RpcController clientController = rpcclient.newController();
             final String paramstring = Integer.toString(i);
             final Testservice.RpcParam request =
@@ -197,7 +198,7 @@ public class SimplePerformanceTest {
         latch.await(expectedMillis, TimeUnit.MILLISECONDS);
         final long endTime = System.currentTimeMillis();
         final long duration = endTime - startTime;
-        final double millisPerRoundtrip = (double)duration / (double)ROUNDTRIPS;
+        final double millisPerRoundtrip = ((double) duration) / ((double) ROUNDTRIPS);
 
         log.info("Duration of "
                 + ROUNDTRIPS

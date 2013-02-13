@@ -31,12 +31,14 @@ public final class ResolverImpl implements MethodSignatureResolver {
     public ResolverImpl() {
     }
 
-    public MessageLite getPrototypeForParameter(final MethodSignature methodSignature) {
+    public MessageLite getPrototypeForParameter(
+            final MethodSignature methodSignature) {
         checkNotNull(methodSignature);
         return mmap.get(methodSignature).getOutputType();
     }
 
-    public MessageLite getPrototypeForReturnValue(final MethodSignature methodSignature) {
+    public MessageLite getPrototypeForReturnValue(
+            final MethodSignature methodSignature) {
         checkNotNull(methodSignature);
         return mmap.get(methodSignature).getOutputType();
     }

@@ -51,7 +51,10 @@ public interface RpcExecutionService {
      * @param ctx
      * @param message The parameter object.
      */
-    void execute(RemoteExecutionContext dc, ChannelHandlerContext ctx, Message message);
+    void execute(
+            final RemoteExecutionContext dc,
+            final ChannelHandlerContext ctx,
+            final Message message);
 
     /**
      * Cancel an invocation.

@@ -33,10 +33,10 @@ public final class RpcPeerStartupAndShutdownTest {
 
     private static final Logger log = Logger.getLogger(
             no.rmz.blobee.rpc.RpcPeerStartupAndShutdownTest.class.getName());
-    private final static String HOST = "localhost";
-    private final static Rpc.RpcControl HEARTBEAT_MESSAGE =
+    private static  final String HOST = "localhost";
+    private  static final Rpc.RpcControl HEARTBEAT_MESSAGE =
             Rpc.RpcControl.newBuilder().setMessageType(Rpc.MessageType.HEARTBEAT).build();
-    private final static Rpc.RpcControl SHUTDOWN_MESSAGE =
+    private static final Rpc.RpcControl SHUTDOWN_MESSAGE =
             Rpc.RpcControl.newBuilder().setMessageType(Rpc.MessageType.SHUTDOWN).build();
 
 
@@ -58,8 +58,7 @@ public final class RpcPeerStartupAndShutdownTest {
     public void sleepHalfASec() {
         try {
             Thread.currentThread().sleep(500);
-        }
-        catch (InterruptedException ex) {
+        } catch (InterruptedException ex) {
             throw new RuntimeException(ex);
         }
     }

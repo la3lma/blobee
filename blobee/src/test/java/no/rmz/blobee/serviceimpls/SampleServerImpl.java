@@ -24,7 +24,7 @@ import no.rmz.blobeetestproto.api.proto.Testservice.RpcService;
 
 public  final class SampleServerImpl extends RpcService {
 
-    public final static String RETURN_VALUE = "Going home";
+    public static final String RETURN_VALUE = "Going home";
 
     private final RpcResult result =
             RpcResult.newBuilder().setReturnvalue(RETURN_VALUE).build();

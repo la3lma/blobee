@@ -27,14 +27,14 @@ public interface OutgoingRpcWire {
             final Long rpcIndex,
             final Message request);
 
-    public void returnRpcResult(
+     void returnRpcResult(
             final long rpcIndex,
             final Rpc.MethodSignature methodSignature,
             final Message result);
 
-    public void sendHeartbeat();
+    void sendHeartbeat();
 
-    public void sendCancelMessage(final long rpcIndex);
+    void sendCancelMessage(final long rpcIndex);
 
-    public void sendInvocationFailedMessage(final long rpcIndex, final String reason);
+    void sendInvocationFailedMessage(final long rpcIndex, final String reason);
 }

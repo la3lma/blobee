@@ -25,7 +25,7 @@ public final class RpcServiceControllerImpl implements RpcServiceController {
 
     private final RemoteExecutionContext executionContext;
     private final Object monitor = new Object();
-    boolean failed = false;
+    private boolean failed = false;
     private boolean startCancelInvokedAlready = false;
     private boolean cancelled = false;
     private RpcCallback<Object> callbackOnFailure;
@@ -33,12 +33,14 @@ public final class RpcServiceControllerImpl implements RpcServiceController {
 
     public RpcServiceControllerImpl(final RemoteExecutionContext dc) {
         this.executionContext = checkNotNull(dc);
-        this.wire = WireFactory.getWireForChannel(executionContext.getCtx().getChannel());
+        this.wire = WireFactory.getWireForChannel(
+                executionContext.getCtx().getChannel());
     }
 
     @Override
     public void reset() {
-        throw new UnsupportedOperationException("Reset not supported on server side controller");
+        throw new UnsupportedOperationException(
+                "Reset not supported on server side controller");
     }
 
     @Override
@@ -48,7 +50,8 @@ public final class RpcServiceControllerImpl implements RpcServiceController {
 
     @Override
     public String errorText() {
-        throw new UnsupportedOperationException("Not supported in server side RpcController");
+        throw new UnsupportedOperationException(
+                "Not supported in server side RpcController");
     }
 
 
@@ -56,7 +59,8 @@ public final class RpcServiceControllerImpl implements RpcServiceController {
         checkNotNull(callback);
         synchronized (monitor) {
             if (callbackOnFailure != null) {
-                throw new IllegalStateException("notifyOnCancel invoked more than once");
+                throw new IllegalStateException(
+                        "notifyOnCancel invoked more than once");
             }
             callbackOnFailure = callback;
         }

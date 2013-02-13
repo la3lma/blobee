@@ -21,7 +21,7 @@ public final class RpcServerException extends Exception {
         super(ex);
     }
 
-    RpcServerException(String string) {
+    RpcServerException(final String string) {
         super(string);
     }
 }

@@ -13,13 +13,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package no.rmz.blobee.rpc.server;
 
 public interface RpcServer {
 
-    public RpcServer start();
+    RpcServer start();
 
-    public void stop();
-
+    void stop();
 }

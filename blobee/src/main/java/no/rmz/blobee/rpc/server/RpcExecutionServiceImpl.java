@@ -42,12 +42,12 @@ import org.jboss.netty.channel.ChannelHandlerContext;
 
 /**
  * The implementation object implements one or more interfaces each of those
- * interfaces present methods that can be served through
+ * interfaces present methods that can be served through.
  */
 public final class RpcExecutionServiceImpl
         implements RpcExecutionService {
 
-    private final static Logger log =
+    private static  final Logger log =
             Logger.getLogger(RpcExecutionServiceImpl.class.getName());
     /**
      * A thread pool using the EXCEPTION_HANDLER that is used to execute
@@ -84,14 +84,15 @@ public final class RpcExecutionServiceImpl
             return null;
         }
     }
-    final String name;
+
+    private final String name;
 
     public RpcExecutionServiceImpl(final String name) {
         this(name, null);
     }
     private final ExecutionServiceListener listener;
 
-    public RpcExecutionServiceImpl(final String name, ExecutionServiceListener listener) {
+    public RpcExecutionServiceImpl(final String name, final ExecutionServiceListener listener) {
         this.name = checkNotNull(name);
         this.listener = listener;
     }
@@ -139,8 +140,7 @@ public final class RpcExecutionServiceImpl
                 try {
                     descriptor = ServiceAnnotationMapper.getMethodDescriptor(
                             implementation.getClass(), name);
-                }
-                catch (Exception ex) { // XXX Bad habit
+                } catch (Exception ex) { // XXX Bad habit
                     throw new RpcServerException(ex);
                 }
 
@@ -196,16 +196,16 @@ public final class RpcExecutionServiceImpl
         return null;
     }
 
-    public void removeController(final ChannelHandlerContext ctx, long rpcIndex) {
+    public void removeController(final ChannelHandlerContext ctx, final long rpcIndex) {
         controllerStorage.removeController(ctx, rpcIndex);
     }
 
-    public final static class ControllerCoordinate {
+    public static  final class ControllerCoordinate {
 
-        final ChannelHandlerContext ctx;
-        final Long rpcIdx;
+        private final ChannelHandlerContext ctx;
+        private final Long rpcIdx;
 
-        public ControllerCoordinate(ChannelHandlerContext ctx, long rpcIdx) {
+        public ControllerCoordinate(final ChannelHandlerContext ctx, final long rpcIdx) {
             this.ctx = checkNotNull(ctx);
             checkArgument(rpcIdx >= 0);
             this.rpcIdx = rpcIdx;
@@ -241,8 +241,7 @@ public final class RpcExecutionServiceImpl
                 new MethodInvokingRunnable(implementation, dc, ctx, parameter, controllerStorage, this);
         try {
             threadPool.submit(runnable);
-        }
-        catch (Exception e) {
+        }  catch (Exception e) {
             log.log(Level.SEVERE, "Couldn't submit runnable.  That's awful!", e);
         }
     }

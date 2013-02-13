@@ -29,7 +29,7 @@ import org.jboss.netty.channel.ChannelFuture;
 public final class ConnectingRpcClientImpl implements RpcClient {
     private final RpcClientImpl rpcClient;
     private final ClientBootstrap clientBootstrap;
-    final InetSocketAddress socketAddress;
+    private final InetSocketAddress socketAddress;
 
     public ConnectingRpcClientImpl(
             final ClientBootstrap clientBootstrap,

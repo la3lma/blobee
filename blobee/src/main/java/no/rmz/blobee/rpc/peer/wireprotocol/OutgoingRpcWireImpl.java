@@ -31,7 +31,7 @@ import org.jboss.netty.channel.Channel;
 //     a class comment.
 public final class OutgoingRpcWireImpl implements OutgoingRpcWire {
 
-    private final static Logger log = Logger.getLogger(OutgoingRpcWireImpl.class.getName());
+    private static  final Logger log = Logger.getLogger(OutgoingRpcWireImpl.class.getName());
 
     /**
      * A constant used when sending heartbeats.
@@ -56,7 +56,7 @@ public final class OutgoingRpcWireImpl implements OutgoingRpcWire {
     }
 
     // XXX This could be inlined, it isn't really necessary any longer.
-    private void write(final Message msg ) {
+    private void write(final Message msg) {
         checkNotNull(msg);
         synchronized (monitor) {
             channel.write(msg);
@@ -75,8 +75,7 @@ public final class OutgoingRpcWireImpl implements OutgoingRpcWire {
         try {
             msg.writeTo(baos);
             baos.close();
-        }
-        catch (IOException ex) {
+        } catch (IOException ex) {
             log.log(Level.SEVERE, "Couldn't serialize payload", ex);
         }
         ByteString payload;
@@ -142,7 +141,7 @@ public final class OutgoingRpcWireImpl implements OutgoingRpcWire {
     }
 
     @Override
-    public void sendCancelMessage(long rpcIndex) {
+    public void sendCancelMessage(final long rpcIndex) {
 
         final RpcControl cancelMessage =
                 Rpc.RpcControl.newBuilder()

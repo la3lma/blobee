@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package no.rmz.blobee.rpc.server;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -31,34 +30,34 @@ import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 
 public final class RpcServerImpl implements RpcServer {
 
-    private final static Logger log =
+    private static final  Logger log =
             Logger.getLogger(RpcServerImpl.class.getName());
-
     private final InetSocketAddress socket;
     private final RpcExecutionService executionService;
     private final RpcMessageListener listener;
     private final ServerBootstrap bootstrap;
-
-      final ExecutorService bossExecutor;
-
-        final ExecutorService workerExcecutor;
+    private final ExecutorService bossExecutor;
+    private final ExecutorService workerExcecutor;
 
     public RpcServerImpl(
             final InetSocketAddress socket,
             final RpcMessageListener listener) {
         this(socket,
-                new RpcExecutionServiceImpl("Execution service for server listening on " + socket.toString()),
+                new RpcExecutionServiceImpl(
+                "Execution service for server listening on "
+                + socket.toString()),
                 listener);
     }
 
-     public RpcServerImpl(
+    public RpcServerImpl(
             final InetSocketAddress socket,
             final RpcMessageListener listener,
             final ExecutionServiceListener esListener) {
         this(socket,
                 new RpcExecutionServiceImpl(
-                    "Execution service for server listening on " + socket.toString(),
-                    esListener),
+                "Execution service for server listening on "
+                + socket.toString(),
+                esListener),
                 listener);
     }
 
@@ -71,10 +70,12 @@ public final class RpcServerImpl implements RpcServer {
         this.listener = listener; // XXX Nullable
 
         bossExecutor = Executors.newCachedThreadPool(
-                new ErrorLoggingThreadFactory("RpcServerImpl bossExecutor", log));
+                new ErrorLoggingThreadFactory(
+                "RpcServerImpl bossExecutor", log));
 
         workerExcecutor = Executors.newCachedThreadPool(
-                new ErrorLoggingThreadFactory("RpcServerImpl workerExcecutor", log));
+                new ErrorLoggingThreadFactory(
+                "RpcServerImpl workerExcecutor", log));
 
         this.bootstrap = new ServerBootstrap(
                 new NioServerSocketChannelFactory(
@@ -82,15 +83,19 @@ public final class RpcServerImpl implements RpcServer {
                 workerExcecutor));
         final String name = "RPC Server at " + socket.toString();
         final RpcPeerPipelineFactory serverChannelPipelineFactory =
-                new RpcPeerPipelineFactory(name, executionService, new MultiChannelClientFactory(), listener);
+                new RpcPeerPipelineFactory(
+                      name,
+                      executionService,
+                      new MultiChannelClientFactory(),
+                      listener);
         // Set up the pipeline factory.
         bootstrap.setPipelineFactory(serverChannelPipelineFactory);
     }
 
-
     /**
-     * Bind to bootstrap socket and start accepting incoming
-     * connections and requests.
+     * Bind to bootstrap socket and start accepting incoming connections and
+     * requests.
+     *
      * @return this
      */
     public RpcServer start() {

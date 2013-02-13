@@ -54,12 +54,12 @@ public final class ReallySimplePerformanceTest {
     /**
      * The number of iterations we should run during the test.
      */
-    private final static int ROUNDTRIPS = 1000;
+    private  static final int ROUNDTRIPS = 1000;
 
     /**
      * The host where we set up the server.
      */
-    private final static String HOST = "localhost";
+    private static  final String HOST = "localhost";
 
     /**
      * The port we set up the server on.  It will be dynamically allocated
@@ -93,13 +93,13 @@ public final class ReallySimplePerformanceTest {
     /**
      * The message that is sent in the response.
      */
-    public final static String RETURN_VALUE = "Going home";
+    public static  final String RETURN_VALUE = "Going home";
 
     /**
      * A return value used to return results from the server serving the
      * RPC requests.  It contains a short static string.
      */
-    final RpcResult RETURNVALUE =
+    private static  final RpcResult RETURNVALUE =
             Testservice.RpcResult.newBuilder().setReturnvalue(RETURN_VALUE).build();
 
 
@@ -129,8 +129,7 @@ public final class ReallySimplePerformanceTest {
         try {
             // First we find a free port
             port = Net.getFreePort();
-        }
-        catch (IOException ex) {
+        } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
 
@@ -171,7 +170,7 @@ public final class ReallySimplePerformanceTest {
      * @throws InterruptedException
      * @throws BrokenBarrierException
      */
-    @SuppressWarnings({"WA_AWAIT_NOT_IN_LOOP", "DLS_DEAD_LOCAL_STORE"})
+    @SuppressWarnings({"WA_AWAIT_NOT_IN_LOOP", "DLS_DEAD_LOCAL_STORE" })
     public void testRpcInvocation() throws InterruptedException, BrokenBarrierException {
 
         // The test is done when we've counted down the
@@ -241,7 +240,7 @@ public final class ReallySimplePerformanceTest {
      * @param argv
      * @throws Exception
      */
-    public static void main(final String argv[])  throws Exception {
+    public static void main(final String argv [])  throws Exception {
         final ReallySimplePerformanceTest tst = new ReallySimplePerformanceTest();
         tst.setUp();
         tst.testRpcInvocation();

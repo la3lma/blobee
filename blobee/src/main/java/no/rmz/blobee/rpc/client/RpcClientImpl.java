@@ -51,10 +51,11 @@ public final class RpcClientImpl implements RpcClient {
 
     private static final Logger log = Logger.getLogger(RpcClientImpl.class.getName());
 
-    private final static int TIME_TO_WAIT_WHEN_QUEUE_IS_EMPTY_IN_MILLIS = 50;
+    private static final  int MAX_CAPACITY_FOR_INPUT_BUFFER = 10000;
+    private static  final int TIME_TO_WAIT_WHEN_QUEUE_IS_EMPTY_IN_MILLIS = 50;
     public static final int MAXIMUM_TCP_PORT_NUMBER = 65535;
     private final int capacity;
-    final BlockingQueue<RpcClientSideInvocation> incoming;
+    private final BlockingQueue<RpcClientSideInvocation> incoming;
     private volatile boolean running = false;
 
     // XXX Should this also be a concurrent hash?  Yes.  Also, a lot
@@ -69,7 +70,7 @@ public final class RpcClientImpl implements RpcClient {
     private Channel channel;
     private final Object mutationMonitor = new Object();
     private final Object runLock = new Object();
-    private final static int MAX_CAPACITY_FOR_INPUT_BUFFER = 10000;
+
     private final MethodSignatureResolver resolver;
 
 
@@ -128,8 +129,7 @@ public final class RpcClientImpl implements RpcClient {
             try {
                 runningLock.lock();
                 noLongerRunning.signal();
-            }
-            finally {
+            } finally {
                 runningLock.unlock();
             }
         }
@@ -163,8 +163,7 @@ public final class RpcClientImpl implements RpcClient {
 
             rcci.setClientAndIndex(this, currentIndex);
             sendInvocation(invocation, currentIndex);
-        }
-        catch (InterruptedException ex) {
+        } catch (InterruptedException ex) {
             log.warning("Something went south");
         }
     }
@@ -267,9 +266,8 @@ public final class RpcClientImpl implements RpcClient {
                     }
                     try {
                         Thread.sleep(20);
-                    }
-                    catch (InterruptedException ex) {
-                        // Ignore interruption
+                    } catch (InterruptedException ex) {
+                        log.info("Ignoring interruption " + ex);
                     }
                 }
                 throw new RuntimeException("Couldn't add to queue");
@@ -336,7 +334,7 @@ public final class RpcClientImpl implements RpcClient {
 
     public RpcClient addProtobuferRpcInterface(final Object instance) {
 
-        if (!( instance instanceof com.google.protobuf.Service )) {
+        if (!(instance instanceof com.google.protobuf.Service)) {
             throw new IllegalArgumentException("Expected a class extending com.google.protobuf.Service");
         }
 
@@ -359,8 +357,7 @@ public final class RpcClientImpl implements RpcClient {
                 // final MessageLite inputType = md.getInputType().toProto().getDefaultInstance();
 
                 resolver.addTypes(md, inputType, outputType);
-            }
-            catch (MethodTypeException ex) {
+            }   catch (MethodTypeException ex) {
                 /// XXXX Something  more severe should happen here
                 Logger.getLogger(RpcClientImpl.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -387,14 +384,11 @@ public final class RpcClientImpl implements RpcClient {
         final Object instance;
         try {
             instance = newReflectiveService.invoke(null, (Object) null);
-        }
-        catch (IllegalAccessException ex) {
+        } catch (IllegalAccessException ex) {
             throw new RuntimeException(ex);
-        }
-        catch (IllegalArgumentException ex) {
+        } catch (IllegalArgumentException ex) {
             throw new RuntimeException(ex);
-        }
-        catch (InvocationTargetException ex) {
+        } catch (InvocationTargetException ex) {
             throw new RuntimeException(ex);
         }
 

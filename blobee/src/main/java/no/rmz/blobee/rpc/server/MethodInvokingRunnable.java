@@ -45,19 +45,14 @@ final class MethodInvokingRunnable implements Runnable {
         };
         try {
             method.invoke(implementation, controller, parameter, callbackAdapter);
-        } // XXX Throwing Runtime Exceptions is evil, should be caught,
-        //     then logged.
-        catch (IllegalAccessException ex) {
+        } catch (IllegalAccessException ex) {
             throw new RuntimeException(ex);
-        }
-        catch (IllegalArgumentException ex) {
+        } catch (IllegalArgumentException ex) {
             throw new RuntimeException(ex);
-        }
-        catch (InvocationTargetException ex) {
+        } catch (InvocationTargetException ex) {
             throw new RuntimeException(ex);
         } finally {
             executor.removeController(ctx, dc.getRpcIndex());
         }
     }
-
 }

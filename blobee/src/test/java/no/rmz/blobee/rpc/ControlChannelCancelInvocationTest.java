@@ -49,12 +49,12 @@ public final class ControlChannelCancelInvocationTest {
 
     private static final Logger log = Logger.getLogger(
             no.rmz.blobee.rpc.ControlChannelCancelInvocationTest.class.getName());
-    private final static String HOST = "localhost";
-    public final static String RETURN_VALUE = "Going home";
+    private static  final String HOST = "localhost";
+    public  static  final String RETURN_VALUE = "Going home";
     private RpcChannel clientChannel;
     private Testservice.RpcParam request = Testservice.RpcParam.newBuilder().build();
     private RpcController clientController;
-    private final static String FAILED_TEXT = "The computation failed";
+    private static  final String FAILED_TEXT = "The computation failed";
     private ClientServerFixture csf;
     private volatile boolean cancelMessageWasReceived;
 
@@ -66,7 +66,8 @@ public final class ControlChannelCancelInvocationTest {
     public void shutDown() {
         csf.stop();
     }
-    volatile boolean zot = false;
+
+    private volatile boolean zot = false;
 
     /**
      * The service instance that we will use to communicate over the controller
@@ -85,7 +86,7 @@ public final class ControlChannelCancelInvocationTest {
 
 
             controller.notifyOnCancel(new RpcCallback<Object>() {
-                public void run(Object parameter) {
+                public void run(final Object parameter) {
                     if (controller.isCanceled()) {
                         cancelMessageWasReceived = true;
                     }
@@ -162,8 +163,7 @@ public final class ControlChannelCancelInvocationTest {
             public void run() {
                 try {
                     Thread.currentThread().sleep(1000);
-                }
-                catch (InterruptedException ex) {
+                } catch (InterruptedException ex) {
                     throw new RuntimeException("Interrupted while sleeping");
                 }
                 myService.invoke(clientController, request, callback);

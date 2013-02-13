@@ -1,8 +1,6 @@
 package no.rmz.maputils;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -51,31 +49,31 @@ public final class InstrumentedHashMap<A, B> implements Map<A, B> {
         return backend.isEmpty();
     }
 
-    public boolean containsKey(Object key) {
+    public boolean containsKey(final Object key) {
         return backend.containsKey(key);
     }
 
-    public boolean containsValue(Object value) {
+    public boolean containsValue(final Object value) {
         return backend.containsValue(value);
     }
 
-    public B get(Object key) {
+    public B get(final Object key) {
         return backend.get(key);
     }
 
-    public B put(A key, B value) {
+    public B put(final A key, final B value) {
         final B result = backend.put(key, value);
         log();
         return result;
     }
 
-    public B remove(Object key) {
+    public B remove(final Object key) {
         final B result = backend.remove(key);
         log();
         return result;
     }
 
-    public void putAll(Map<? extends A, ? extends B> m) {
+    public void putAll(final Map<? extends A, ? extends B> m) {
         backend.putAll(m);
     }
 
@@ -95,7 +93,7 @@ public final class InstrumentedHashMap<A, B> implements Map<A, B> {
         return backend.entrySet();
     }
 
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         return backend.equals(o);
     }
 

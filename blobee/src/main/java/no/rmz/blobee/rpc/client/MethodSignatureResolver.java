@@ -22,9 +22,11 @@ import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
 
 public interface MethodSignatureResolver {
 
-    MessageLite getPrototypeForParameter(final MethodSignature methodSignature);
+    MessageLite getPrototypeForParameter(
+            final MethodSignature methodSignature);
 
-    MessageLite getPrototypeForReturnValue(final MethodSignature methodSignature);
+    MessageLite getPrototypeForReturnValue(
+            final MethodSignature methodSignature);
 
     void addTypes(
             final Descriptors.MethodDescriptor md,

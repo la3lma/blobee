@@ -50,7 +50,8 @@ import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
  */
 public final class RpcSetup {
 
-    public final static Logger log = Logger.getLogger(RpcSetup.class.getName());
+    public static final  Logger log =
+            Logger.getLogger(RpcSetup.class.getName());
 
     /**
      * The default buffer size for the client.  This turns out
@@ -60,7 +61,7 @@ public final class RpcSetup {
      * what the optimal value is, or even better, if it can be calculated
      * dynamically at runtime.
      */
-    public final static int DEFAULT_BUFFER_SIZE = 1000;
+    public static  final int DEFAULT_BUFFER_SIZE = 1000;
 
 
     /**
@@ -82,7 +83,7 @@ public final class RpcSetup {
                 new ErrorLoggingThreadFactory("RpcClient bossExecutor", log));
 
         final ExecutorService workerExcecutor = Executors.newCachedThreadPool(
-                new ErrorLoggingThreadFactory("RpcClient workerExcecutor", log));
+               new ErrorLoggingThreadFactory("RpcClient workerExcecutor", log));
 
         // Configure the client.
         // XXX Use a thread factory to catch throws that are not

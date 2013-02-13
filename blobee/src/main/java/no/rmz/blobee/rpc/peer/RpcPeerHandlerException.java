@@ -2,11 +2,11 @@ package no.rmz.blobee.rpc.peer;
 
 public final class RpcPeerHandlerException extends Exception {
 
-    public RpcPeerHandlerException(String message) {
+    public RpcPeerHandlerException(final String message) {
         super(message);
     }
 
-    RpcPeerHandlerException(Exception ex) {
+    RpcPeerHandlerException(final Exception ex) {
         super(ex);
     }
 }

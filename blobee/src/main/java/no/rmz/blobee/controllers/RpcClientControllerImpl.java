@@ -116,18 +116,22 @@ public final class RpcClientControllerImpl implements RpcClientController {
     }
 
     @Override
-    public void notifyOnCancel(RpcCallback<Object> callback) {
-        throw new UnsupportedOperationException("notifyOnCancel callback not supported on client side");
+    public void notifyOnCancel(final RpcCallback<Object> callback) {
+        throw new UnsupportedOperationException(
+                "notifyOnCancel callback not supported on client side");
     }
 
     @Override
-    public void setClientAndIndex(final RpcClientImpl rpcClient, final long rpcIndex) {
+    public void setClientAndIndex(
+            final RpcClientImpl rpcClient,
+            final long rpcIndex) {
         checkNotNull(rpcClient);
         checkArgument(rpcIndex >= 0);
         synchronized (monitor) {
 
             if (this.rpcClient != null) {
-                throw new IllegalArgumentException("Controller is already in use, can't be reset");
+                throw new IllegalArgumentException(
+                        "Controller is already in use, can't be reset");
             }
             this.rpcClient = checkNotNull(rpcClient);
             checkArgument(rpcIndex >= 0);

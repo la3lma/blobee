@@ -18,7 +18,7 @@ package no.rmz.blobee.protobuf;
 
 public final class MethodTypeException extends Exception {
 
-    public MethodTypeException(Throwable cause) {
+    public MethodTypeException(final Throwable cause) {
         super(cause);
     }
 }

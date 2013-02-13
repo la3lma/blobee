@@ -69,7 +69,8 @@ public final class RpcPeerHandler
      */
 
     private HeartbeatMonitor heartbeatMonitor;
-    final Map<Channel, Object> lockMap = new WeakHashMap<Channel, Object>();
+    private final Map<Channel, Object> lockMap =
+            new WeakHashMap<Channel, Object>();
     private final MethodSignatureResolver clientResolver;
 
     protected RpcPeerHandler(
@@ -110,7 +111,11 @@ public final class RpcPeerHandler
         return rcf.getClientFor(channel);
     }
 
-    public void runListener(final ChannelHandlerContext ctx, Object message) {
+    public void runListener(
+            final ChannelHandlerContext ctx,
+            final Object message) {
+        checkNotNull(ctx);
+        checkNotNull(message);
         synchronized (listenerLock) {
             if (listener != null) {
                 listener.receiveMessage(message, ctx);
@@ -124,7 +129,7 @@ public final class RpcPeerHandler
             final MessageEvent e) {
 
         final Object object = e.getMessage();
-        if (!( object instanceof Message )) {
+        if (!(object instanceof Message)) {
             throw new RuntimeException("Unknown type of incoming message in "
                     + this
                     + ".  Type of message was "
@@ -163,11 +168,13 @@ public final class RpcPeerHandler
                         processCancelMessage(msg, ctx);
                         break;
                     default:
-                        log.warning("Unknown type of control message: " + message);
+                        log.warning(
+                                "Unknown type of control message: " + message);
                 }
             } else {
                log.log(Level.SEVERE,
-                      "Unknown message type detected, shutting down channel", message);
+                      "Unknown message type detected, shutting down channel",
+                      message);
              e.getChannel().close();
             }
         } catch (Exception ex) {
@@ -179,7 +186,9 @@ public final class RpcPeerHandler
     }
 
     @Override
-    public void exceptionCaught(final ChannelHandlerContext ctx, final ExceptionEvent e) {
+    public void exceptionCaught(
+            final ChannelHandlerContext ctx,
+            final ExceptionEvent e) {
         // Close the connection when an exception is raised.
         log.log(Level.WARNING, "Unexpected exception from downstream.", e.getCause());
         e.getChannel().close();
@@ -208,27 +217,33 @@ public final class RpcPeerHandler
                     return returnValue;
                 }
             }
-        }
-        catch (Exception ex) {
+        }  catch (Exception ex) {
             throw new RpcPeerHandlerException(ex);
         }
-        throw new RpcPeerHandlerException("Couldn't find getDefaultIntance method for class " + theClass);
+        throw new RpcPeerHandlerException(
+                "Couldn't find getDefaultIntance method for class " + theClass);
     }
 
     // XXX The executor service should also be a resolver
-    private MessageLite getPrototypeForParameter(final MethodSignature methodSignature) throws RpcPeerHandlerException {
+    private MessageLite getPrototypeForParameter(
+            final MethodSignature methodSignature)
+            throws RpcPeerHandlerException {
         checkNotNull(methodSignature);
-        final Class parameterType = executionService.getParameterType(methodSignature);
+        final Class parameterType =
+                executionService.getParameterType(methodSignature);
         checkNotNull(parameterType);
         return getPrototypeForMessageClass(parameterType);
     }
 
-    private MessageLite getPrototypeForReturnValue(final MethodSignature methodSignature) {
+    private MessageLite getPrototypeForReturnValue(
+            final MethodSignature methodSignature) {
         checkNotNull(methodSignature);
         return clientResolver.getPrototypeForReturnValue(methodSignature);
     }
 
-    public void returnResult(final RemoteExecutionContext context, final Message result) {
+    public void returnResult(
+            final RemoteExecutionContext context,
+            final Message result) {
         final long rpcIndex = context.getRpcIndex();
         final MethodSignature methodSignature = context.getMethodSignature();
         final Channel channel = context.getCtx().getChannel();
@@ -257,7 +272,9 @@ public final class RpcPeerHandler
         executionService.startCancel(ctx, rpcIndex);
     }
 
-    private void processInvocationFailedMessage(final Channel channel, final RpcControl msg) {
+    private void processInvocationFailedMessage(
+            final Channel channel,
+            final RpcControl msg) {
         checkNotNull(channel);
         checkNotNull(msg);
         final String errorMessage = msg.getFailed();
@@ -265,7 +282,8 @@ public final class RpcPeerHandler
         getRpcChannel(channel).failInvocation(rpcIndex, errorMessage);
     }
 
-    private void processChannelShutdownMessage(final ChannelHandlerContext ctx) {
+    private void processChannelShutdownMessage(
+            final ChannelHandlerContext ctx) {
         ctx.getChannel().close();
     }
 
@@ -285,9 +303,11 @@ public final class RpcPeerHandler
 
         final MessageLite payload;
         try {
-            payload = prototypeForReturnValue.newBuilderForType().mergeFrom(msg.getPayload()).build();
-        }
-        catch (InvalidProtocolBufferException ex) {
+            payload =  prototypeForReturnValue
+                    .newBuilderForType()
+                    .mergeFrom(msg.getPayload())
+                    .build();
+        } catch (InvalidProtocolBufferException ex) {
             throw new RpcPeerHandlerException(ex);
         }
         checkNotNull(payload);
@@ -298,7 +318,9 @@ public final class RpcPeerHandler
         getRpcChannel(ctx.getChannel()).returnCall(dc, pld);
     }
 
-    private void processInvocationMessage(final RpcControl msg, final ChannelHandlerContext ctx)
+    private void processInvocationMessage(
+            final RpcControl msg,
+            final ChannelHandlerContext ctx)
             throws RpcPeerHandlerException {
         try {
             final MethodSignature methodSignature = msg.getMethodSignature();
@@ -307,21 +329,24 @@ public final class RpcPeerHandler
                     getPrototypeForParameter(methodSignature);
 
 
-            final RemoteExecutionContext rec = new RemoteExecutionContext(this, ctx,
+            final RemoteExecutionContext rec =
+                    new RemoteExecutionContext(this, ctx,
                     methodSignature, rpcIndex, RpcDirection.INVOKING);
             checkNotNull(rec);
 
 
             final MessageLite payload =
-                    prototypeForParameter.newBuilderForType().mergeFrom(msg.getPayload()).build();
+                    prototypeForParameter
+                    .newBuilderForType()
+                    .mergeFrom(msg.getPayload())
+                    .build();
             checkNotNull(payload);
             // XXX Bug here
             final Message pld = (Message) payload;
 
             checkNotNull(ctx);
             executionService.execute(rec, ctx, pld);
-        }
-        catch (InvalidProtocolBufferException ex) {
+        } catch (InvalidProtocolBufferException ex) {
             throw new RpcPeerHandlerException(ex);
         }
     }

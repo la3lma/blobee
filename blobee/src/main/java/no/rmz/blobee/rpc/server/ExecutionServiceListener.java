@@ -26,7 +26,7 @@ import java.util.concurrent.ExecutorService;
  */
 public interface ExecutionServiceListener {
 
-    public void listen(
+    void listen(
             ExecutorService threadPool,
             Object object,
             Object implementation,

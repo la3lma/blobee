@@ -34,7 +34,9 @@ public final class SingeltonClientFactory implements RpcClientFactory {
                 this.channel = channel;
             }
             if (channel != this.channel) {
-                throw new IllegalStateException("Attempt to get client for more than one channel " + channel);
+                throw new IllegalStateException(
+                        "Attempt to get client for more than one channel "
+                        + channel);
             } else {
                 return rpcClient;
             }

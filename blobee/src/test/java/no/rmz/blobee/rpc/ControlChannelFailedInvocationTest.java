@@ -51,7 +51,7 @@ public final class ControlChannelFailedInvocationTest {
     private RpcChannel clientChannel;
     private Testservice.RpcParam request = Testservice.RpcParam.newBuilder().build();
     private RpcController clientController;
-    private final static String FAILED_TEXT = "The computation failed";
+    private static  final String FAILED_TEXT = "The computation failed";
     private ClientServerFixture csf;
     private Lock lock;
     private Condition resultReceived;
@@ -74,7 +74,7 @@ public final class ControlChannelFailedInvocationTest {
      */
     public final class ServiceTestItem extends Testservice.RpcService {
 
-        public final static String RETURN_VALUE = "Going home";
+        public  static  final String RETURN_VALUE = "Going home";
         private final Testservice.RpcResult result =
                 Testservice.RpcResult.newBuilder().setReturnvalue(RETURN_VALUE).build();
 
@@ -115,7 +115,7 @@ public final class ControlChannelFailedInvocationTest {
 
 
 
-    @Test(timeout=10000)
+    @Test(timeout = 10000)
     @SuppressWarnings("WA_AWAIT_NOT_IN_LOOP")
     public void testRpcInvocation() throws InterruptedException {
 

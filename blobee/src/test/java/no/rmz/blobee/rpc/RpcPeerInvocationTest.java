@@ -47,7 +47,7 @@ public final class RpcPeerInvocationTest {
 
     private static final Logger log = Logger.getLogger(
             no.rmz.blobee.rpc.RpcPeerInvocationTest.class.getName());
-    private final static String HOST = "localhost";
+    private  static  final String HOST = "localhost";
 
     private int port;
 
@@ -60,7 +60,7 @@ public final class RpcPeerInvocationTest {
     private Condition resultReceived;
     private RpcController servingController;
 
-    RpcMessageListener rpcMessageListener = new RpcMessageListener() {
+    private RpcMessageListener rpcMessageListener = new RpcMessageListener() {
         public void receiveMessage(
                 final Object message,
                 final ChannelHandlerContext ctx) {
@@ -73,8 +73,7 @@ public final class RpcPeerInvocationTest {
         try {
             lock.lock();
             resultReceived.signal();
-        }
-        finally {
+        } finally {
             lock.unlock();
         }
     }
@@ -110,7 +109,7 @@ public final class RpcPeerInvocationTest {
     @Mock
     Receiver<String> callbackResponse;
 
-    @Test(timeout=10000)
+    @Test(timeout = 10000)
     @SuppressWarnings("WA_AWAIT_NOT_IN_LOOP")
     public void testRpcInvocation() throws InterruptedException {
 

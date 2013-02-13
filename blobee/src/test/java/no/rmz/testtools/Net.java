@@ -26,7 +26,12 @@ import java.util.List;
  *
  * @author borud
  */
-public class Net {
+public final class Net {
+
+    private  Net() {
+    }
+
+
 
     /**
      * Find a network port that is not in use. <p> The only way to implement
@@ -57,7 +62,7 @@ public class Net {
      * @return an array of numPorts port numbers.
      * @throws IOException if an IO error occurs.
      */
-    public static int[] getFreePorts(int numPorts) throws IOException {
+    public static int[] getFreePorts(final int numPorts) throws IOException {
 
         checkArgument(numPorts > 0);
         final List<ServerSocket> sockets = new ArrayList<ServerSocket>(numPorts);
@@ -74,8 +79,7 @@ public class Net {
                 portNums[i] = ss.getLocalPort();
             }
             return portNums;
-        }
-        finally {
+        } finally {
             for (final ServerSocket socket : sockets) {
                 socket.close();
             }

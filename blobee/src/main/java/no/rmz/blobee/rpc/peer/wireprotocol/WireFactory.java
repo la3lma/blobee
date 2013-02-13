@@ -22,10 +22,10 @@ import org.jboss.netty.channel.Channel;
 
 public final class WireFactory {
 
-    private final static Logger log =
+    private static final  Logger log =
             Logger.getLogger(WireFactory.class.getName());
 
-    private static final Map<Channel, OutgoingRpcWire> wireMap =
+    private static final Map<Channel, OutgoingRpcWire> WIRE_MAP =
             new WeakHashMap<Channel, OutgoingRpcWire>();
 
     /**
@@ -36,13 +36,13 @@ public final class WireFactory {
 
     public static OutgoingRpcWire getWireForChannel(final Channel channel) {
         // XXX Another layer of synchronization first perhaps, to get
-        //     a lock-object that nobody else can do anything (including locking)
-        //     on?
+        //     a lock-object that nobody else can do anything
+        //     (including locking) on?
         synchronized (channel) {
-            OutgoingRpcWire wire = wireMap.get(channel);
+            OutgoingRpcWire wire = WIRE_MAP.get(channel);
             if (wire == null) {
                 wire = new OutgoingRpcWireImpl(channel);
-                wireMap.put(channel, wire);
+                WIRE_MAP.put(channel, wire);
             }
             return wire;
         }

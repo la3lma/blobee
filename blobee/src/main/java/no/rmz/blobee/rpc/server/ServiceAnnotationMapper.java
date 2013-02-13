@@ -46,20 +46,15 @@ public final class ServiceAnnotationMapper {
             final MethodDescriptor methodDesc =
                     serviceDescriptor.findMethodByName(rectifiedMethodName);
             return methodDesc;
-        }
-        catch (IllegalAccessException ex) {
+        } catch (IllegalAccessException ex) {
              throw new RpcServerException(ex);
-        }
-        catch (IllegalArgumentException ex) {
+        } catch (IllegalArgumentException ex) {
              throw new RpcServerException(ex);
-        }
-        catch (InvocationTargetException ex) {
+        } catch (InvocationTargetException ex) {
             throw new RpcServerException(ex);
-        }
-        catch (NoSuchMethodException ex) {
+        } catch (NoSuchMethodException ex) {
            throw new RpcServerException(ex);
-        }
-        catch (SecurityException ex) {
+        } catch (SecurityException ex) {
            throw new RpcServerException(ex);
         }
     }

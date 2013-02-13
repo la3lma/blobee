@@ -15,50 +15,56 @@ import java.util.logging.Logger;
 
 public final class InstrumentedMapRegistry {
 
-    private final static Logger log = Logger.getLogger(InstrumentedMapRegistry.class.getName());
+    private  static final Logger log = Logger.getLogger(InstrumentedMapRegistry.class.getName());
 
-    private static final Set<InstrumentedHashMap> maps = new HashSet<InstrumentedHashMap>();
+    private static final Set<InstrumentedHashMap> MAPS = new HashSet<InstrumentedHashMap>();
+
+    private  InstrumentedMapRegistry() {
+    }
+
 
 
     public static void register(final InstrumentedHashMap map) {
         checkNotNull(map);
-        synchronized (maps) {
-            maps.add(map);
+        synchronized (MAPS) {
+            MAPS.add(map);
         }
     }
 
 
-    public static final  void log(final InstrumentedHashMap map, long size) {
+    public static  void log(
+            final InstrumentedHashMap map,
+            final long size) {
         final Runtime rt = Runtime.getRuntime();
         final long    usedMemory = rt.totalMemory() - rt.freeMemory();
         final String  name = map.getName();
         final String  classname = map.getCreator().getClass().getName();
         final long    time = System.currentTimeMillis();
         final PrintStream ps = getPrintStream(classname, name);
-        synchronized(ps) {
+        synchronized (ps) {
             ps.format("%d  %d\n", time, size);
             ps.flush();
         }
         final PrintStream ps2 = getPrintStream(InstrumentedMapRegistry.class.getName(), "usedMemory");
-        synchronized(ps) {
+        synchronized (ps) {
             ps2.format("%d  %d\n", time, usedMemory / 100000); // XXX magic scale factor
             ps2.flush();
         }
     }
 
-    private final static Map<String, PrintStream> printstreams =
+    private static  final Map<String, PrintStream> PRINTSTREAMS =
             new ConcurrentHashMap<String, PrintStream>();
 
     @SuppressWarnings("JLM_JSR166_UTILCONCURRENT_MONITORENTER")
     private static PrintStream getPrintStream(final String classname, final String name) {
         checkNotNull(name);
         checkNotNull(classname);
-        synchronized (printstreams) {
-            if (printstreams.containsKey(name)) {
-                return printstreams.get(name);
+        synchronized (PRINTSTREAMS) {
+            if (PRINTSTREAMS.containsKey(name)) {
+                return PRINTSTREAMS.get(name);
             } else {
                 final PrintStream ps = newPrintStream(name);
-                printstreams.put(name, ps);
+                PRINTSTREAMS.put(name, ps);
                 return ps;
             }
         }
@@ -66,8 +72,8 @@ public final class InstrumentedMapRegistry {
 
     @SuppressWarnings("JLM_JSR166_UTILCONCURRENT_MONITORENTER")
     public static void close() {
-        synchronized (printstreams) {
-            for (final PrintStream ps : printstreams.values()) {
+        synchronized (PRINTSTREAMS) {
+            for (final PrintStream ps : PRINTSTREAMS.values()) {
                 synchronized (ps) {
                     ps.close();
                 }
@@ -75,7 +81,7 @@ public final class InstrumentedMapRegistry {
         }
     }
 
-    final static String logdir = "logs"; // XXX
+    private static final String logdir = "logs"; // XXX
 
     private static PrintStream newPrintStream(final String name) {
         try {
@@ -88,8 +94,7 @@ public final class InstrumentedMapRegistry {
             }
             final  PrintStream printStream = new PrintStream(file);
             return printStream;
-        }
-        catch (FileNotFoundException ex) {
+        } catch (FileNotFoundException ex) {
             throw new RuntimeException(ex);
         }
     }
