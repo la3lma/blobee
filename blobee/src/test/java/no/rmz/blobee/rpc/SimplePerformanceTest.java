@@ -156,11 +156,11 @@ public final class SimplePerformanceTest {
     }
 
     private final Map<String, Boolean> serverExecutorMap =
-            new ConcurrentHashMap<String, Boolean>();
+            new ConcurrentHashMap<>();
     private final Map<String, Boolean> clientSenderMap =
-            new ConcurrentHashMap<String, Boolean>();
+            new ConcurrentHashMap<>();
     private final Map<String, Boolean> serverReceiverMap =
-            new ConcurrentHashMap<String, Boolean>();
+            new ConcurrentHashMap<>();
 
 
     @edu.umd.cs.findbugs.annotations.SuppressWarnings("WA_AWAIT_NOT_IN_LOOP")
@@ -174,7 +174,7 @@ public final class SimplePerformanceTest {
         serverReceiverMap.clear();
 
         final Map<String, Boolean> hitMap =
-                new ConcurrentHashMap<String, Boolean>();
+                new ConcurrentHashMap<>();
 
         final RpcCallback<Testservice.RpcResult> callback =
                 new RpcCallback<Testservice.RpcResult>() {

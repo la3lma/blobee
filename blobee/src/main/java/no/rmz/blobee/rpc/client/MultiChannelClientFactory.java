@@ -31,7 +31,7 @@ public final class MultiChannelClientFactory implements RpcClientFactory {
 
     public MultiChannelClientFactory() {
         this.resolver = new ResolverImpl();
-        this.channelClientMap = new WeakHashMap<Channel, RpcClient>();
+        this.channelClientMap = new WeakHashMap<>();
     }
 
     @Override

@@ -26,7 +26,7 @@ import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
 public final class ResolverImpl implements MethodSignatureResolver {
 
     private final Map<MethodSignature, MethodDesc> mmap =
-            new ConcurrentHashMap<MethodSignature, MethodDesc>();
+            new ConcurrentHashMap<>();
 
     public ResolverImpl() {
     }

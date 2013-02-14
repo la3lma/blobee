@@ -64,7 +64,7 @@ public final class Net {
 
         checkArgument(numPorts > 0);
         final List<ServerSocket> sockets =
-                new ArrayList<ServerSocket>(numPorts);
+                new ArrayList<>(numPorts);
         final int[] portNums = new int[numPorts];
 
         try {

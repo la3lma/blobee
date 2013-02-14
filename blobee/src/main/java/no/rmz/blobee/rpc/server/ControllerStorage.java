@@ -13,8 +13,7 @@ public final class ControllerStorage {
             RpcExecutionServiceImpl.ControllerCoordinate,
             RpcServiceController> map =
                 new ConcurrentHashMap<
-                    RpcExecutionServiceImpl.ControllerCoordinate,
-                    RpcServiceController>();
+                    >();
 
     public void storeController(
             final ChannelHandlerContext ctx,

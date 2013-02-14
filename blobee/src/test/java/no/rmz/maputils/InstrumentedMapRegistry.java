@@ -19,7 +19,7 @@ public final class InstrumentedMapRegistry {
             Logger.getLogger(InstrumentedMapRegistry.class.getName());
 
     private static final Set<InstrumentedHashMap> MAPS =
-            new HashSet<InstrumentedHashMap>();
+            new HashSet<>();
 
     private  InstrumentedMapRegistry() {
     }
@@ -56,7 +56,7 @@ public final class InstrumentedMapRegistry {
     }
 
     private static  final Map<String, PrintStream> PRINTSTREAMS =
-            new ConcurrentHashMap<String, PrintStream>();
+            new ConcurrentHashMap<>();
 
     @SuppressWarnings("JLM_JSR166_UTILCONCURRENT_MONITORENTER")
     private static PrintStream getPrintStream(

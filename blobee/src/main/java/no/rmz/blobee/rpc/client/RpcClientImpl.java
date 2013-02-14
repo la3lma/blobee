@@ -65,7 +65,7 @@ public final class RpcClientImpl implements RpcClient {
     //     (perhaps all) of the synchronization over invocations
     //     should be removed.
     private final Map<Long, RpcClientSideInvocation> invocations =
-                new TreeMap <Long, RpcClientSideInvocation>();
+                new TreeMap <>();
 
 
     private OutgoingRpcWire wire;
@@ -189,7 +189,7 @@ public final class RpcClientImpl implements RpcClient {
         checkArgument(0 < capacity && capacity < MAX_CAPACITY_FOR_INPUT_BUFFER);
         this.capacity = capacity;
         this.incoming =
-                new ArrayBlockingQueue<RpcClientSideInvocation>(capacity);
+                new ArrayBlockingQueue<>(capacity);
         this.resolver = checkNotNull(resolver);
         this.runningLock = new ReentrantLock();
         this.noLongerRunning = runningLock.newCondition();

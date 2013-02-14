@@ -59,9 +59,9 @@ public final class RpcExecutionServiceImpl
 
 
     private Map<MethodSignature, MethodDesc> xmap =
-            new ConcurrentHashMap<MethodSignature, MethodDesc>();
+            new ConcurrentHashMap<>();
     private Object implementation;
-    private Map<Class, Object> implementations = new HashMap<Class, Object>();
+    private Map<Class, Object> implementations = new HashMap<>();
     private final ControllerStorage controllerStorage = new ControllerStorage();
 
     @Override
@@ -115,7 +115,7 @@ public final class RpcExecutionServiceImpl
             final Class[] interfaceClasses) throws RpcServerException {
         this.implementation = checkNotNull(implementation);
 
-        final Collection<Class> ifaces = new HashSet<Class>();
+        final Collection<Class> ifaces = new HashSet<>();
 
         for (final Class i : implementation.getClass().getClasses()) {
             ifaces.add(i);

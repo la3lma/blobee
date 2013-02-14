@@ -26,7 +26,7 @@ public final class WireFactory {
             Logger.getLogger(WireFactory.class.getName());
 
     private static final Map<Channel, OutgoingRpcWire> WIRE_MAP =
-            new WeakHashMap<Channel, OutgoingRpcWire>();
+            new WeakHashMap<>();
 
     /**
      * Utility class, no public constructor.

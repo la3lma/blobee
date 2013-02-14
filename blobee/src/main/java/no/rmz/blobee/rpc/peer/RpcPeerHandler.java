@@ -19,6 +19,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.google.protobuf.MessageLite;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -70,7 +71,7 @@ public final class RpcPeerHandler
 
     private HeartbeatMonitor heartbeatMonitor;
     private final Map<Channel, Object> lockMap =
-            new WeakHashMap<Channel, Object>();
+            new WeakHashMap<>();
     private final MethodSignatureResolver clientResolver;
 
     protected RpcPeerHandler(
@@ -218,7 +219,7 @@ public final class RpcPeerHandler
                     return returnValue;
                 }
             }
-        }  catch (Exception ex) {
+        }  catch (SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             throw new RpcPeerHandlerException(ex);
         }
         throw new RpcPeerHandlerException(
