@@ -39,7 +39,6 @@ public final class RpcClientControllerImpl implements RpcClientController {
     public void reset() {
         synchronized (monitor) {
             if (rpcClient == null) {
-                return;
             } else if (active) {
                 throw new IllegalStateException(
                         "Cannot reset controller, it is already connected to "
