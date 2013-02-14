@@ -62,6 +62,7 @@ public final class RpcPeerInvocationTest {
     private RpcController servingController;
 
     private RpcMessageListener rpcMessageListener = new RpcMessageListener() {
+        @Override
         public void receiveMessage(
                 final Object message,
                 final ChannelHandlerContext ctx) {
@@ -117,6 +118,7 @@ public final class RpcPeerInvocationTest {
 
         final RpcCallback<Testservice.RpcResult> callback =
                 new RpcCallback<Testservice.RpcResult>() {
+                    @Override
                     public void run(final Testservice.RpcResult response) {
                         callbackResponse.receive(response.getReturnvalue());
                         signalResultReceived();

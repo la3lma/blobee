@@ -99,6 +99,7 @@ public final class SimplePerformanceTest {
                     new InetSocketAddress(HOST, port),
                     new RpcMessageListener() {
 
+                        @Override
                     public void receiveMessage(
                             final Object message,
                             final ChannelHandlerContext ctx) {
@@ -113,6 +114,7 @@ public final class SimplePerformanceTest {
                     }, new ExecutionServiceListener() {
 
                         // XXX This is terrible, get rid of it.
+                        @Override
                     public void listen(
                             final ExecutorService ex,
                             final Object method,
@@ -139,6 +141,7 @@ public final class SimplePerformanceTest {
                 .addInterface(Testservice.RpcService.class)
                 .addInvocationListener(new RpcClientSideInvocationListener() {
 
+                    @Override
                     public void listenToInvocation(
                             final RpcClientSideInvocation invocation) {
                         final Message req = invocation.getRequest();
@@ -175,6 +178,7 @@ public final class SimplePerformanceTest {
 
         final RpcCallback<Testservice.RpcResult> callback =
                 new RpcCallback<Testservice.RpcResult>() {
+                    @Override
                     public void run(final Testservice.RpcResult response) {
                         latch.countDown();
                         hitMap.remove(response.getReturnvalue());

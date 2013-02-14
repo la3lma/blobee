@@ -54,6 +54,7 @@ public final class ErrorLoggingThreadFactory implements ThreadFactory {
         this.name = checkNotNull(name);
         this.log  = checkNotNull(log);
         this.exceptionHandler = new UncaughtExceptionHandler() {
+            @Override
             public void uncaughtException(final Thread t, final Throwable e) {
                 log.log(Level.SEVERE, "Uncaught exception in thrad " + t, e);
             }

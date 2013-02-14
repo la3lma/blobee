@@ -35,6 +35,7 @@ public final class RpcClientControllerImpl implements RpcClientController {
     public RpcClientControllerImpl() {
     }
 
+    @Override
     public void reset() {
         synchronized (monitor) {
             if (rpcClient == null) {
@@ -51,6 +52,7 @@ public final class RpcClientControllerImpl implements RpcClientController {
         }
     }
 
+    @Override
     public void bindToInvocation(final RpcClientSideInvocation invocation) {
         checkNotNull(invocation);
         synchronized (monitor) {

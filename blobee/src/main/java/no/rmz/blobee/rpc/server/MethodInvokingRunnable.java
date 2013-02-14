@@ -40,6 +40,7 @@ final class MethodInvokingRunnable implements Runnable {
         executor.storeController(ctx, dc.getRpcIndex(), controller);
         final RpcCallback<Message> callbackAdapter =
                 new RpcCallback<Message>() {
+                    @Override
             public void run(final Message response) {
                 controller.invokeCancelledCallback();
                 dc.returnResult(response);

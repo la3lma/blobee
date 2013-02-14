@@ -50,6 +50,7 @@ public final class ConnectingRpcClientImpl implements RpcClient {
         // Start the connection attempt.
         final ChannelFuture future = clientBootstrap.connect(socketAddress);
         rpcClient.start(future.getChannel(), new ChannelShutdownCleaner() {
+            @Override
             public void shutdownHook() {
                 // Shut down thread pools to exit.
                 clientBootstrap.releaseExternalResources();
@@ -58,22 +59,27 @@ public final class ConnectingRpcClientImpl implements RpcClient {
         return this;
     }
 
+    @Override
     public void cancelInvocation(final long rpcIndex) {
         rpcClient.cancelInvocation(rpcIndex);
     }
 
+    @Override
     public void failInvocation(final long rpcIndex, final String errorMessage) {
         rpcClient.failInvocation(rpcIndex, errorMessage);
     }
 
+    @Override
     public RpcChannel newClientRpcChannel() {
         return rpcClient.newClientRpcChannel();
     }
 
+    @Override
     public RpcController newController() {
         return rpcClient.newController();
     }
 
+    @Override
     public void returnCall(
             final RemoteExecutionContext dc,
             final Message message) {
@@ -83,20 +89,24 @@ public final class ConnectingRpcClientImpl implements RpcClient {
     }
 
 
+    @Override
     public MethodSignatureResolver getResolver() {
        return rpcClient.getResolver();
     }
 
+    @Override
     public RpcClient addProtobuferRpcInterface(final Object instance) {
          rpcClient.addProtobuferRpcInterface(instance);
          return this;
     }
 
+    @Override
     public RpcClient addInterface(final Class serviceInterface) {
          rpcClient.addInterface(serviceInterface);
          return this;
     }
 
+    @Override
     public RpcClient addInvocationListener(
             final RpcClientSideInvocationListener listener) {
         rpcClient.addInvocationListener(listener);

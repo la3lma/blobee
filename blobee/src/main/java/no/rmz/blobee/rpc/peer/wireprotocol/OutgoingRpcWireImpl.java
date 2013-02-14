@@ -139,6 +139,7 @@ public final class OutgoingRpcWireImpl implements OutgoingRpcWire {
 
 
 
+    @Override
     public void sendHeartbeat() {
         write(HEARTBEAT);
     }
@@ -155,6 +156,7 @@ public final class OutgoingRpcWireImpl implements OutgoingRpcWire {
         sendControlMessage(cancelMessage);
     }
 
+    @Override
     public void sendInvocationFailedMessage(
             final long rpcIndex,
             final String reason) {

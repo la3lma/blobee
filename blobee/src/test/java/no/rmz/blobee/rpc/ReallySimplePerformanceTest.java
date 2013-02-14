@@ -184,6 +184,7 @@ public final class ReallySimplePerformanceTest {
         // The callback does the countdown
         final RpcCallback<Testservice.RpcResult> callback =
                 new RpcCallback<Testservice.RpcResult>() {
+                    @Override
             public void run(final Testservice.RpcResult response) {
                 callbackCounter.countDown();
             }

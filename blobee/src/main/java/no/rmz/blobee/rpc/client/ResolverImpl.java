@@ -31,18 +31,21 @@ public final class ResolverImpl implements MethodSignatureResolver {
     public ResolverImpl() {
     }
 
+    @Override
     public MessageLite getPrototypeForParameter(
             final MethodSignature methodSignature) {
         checkNotNull(methodSignature);
         return mmap.get(methodSignature).getOutputType();
     }
 
+    @Override
     public MessageLite getPrototypeForReturnValue(
             final MethodSignature methodSignature) {
         checkNotNull(methodSignature);
         return mmap.get(methodSignature).getOutputType();
     }
 
+    @Override
     public void addTypes(
             final MethodDescriptor md,
             final MessageLite inputType,

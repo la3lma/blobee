@@ -85,6 +85,7 @@ public final class RpcPeerPipelineFactory implements ChannelPipelineFactory {
     //     compression, ssl, http, whatever, but for not it's just
     //     the simplest possible pipeline I could get away with, and it's
     //     complex enough already.
+    @Override
     public ChannelPipeline getPipeline() throws Exception {
         final ProtobufDecoder protbufDecoder;
         protbufDecoder = new ProtobufDecoder(

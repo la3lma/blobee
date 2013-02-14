@@ -28,6 +28,7 @@ public final class SingeltonClientFactory implements RpcClientFactory {
         this.rpcClient = checkNotNull(rpcClient);
     }
 
+    @Override
     public RpcClient getClientFor(final Channel channel) {
         synchronized (monitor) {
             if (this.channel == null) {
@@ -43,10 +44,12 @@ public final class SingeltonClientFactory implements RpcClientFactory {
         }
     }
 
+    @Override
     public MethodSignatureResolver getResolver() {
         return rpcClient.getResolver();
     }
 
+    @Override
     public void removeClientFor(final Channel channel) {
         synchronized (monitor) {
             checkNotNull(channel);

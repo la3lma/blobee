@@ -34,6 +34,7 @@ public final class MultiChannelClientFactory implements RpcClientFactory {
         this.channelClientMap = new WeakHashMap<Channel, RpcClient>();
     }
 
+    @Override
     public RpcClient getClientFor(final Channel channel) {
         checkNotNull(channel);
         synchronized (monitor) {
@@ -50,6 +51,7 @@ public final class MultiChannelClientFactory implements RpcClientFactory {
         }
     }
 
+    @Override
     public void removeClientFor(final Channel channel) {
         checkNotNull(channel);
         synchronized (monitor) {
@@ -59,6 +61,7 @@ public final class MultiChannelClientFactory implements RpcClientFactory {
         }
     }
 
+    @Override
     public MethodSignatureResolver getResolver() {
         return resolver;
     }

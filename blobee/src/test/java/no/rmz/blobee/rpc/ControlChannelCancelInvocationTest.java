@@ -88,6 +88,7 @@ public final class ControlChannelCancelInvocationTest {
 
 
             controller.notifyOnCancel(new RpcCallback<Object>() {
+                @Override
                 public void run(final Object parameter) {
                     if (controller.isCanceled()) {
                         cancelMessageWasReceived = true;
@@ -111,6 +112,7 @@ public final class ControlChannelCancelInvocationTest {
     }
     private final RpcMessageListener rpcMessageListener =
             new RpcMessageListener() {
+                @Override
                 public void receiveMessage(
                         final Object message,
                         final ChannelHandlerContext ctx) {
@@ -152,6 +154,7 @@ public final class ControlChannelCancelInvocationTest {
 
         final RpcCallback<Testservice.RpcResult> callback =
                 new RpcCallback<Testservice.RpcResult>() {
+                    @Override
                     public void run(final Testservice.RpcResult response) {
                         callbackResponse.receive(response.getReturnvalue());
                         Conditions.signalCondition(
@@ -165,6 +168,7 @@ public final class ControlChannelCancelInvocationTest {
                 Testservice.RpcService.newStub(clientChannel);
 
         final Runnable testRun = new Runnable() {
+            @Override
             public void run() {
                 try {
                     Thread.currentThread().sleep(1000);

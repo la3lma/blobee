@@ -93,6 +93,7 @@ public final class ControlChannelFailedInvocationTest {
     }
     private final RpcMessageListener rpcMessageListener =
             new RpcMessageListener() {
+                @Override
                 public void receiveMessage(
                         final Object message,
                         final ChannelHandlerContext ctx) {
@@ -123,6 +124,7 @@ public final class ControlChannelFailedInvocationTest {
 
         final RpcCallback<Testservice.RpcResult> callback =
                 new RpcCallback<Testservice.RpcResult>() {
+                    @Override
                     public void run(final Testservice.RpcResult response) {
                         callbackResponse.receive(response.getReturnvalue());
                          Conditions.waitForCondition(

@@ -125,6 +125,7 @@ public final class RpcClientImpl implements RpcClient {
 
 
     private final Runnable incomingDispatcher = new Runnable() {
+        @Override
         public void run() {
             while (running) {
                 sendFirstAvailableOutgoingInvocation();
@@ -218,6 +219,7 @@ public final class RpcClientImpl implements RpcClient {
             // to reease external resources, and with that the client
             // is completely halted.
             final Runnable channelCleanup = new Runnable() {
+                @Override
                 public void run() {
                     // Wait until the connection is
                     // closed or the connection attempt fails.
@@ -241,6 +243,7 @@ public final class RpcClientImpl implements RpcClient {
     public RpcChannel newClientRpcChannel() {
         return new RpcChannel() {
 
+            @Override
             public void callMethod(
                     final MethodDescriptor method,
                     final RpcController controller,
@@ -336,12 +339,14 @@ public final class RpcClientImpl implements RpcClient {
         deactivateInvocation(rpcIndex);
     }
 
+    @Override
     public RpcClient start() {
         return this;
     }
 
     private RpcClientSideInvocationListener listener;
 
+    @Override
     public RpcClient addInvocationListener(
             final RpcClientSideInvocationListener listener) {
         checkNotNull(listener);
@@ -349,10 +354,12 @@ public final class RpcClientImpl implements RpcClient {
         return this;
     }
 
+    @Override
     public MethodSignatureResolver getResolver() {
         return resolver;
     }
 
+    @Override
     public RpcClient addProtobuferRpcInterface(final Object instance) {
 
         if (!(instance instanceof com.google.protobuf.Service)) {
@@ -390,6 +397,7 @@ public final class RpcClientImpl implements RpcClient {
         return this;
     }
 
+    @Override
     public RpcClient addInterface(final Class serviceDefinition) {
         checkNotNull(serviceDefinition);
 

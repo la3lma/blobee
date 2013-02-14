@@ -64,6 +64,7 @@ public final class RpcExecutionServiceImpl
     private Map<Class, Object> implementations = new HashMap<Class, Object>();
     private final ControllerStorage controllerStorage = new ControllerStorage();
 
+    @Override
     public Class getReturnType(final MethodSignature sig) {
         // Preconditions
         checkNotNull(sig);
@@ -75,6 +76,7 @@ public final class RpcExecutionServiceImpl
         return result;
     }
 
+    @Override
     public Class getParameterType(final MethodSignature sig) {
         checkNotNull(sig);
 
@@ -268,6 +270,7 @@ public final class RpcExecutionServiceImpl
         }
     }
 
+    @Override
     public void startCancel(
             final ChannelHandlerContext ctx,
             final long rpcIndex) {

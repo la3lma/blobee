@@ -55,6 +55,7 @@ public final class RpcServiceControllerImpl implements RpcServiceController {
     }
 
 
+    @Override
     public void notifyOnCancel(final RpcCallback<Object> callback) {
         checkNotNull(callback);
         synchronized (monitor) {

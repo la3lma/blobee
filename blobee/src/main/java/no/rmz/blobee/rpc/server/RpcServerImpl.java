@@ -98,6 +98,7 @@ public final class RpcServerImpl implements RpcServer {
      *
      * @return this
      */
+    @Override
     public RpcServer start() {
         bootstrap.bind(socket);
         return this;
@@ -119,6 +120,7 @@ public final class RpcServerImpl implements RpcServer {
         return this;
     }
 
+    @Override
     public void stop() {
         bootstrap.shutdown();
         bossExecutor.shutdownNow();
