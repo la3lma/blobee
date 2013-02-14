@@ -52,7 +52,8 @@ public interface RpcClientController extends RpcController {
     /**
      * Bind the controller to a record keeping track of the client side
      * of an RPC invocation.
-     * @param invocation  The invocation that we want the controller to be associated with.
+     * @param invocation  The invocation that we want the
+     *       controller to be associated with.
      */
     void bindToInvocation(final RpcClientSideInvocation invocation);
 

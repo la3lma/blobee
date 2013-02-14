@@ -14,7 +14,7 @@ import no.rmz.testtools.Net;
  * test scenarios.
  */
 public final class ClientServerFixture {
-    private final static String HOST = "localhost";
+    private static final  String HOST = "localhost";
     private final RpcServer rpcServer;
     private final RpcClient rpcclient;
     private final int port;

@@ -88,7 +88,8 @@ public final class ReallySimplePerformanceTest {
      * the parameter and the response.  This is the request parameter, and
      * it contains nothing in the way of payload.
      */
-    private Testservice.RpcParam request = Testservice.RpcParam.newBuilder().build();
+    private Testservice.RpcParam request =
+            Testservice.RpcParam.newBuilder().build();
 
     /**
      * The message that is sent in the response.
@@ -100,7 +101,8 @@ public final class ReallySimplePerformanceTest {
      * RPC requests.  It contains a short static string.
      */
     private static  final RpcResult RETURNVALUE =
-            Testservice.RpcResult.newBuilder().setReturnvalue(RETURN_VALUE).build();
+            Testservice.RpcResult.newBuilder()
+            .setReturnvalue(RETURN_VALUE).build();
 
 
     /**
@@ -143,7 +145,8 @@ public final class ReallySimplePerformanceTest {
                     new InetSocketAddress(HOST, port))
                 .addImplementation(
                     new TestService(), // An implementation instance
-                    Testservice.RpcService.Interface.class) // The service interface it implements.
+                    // The service interface it implements.
+                    Testservice.RpcService.Interface.class)
                 .start(); // finally start the whole thing.
 
         // Then we set up a client.  The pattern is much
@@ -171,7 +174,8 @@ public final class ReallySimplePerformanceTest {
      * @throws BrokenBarrierException
      */
     @SuppressWarnings({"WA_AWAIT_NOT_IN_LOOP", "DLS_DEAD_LOCAL_STORE" })
-    public void testRpcInvocation() throws InterruptedException, BrokenBarrierException {
+    public void testRpcInvocation() throws
+            InterruptedException, BrokenBarrierException {
 
         // The test is done when we've counted down the
         // callbackCounter latch.
@@ -220,7 +224,8 @@ public final class ReallySimplePerformanceTest {
         // and make some calculations.
         final long endTime = System.currentTimeMillis();
         final long duration = endTime - startTime;
-        final double millisPerRoundtrip = (double) duration / (double) ROUNDTRIPS;
+        final double millisPerRoundtrip =
+                (double) duration / (double) ROUNDTRIPS;
 
         // Then tell the user about our results.
         log.info("Duration of "
@@ -241,7 +246,8 @@ public final class ReallySimplePerformanceTest {
      * @throws Exception
      */
     public static void main(final String argv [])  throws Exception {
-        final ReallySimplePerformanceTest tst = new ReallySimplePerformanceTest();
+        final ReallySimplePerformanceTest tst =
+                new ReallySimplePerformanceTest();
         tst.setUp();
         tst.testRpcInvocation();
 

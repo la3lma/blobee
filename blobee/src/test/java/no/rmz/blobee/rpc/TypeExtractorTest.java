@@ -36,22 +36,28 @@ public final class TypeExtractorTest {
 
         final com.google.protobuf.Service service =  new SampleServerImpl();
 
-        final Descriptors.ServiceDescriptor descriptor = service.getDescriptorForType();
-        final List<Descriptors.MethodDescriptor> methods = descriptor.getMethods();
+        final Descriptors.ServiceDescriptor descriptor =
+                service.getDescriptorForType();
+        final List<Descriptors.MethodDescriptor> methods =
+                descriptor.getMethods();
 
         // Since we know that SampleServerImpl has only one method.
         org.junit.Assert.assertEquals(1, methods.size());
 
         Descriptors.MethodDescriptor md = methods.get(0);
 
-        final Message inputType = TypeExctractor.getReqestPrototype(service, md);
+        final Message inputType =
+                TypeExctractor.getReqestPrototype(service, md);
         org.junit.Assert.assertNotNull(inputType);
-        final Message outputType =  TypeExctractor.getResponsePrototype(service, md);
+        final Message outputType =
+                TypeExctractor.getResponsePrototype(service, md);
         org.junit.Assert.assertNotNull(outputType);
 
         final String fullName = md.getFullName();
 
-        org.junit.Assert.assertEquals("no.rmz.blobeetestproto.api.proto.RpcService.Invoke", fullName);
+        org.junit.Assert.assertEquals(
+                "no.rmz.blobeetestproto.api.proto.RpcService.Invoke",
+                fullName);
         org.junit.Assert.assertTrue(inputType instanceof Testservice.RpcParam);
         org.junit.Assert.assertTrue(outputType instanceof Testservice.RpcResult);
     }

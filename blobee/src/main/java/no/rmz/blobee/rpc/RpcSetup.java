@@ -121,7 +121,8 @@ public final class RpcSetup {
             final RpcMessageListener rpcMessageListener,
             final ExecutionServiceListener esListener) {
         checkNotNull(inetSocketAddress);
-        return new RpcServerImpl(inetSocketAddress, rpcMessageListener, esListener);
+        return new RpcServerImpl(
+                inetSocketAddress, rpcMessageListener, esListener);
     }
 
     public static RpcServerImpl newServer(

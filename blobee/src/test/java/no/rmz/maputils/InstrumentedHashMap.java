@@ -11,14 +11,18 @@ public final class InstrumentedHashMap<A, B> implements Map<A, B> {
     private final String name;
     private final Object creator;
 
-    private static final Logger log = Logger.getLogger(InstrumentedHashMap.class.getName());
+    private static final Logger log =
+            Logger.getLogger(InstrumentedHashMap.class.getName());
     private final Map<A, B> backend;
 
     public InstrumentedHashMap(final Object creator, final String name) {
         this(creator, name, new HashMap<A, B>());
     }
 
-    public InstrumentedHashMap(final Object clazz, final String name, final Map<A, B> backend) {
+    public InstrumentedHashMap(
+            final Object clazz,
+            final String name,
+            final Map<A, B> backend) {
         this.creator = checkNotNull(clazz);
         this.name = checkNotNull(name);
         this.backend = checkNotNull(backend);

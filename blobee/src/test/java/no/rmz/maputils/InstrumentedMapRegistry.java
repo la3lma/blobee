@@ -15,9 +15,11 @@ import java.util.logging.Logger;
 
 public final class InstrumentedMapRegistry {
 
-    private  static final Logger log = Logger.getLogger(InstrumentedMapRegistry.class.getName());
+    private  static final Logger log =
+            Logger.getLogger(InstrumentedMapRegistry.class.getName());
 
-    private static final Set<InstrumentedHashMap> MAPS = new HashSet<InstrumentedHashMap>();
+    private static final Set<InstrumentedHashMap> MAPS =
+            new HashSet<InstrumentedHashMap>();
 
     private  InstrumentedMapRegistry() {
     }
@@ -45,9 +47,10 @@ public final class InstrumentedMapRegistry {
             ps.format("%d  %d\n", time, size);
             ps.flush();
         }
-        final PrintStream ps2 = getPrintStream(InstrumentedMapRegistry.class.getName(), "usedMemory");
+        final PrintStream ps2 = getPrintStream(
+                InstrumentedMapRegistry.class.getName(), "usedMemory");
         synchronized (ps) {
-            ps2.format("%d  %d\n", time, usedMemory / 100000); // XXX magic scale factor
+            ps2.format("%d  %d\n", time, usedMemory / 100000);
             ps2.flush();
         }
     }
@@ -56,7 +59,9 @@ public final class InstrumentedMapRegistry {
             new ConcurrentHashMap<String, PrintStream>();
 
     @SuppressWarnings("JLM_JSR166_UTILCONCURRENT_MONITORENTER")
-    private static PrintStream getPrintStream(final String classname, final String name) {
+    private static PrintStream getPrintStream(
+            final String classname,
+            final String name) {
         checkNotNull(name);
         checkNotNull(classname);
         synchronized (PRINTSTREAMS) {

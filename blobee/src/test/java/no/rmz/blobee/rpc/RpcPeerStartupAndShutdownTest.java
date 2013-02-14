@@ -35,9 +35,11 @@ public final class RpcPeerStartupAndShutdownTest {
             no.rmz.blobee.rpc.RpcPeerStartupAndShutdownTest.class.getName());
     private static  final String HOST = "localhost";
     private  static final Rpc.RpcControl HEARTBEAT_MESSAGE =
-            Rpc.RpcControl.newBuilder().setMessageType(Rpc.MessageType.HEARTBEAT).build();
+            Rpc.RpcControl.newBuilder()
+            .setMessageType(Rpc.MessageType.HEARTBEAT).build();
     private static final Rpc.RpcControl SHUTDOWN_MESSAGE =
-            Rpc.RpcControl.newBuilder().setMessageType(Rpc.MessageType.SHUTDOWN).build();
+            Rpc.RpcControl.newBuilder()
+            .setMessageType(Rpc.MessageType.SHUTDOWN).build();
 
 
     private ClientServerFixture csf;

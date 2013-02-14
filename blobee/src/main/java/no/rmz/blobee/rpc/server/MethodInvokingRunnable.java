@@ -35,16 +35,19 @@ final class MethodInvokingRunnable implements Runnable {
     @Override
     public void run() {
         final Method method = executor.getMethod(dc.getMethodSignature());
-        final RpcServiceController controller = new RpcServiceControllerImpl(dc);
+        final RpcServiceController controller =
+                new RpcServiceControllerImpl(dc);
         executor.storeController(ctx, dc.getRpcIndex(), controller);
-        final RpcCallback<Message> callbackAdapter = new RpcCallback<Message>() {
+        final RpcCallback<Message> callbackAdapter =
+                new RpcCallback<Message>() {
             public void run(final Message response) {
                 controller.invokeCancelledCallback();
                 dc.returnResult(response);
             }
         };
         try {
-            method.invoke(implementation, controller, parameter, callbackAdapter);
+            method.invoke(implementation, controller,
+                          parameter, callbackAdapter);
         } catch (IllegalAccessException ex) {
             throw new RuntimeException(ex);
         } catch (IllegalArgumentException ex) {

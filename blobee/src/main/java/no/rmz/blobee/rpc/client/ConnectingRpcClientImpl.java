@@ -74,7 +74,9 @@ public final class ConnectingRpcClientImpl implements RpcClient {
         return rpcClient.newController();
     }
 
-    public void returnCall(final RemoteExecutionContext dc, final Message message) {
+    public void returnCall(
+            final RemoteExecutionContext dc,
+            final Message message) {
         checkNotNull(dc);
         checkNotNull(message);
         rpcClient.returnCall(dc, message);
@@ -95,7 +97,8 @@ public final class ConnectingRpcClientImpl implements RpcClient {
          return this;
     }
 
-    public RpcClient addInvocationListener(final RpcClientSideInvocationListener listener) {
+    public RpcClient addInvocationListener(
+            final RpcClientSideInvocationListener listener) {
         rpcClient.addInvocationListener(listener);
         return this;
     }

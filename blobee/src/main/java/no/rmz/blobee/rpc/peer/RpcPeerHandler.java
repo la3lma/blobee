@@ -190,7 +190,8 @@ public final class RpcPeerHandler
             final ChannelHandlerContext ctx,
             final ExceptionEvent e) {
         // Close the connection when an exception is raised.
-        log.log(Level.WARNING, "Unexpected exception from downstream.", e.getCause());
+        log.log(Level.WARNING, "Unexpected exception from downstream.",
+                e.getCause());
         e.getChannel().close();
     }
 

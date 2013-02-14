@@ -36,8 +36,13 @@ public final class ControllerStorage {
                 new RpcExecutionServiceImpl.ControllerCoordinate(ctx, rpcIdx));
     }
 
-    public RpcServiceController getController(final ChannelHandlerContext ctx, final long rpcIdx) {
-        final RpcServiceController result = map.get(new RpcExecutionServiceImpl.ControllerCoordinate(ctx, rpcIdx));
+    public RpcServiceController getController(
+            final ChannelHandlerContext ctx,
+            final long rpcIdx) {
+        final RpcServiceController result =
+                map.get(
+                   new RpcExecutionServiceImpl.ControllerCoordinate(
+                     ctx, rpcIdx));
         return result;
     }
 

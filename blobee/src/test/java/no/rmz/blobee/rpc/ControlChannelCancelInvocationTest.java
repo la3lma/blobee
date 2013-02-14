@@ -52,7 +52,8 @@ public final class ControlChannelCancelInvocationTest {
     private static  final String HOST = "localhost";
     public  static  final String RETURN_VALUE = "Going home";
     private RpcChannel clientChannel;
-    private Testservice.RpcParam request = Testservice.RpcParam.newBuilder().build();
+    private Testservice.RpcParam request =
+            Testservice.RpcParam.newBuilder().build();
     private RpcController clientController;
     private static  final String FAILED_TEXT = "The computation failed";
     private ClientServerFixture csf;
@@ -76,7 +77,8 @@ public final class ControlChannelCancelInvocationTest {
     public final class ServiceTestItem extends Testservice.RpcService {
 
         private final Testservice.RpcResult result =
-                Testservice.RpcResult.newBuilder().setReturnvalue(RETURN_VALUE).build();
+                Testservice.RpcResult.newBuilder()
+                .setReturnvalue(RETURN_VALUE).build();
 
         @Override
         public void invoke(
@@ -90,12 +92,15 @@ public final class ControlChannelCancelInvocationTest {
                     if (controller.isCanceled()) {
                         cancelMessageWasReceived = true;
                     }
-                    Conditions.signalCondition("service:cancellationReceived", cancelLock, cancellationReceived);
+                    Conditions.signalCondition("service:cancellationReceived",
+                            cancelLock, cancellationReceived);
                 }
             });
 
-            Conditions.signalCondition("service:remoteInvokeStarted", cancelLock, remoteInvokeStarted);
-            Conditions.waitForCondition("service:cancellationSent", cancelLock, cancellationSent);
+            Conditions.signalCondition("service:remoteInvokeStarted",
+                    cancelLock, remoteInvokeStarted);
+            Conditions.waitForCondition("service:cancellationSent",
+                    cancelLock, cancellationSent);
 
             // XXX Shouldn't happen!  Will not get through since the
             //     the invocation is failed at this point.  Should just be
@@ -175,10 +180,13 @@ public final class ControlChannelCancelInvocationTest {
         // Signal that cancel is sent, then wait for
         // the things to propagate to all the places they need to propagate
         // to.
-        Conditions.waitForCondition("main:remoteInvokeStarted", cancelLock, remoteInvokeStarted);
+        Conditions.waitForCondition("main:remoteInvokeStarted",
+                cancelLock, remoteInvokeStarted);
         clientController.startCancel();
-        Conditions.signalCondition("main:cancellationSent", cancelLock, cancellationSent);
-        Conditions.waitForCondition("main:cancellationReceived", cancelLock, cancellationReceived);
+        Conditions.signalCondition("main:cancellationSent",
+                cancelLock, cancellationSent);
+        Conditions.waitForCondition("main:cancellationReceived",
+                cancelLock, cancellationReceived);
 
         // Pass the test if we didn't get a callback response.
         verifyZeroInteractions(callbackResponse);

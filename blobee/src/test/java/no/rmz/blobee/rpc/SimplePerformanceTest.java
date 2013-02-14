@@ -21,6 +21,7 @@ import com.google.protobuf.Message;
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcChannel;
 import com.google.protobuf.RpcController;
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Map;
@@ -87,6 +88,7 @@ public final class SimplePerformanceTest {
 
 
     @Before
+    @SuppressWarnings("DLS_DEAD_LOCAL_STORE")
     public void setUp() throws IOException, RpcServerException  {
 
         port = Net.getFreePort();
@@ -97,9 +99,12 @@ public final class SimplePerformanceTest {
                     new InetSocketAddress(HOST, port),
                     new RpcMessageListener() {
 
-                    public void receiveMessage(final Object message, final ChannelHandlerContext ctx) {
+                    public void receiveMessage(
+                            final Object message,
+                            final ChannelHandlerContext ctx) {
                         if (message instanceof Testservice.RpcParam) {
-                            Testservice.RpcParam param = (Testservice.RpcParam) message;
+                            Testservice.RpcParam param =
+                                    (Testservice.RpcParam) message;
                                 final String parameter = param.getParameter();
                             serverReceiverMap.remove(parameter);
                         }
@@ -115,7 +120,8 @@ public final class SimplePerformanceTest {
                             final Object controller,
                             final Object parameter,
                             final Object callback) {
-                       final Testservice.RpcParam trp = (Testservice.RpcParam) parameter;
+                       final Testservice.RpcParam trp =
+                               (Testservice.RpcParam) parameter;
                        final String paramString = trp.getParameter();
                        serverExecutorMap.remove(paramString);
                     }
@@ -133,9 +139,11 @@ public final class SimplePerformanceTest {
                 .addInterface(Testservice.RpcService.class)
                 .addInvocationListener(new RpcClientSideInvocationListener() {
 
-                    public void listenToInvocation(final RpcClientSideInvocation invocation) {
+                    public void listenToInvocation(
+                            final RpcClientSideInvocation invocation) {
                         final Message req = invocation.getRequest();
-                        final Testservice.RpcParam  param = (Testservice.RpcParam) req;
+                        final Testservice.RpcParam  param =
+                                (Testservice.RpcParam) req;
                         clientSenderMap.remove(param.getParameter());
                     }
                 })
@@ -144,21 +152,26 @@ public final class SimplePerformanceTest {
         clientChannel    = rpcclient.newClientRpcChannel();
     }
 
-    private final Map<String, Boolean> serverExecutorMap = new ConcurrentHashMap<String, Boolean>();
-    private final Map<String, Boolean> clientSenderMap = new ConcurrentHashMap<String, Boolean>();
-    private final Map<String, Boolean> serverReceiverMap = new ConcurrentHashMap<String, Boolean>();
+    private final Map<String, Boolean> serverExecutorMap =
+            new ConcurrentHashMap<String, Boolean>();
+    private final Map<String, Boolean> clientSenderMap =
+            new ConcurrentHashMap<String, Boolean>();
+    private final Map<String, Boolean> serverReceiverMap =
+            new ConcurrentHashMap<String, Boolean>();
 
 
     @edu.umd.cs.findbugs.annotations.SuppressWarnings("WA_AWAIT_NOT_IN_LOOP")
     @Test
-    public void testRpcInvocation() throws InterruptedException, BrokenBarrierException {
+    public void testRpcInvocation() throws
+            InterruptedException, BrokenBarrierException {
 
         final CountDownLatch latch = new CountDownLatch(ROUNDTRIPS);
         clientSenderMap.clear();
         serverExecutorMap.clear();
         serverReceiverMap.clear();
 
-        final Map<String, Boolean> hitMap = new ConcurrentHashMap<String, Boolean>();
+        final Map<String, Boolean> hitMap =
+                new ConcurrentHashMap<String, Boolean>();
 
         final RpcCallback<Testservice.RpcResult> callback =
                 new RpcCallback<Testservice.RpcResult>() {
@@ -168,7 +181,8 @@ public final class SimplePerformanceTest {
                     }
                 };
 
-        final Testservice.RpcService myService = Testservice.RpcService.newStub(clientChannel);
+        final Testservice.RpcService myService =
+                Testservice.RpcService.newStub(clientChannel);
 
 
         final long startTime = System.currentTimeMillis();
@@ -198,7 +212,8 @@ public final class SimplePerformanceTest {
         latch.await(expectedMillis, TimeUnit.MILLISECONDS);
         final long endTime = System.currentTimeMillis();
         final long duration = endTime - startTime;
-        final double millisPerRoundtrip = ((double) duration) / ((double) ROUNDTRIPS);
+        final double millisPerRoundtrip =
+                ((double) duration) / ((double) ROUNDTRIPS);
 
         log.info("Duration of "
                 + ROUNDTRIPS
@@ -211,16 +226,6 @@ public final class SimplePerformanceTest {
                 + latch.getCount()
                 + ", Targetlatch count= "
                 + targetLatch.getCount());
-
-        // XXX Now defunct messages
-        // log.info("Requests that didn't get through all the way: " + hitMap.keySet().toString());
-        // log.info("Requests that were not transmitted to the wire: " + clientSenderMap.keySet().toString());
-        // log.info("Requests that did not get through to the server: " + serverReceiverMap.keySet().toString());
-        // log.info("Requests that were not invoked by the server: " + serverExecutorMap.keySet().toString());
-
-        // log.info("count(serverReceiverMap): " + serverReceiverMap.keySet().size());
-        // log.info("count(clientSenderMap): " + clientSenderMap.keySet().size());
-        // log.info("count(serverExecutorMap): " + serverExecutorMap.keySet().size());
 
         org.junit.Assert.assertEquals("Latch counts should be equal",
                 targetLatch.getCount(),

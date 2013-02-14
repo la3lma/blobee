@@ -54,7 +54,8 @@ public final class RpcExecutionServiceImpl
      * incoming RPC requests.
      */
     private final ExecutorService threadPool = Executors.newCachedThreadPool(
-            new ErrorLoggingThreadFactory("Executor thread for RpcExecutionServiceImpl", log));
+            new ErrorLoggingThreadFactory(
+               "Executor thread for RpcExecutionServiceImpl", log));
 
 
     private Map<MethodSignature, MethodDesc> xmap =
@@ -92,7 +93,9 @@ public final class RpcExecutionServiceImpl
     }
     private final ExecutionServiceListener listener;
 
-    public RpcExecutionServiceImpl(final String name, final ExecutionServiceListener listener) {
+    public RpcExecutionServiceImpl(
+            final String name,
+            final ExecutionServiceListener listener) {
         this.name = checkNotNull(name);
         this.listener = listener;
     }
@@ -118,7 +121,10 @@ public final class RpcExecutionServiceImpl
 
         for (final Class ic : interfaceClasses) {
             if (implementations.containsKey(ic)) {
-                throw new RpcServerException("Interface " + ic + " already has an implementation");
+                throw new RpcServerException(
+                        "Interface "
+                        + ic
+                        + " already has an implementation");
             }
         }
 
@@ -145,29 +151,37 @@ public final class RpcExecutionServiceImpl
                 }
 
                 final MethodSignature methodSignature =
-                        ResolverImpl.getMethodSignatureFromMethodDescriptor(descriptor);
+                        ResolverImpl.getMethodSignatureFromMethodDescriptor(
+                        descriptor);
 
-                final Method implementationMethod = findMethod(name, implementation.getClass());
+                final Method implementationMethod =
+                        findMethod(name, implementation.getClass());
                 if (implementationMethod == null) {
                     throw new IllegalStateException("Unknown method " + name);
                 }
 
 
                 // First we get the list of parameters for the implementation,
-                // the length of this array should be exactly 3: The first parameter
+                // the length of this array should be exactly 3: The first
+                // parameter
                 // is the controller, the second is the parameter and the
                 // third is the  callback method, that takes the
                 // return type as its parameter.
-                final Class<?>[] parameterTypes = implementationMethod.getParameterTypes();
+                final Class<?>[] parameterTypes =
+                        implementationMethod.getParameterTypes();
 
                 // So this would then be the type of the callback
                 final Class pmtype = parameterTypes[1];
 
                 // Then we get the return value
-                final Type typeOfReturnvalue = extractCallbackParamType(interfaceMethod);
+                final Type typeOfReturnvalue =
+                        extractCallbackParamType(interfaceMethod);
                 /// this is the new way
                 final MethodDesc methodDesc =
-                        new MethodDesc(implementationMethod, (Class) typeOfReturnvalue, pmtype);
+                        new MethodDesc(
+                            implementationMethod,
+                            (Class) typeOfReturnvalue,
+                            pmtype);
                 xmap.put(methodSignature, methodDesc);
 
                 implementations.put(iface, implementation);
@@ -175,11 +189,13 @@ public final class RpcExecutionServiceImpl
         }
     }
 
-    private static Type extractCallbackParamType(final Method interfaceMethod) {
+    private static Type extractCallbackParamType(
+            final Method interfaceMethod) {
         checkNotNull(interfaceMethod);
         // Now calculate the return type:
         // First we get the type of the RpcCallback
-        final Type rpcCallbackType = interfaceMethod.getGenericParameterTypes()[2];
+        final Type rpcCallbackType =
+                interfaceMethod.getGenericParameterTypes()[2];
         final ParameterizedType ptype = (ParameterizedType) rpcCallbackType;
         final Type[] actualTypeArguments = ptype.getActualTypeArguments();
         final Type typeOfReturnvalue = actualTypeArguments[0];
@@ -196,7 +212,9 @@ public final class RpcExecutionServiceImpl
         return null;
     }
 
-    public void removeController(final ChannelHandlerContext ctx, final long rpcIndex) {
+    public void removeController(
+            final ChannelHandlerContext ctx,
+            final long rpcIndex) {
         controllerStorage.removeController(ctx, rpcIndex);
     }
 
@@ -205,7 +223,9 @@ public final class RpcExecutionServiceImpl
         private final ChannelHandlerContext ctx;
         private final Long rpcIdx;
 
-        public ControllerCoordinate(final ChannelHandlerContext ctx, final long rpcIdx) {
+        public ControllerCoordinate(
+                final ChannelHandlerContext ctx,
+                final long rpcIdx) {
             this.ctx = checkNotNull(ctx);
             checkArgument(rpcIdx >= 0);
             this.rpcIdx = rpcIdx;
@@ -231,18 +251,20 @@ public final class RpcExecutionServiceImpl
     @Override
     public void execute(
             final RemoteExecutionContext dc,
-            final ChannelHandlerContext ctx, // XXX Redundant? dc.getCtx or something
+            final ChannelHandlerContext ctx, // XXX Redundant? dc.getCtx?
             final Message parameter) {
         checkNotNull(dc);
         checkNotNull(ctx);
         checkNotNull(parameter);
 
         final Runnable runnable =
-                new MethodInvokingRunnable(implementation, dc, ctx, parameter, controllerStorage, this);
+                new MethodInvokingRunnable(
+                  implementation, dc, ctx, parameter, controllerStorage, this);
         try {
             threadPool.submit(runnable);
         }  catch (Exception e) {
-            log.log(Level.SEVERE, "Couldn't submit runnable.  That's awful!", e);
+            log.log(Level.SEVERE,
+                    "Couldn't submit runnable.  That's awful!", e);
         }
     }
 
@@ -266,7 +288,8 @@ public final class RpcExecutionServiceImpl
             final Object object1) {
         // For debugging.
         if (listener != null) {
-            listener.listen(threadPool, null, implementation, null, parameter, null);
+            listener.listen(threadPool, null,
+                    implementation, null, parameter, null);
         }
     }
 

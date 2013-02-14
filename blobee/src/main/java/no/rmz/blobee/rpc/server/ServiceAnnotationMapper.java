@@ -37,7 +37,8 @@ public final class ServiceAnnotationMapper {
             checkNotNull(methodName);
             checkNotNull(serviceInterface);
 
-            final String rectifiedMethodName = methodName.substring(0, 1).toUpperCase() + // XXX VERY UGLY
+            final String rectifiedMethodName =
+                    methodName.substring(0, 1).toUpperCase() + // XXX VERY UGLY
                     methodName.substring(1);
 
             final Method getDescriptor = serviceInterface.getMethod("getDescriptor");

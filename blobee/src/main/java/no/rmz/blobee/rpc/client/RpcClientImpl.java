@@ -49,8 +49,11 @@ import org.jboss.netty.channel.Channel;
 
 public final class RpcClientImpl implements RpcClient {
 
-    private static final Logger log = Logger.getLogger(RpcClientImpl.class.getName());
+    private static final Logger log =
+            Logger.getLogger(RpcClientImpl.class.getName());
 
+    private  static final int MILLIS_TO_SLEEP_BETWEEN_ATTEMPTS = 20;
+    private static final int NUM_OF_TIMES_BEFORE_FAILING = 200;
     private static final  int MAX_CAPACITY_FOR_INPUT_BUFFER = 10000;
     private static  final int TIME_TO_WAIT_WHEN_QUEUE_IS_EMPTY_IN_MILLIS = 50;
     public static final int MAXIMUM_TCP_PORT_NUMBER = 65535;
@@ -105,7 +108,8 @@ public final class RpcClientImpl implements RpcClient {
             final RpcClientSideInvocation invocation =
                     invocations.get(index);
             if (invocation == null) {
-                throw new IllegalStateException("Couldn't find call stub for invocation " + index);
+                throw new IllegalStateException(
+                        "Couldn't find call stub for invocation " + index);
             }
 
 
@@ -159,7 +163,8 @@ public final class RpcClientImpl implements RpcClient {
             synchronized (invocations) {
                 invocations.put(currentIndex, invocation);
             }
-            final RpcClientController rcci = (RpcClientController) invocation.getController();
+            final RpcClientController rcci =
+                    (RpcClientController) invocation.getController();
 
             rcci.setClientAndIndex(this, currentIndex);
             sendInvocation(invocation, currentIndex);
@@ -176,7 +181,9 @@ public final class RpcClientImpl implements RpcClient {
     private final Lock runningLock;
     private final Condition noLongerRunning;
 
-    public RpcClientImpl(final int capacity, final MethodSignatureResolver resolver) {
+    public RpcClientImpl(
+            final int capacity,
+            final MethodSignatureResolver resolver) {
 
         checkArgument(0 < capacity && capacity < MAX_CAPACITY_FOR_INPUT_BUFFER);
         this.capacity = capacity;
@@ -190,7 +197,8 @@ public final class RpcClientImpl implements RpcClient {
     public void setChannel(final Channel channel) {
         synchronized (mutationMonitor) {
             if (this.channel != null) {
-                throw new IllegalStateException("Can't set channel since channel is already set");
+                throw new IllegalStateException(
+                        "Can't set channel since channel is already set");
             }
             this.channel = checkNotNull(channel);
             this.wire  = WireFactory.getWireForChannel(channel);
@@ -211,7 +219,8 @@ public final class RpcClientImpl implements RpcClient {
             // is completely halted.
             final Runnable channelCleanup = new Runnable() {
                 public void run() {
-                    // Wait until the connection is closed or the connection attempt fails.
+                    // Wait until the connection is
+                    // closed or the connection attempt fails.
                     channel.getCloseFuture().awaitUninterruptibly();
                     // Then do whatever cleanup is necessary
                     channelCleanupRunnable.shutdownHook();
@@ -231,6 +240,7 @@ public final class RpcClientImpl implements RpcClient {
     @Override
     public RpcChannel newClientRpcChannel() {
         return new RpcChannel() {
+
             public void callMethod(
                     final MethodDescriptor method,
                     final RpcController controller,
@@ -246,26 +256,29 @@ public final class RpcClientImpl implements RpcClient {
 
                 // Binding the controller to this invocation.
                 if (controller instanceof RpcClientController) {
-                    final RpcClientController ctrl = (RpcClientController) controller;
+                    final RpcClientController ctrl =
+                            (RpcClientController) controller;
                     if (ctrl.isActive()) {
-                        throw new IllegalStateException("Attempt to activate already active controller");
+                        throw new IllegalStateException(
+                              "Attempt to activate already active controller");
                     } else {
                         ctrl.setActive(running);
                     }
                 }
 
                 final RpcClientSideInvocation invocation =
-                        new RpcClientSideInvocation(method, controller, request, responsePrototype, done);
+                        new RpcClientSideInvocation(
+                           method, controller,
+                           request, responsePrototype, done);
 
                 // XXX
                 // Busy-wait to add to in-queue
-                for (int i = 0; i < 200; i++) { /// XXXX bogus
+                for (int i = 0;  i < NUM_OF_TIMES_BEFORE_FAILING; i++) {
 
                     if (incoming.offer(invocation)) {
                         return;
-                    }
-                    try {
-                        Thread.sleep(20);
+                    } try {
+                        Thread.sleep(MILLIS_TO_SLEEP_BETWEEN_ATTEMPTS);
                     } catch (InterruptedException ex) {
                         log.info("Ignoring interruption " + ex);
                     }
@@ -289,7 +302,11 @@ public final class RpcClientImpl implements RpcClient {
             invocation = invocations.get(rpcIndex);
         }
         if (invocation == null) {
-            log.log(Level.FINEST, "Attempt to fail nonexistant invocation: " + rpcIndex + " with error message " + errorMessage);
+            log.log(Level.FINEST,
+                    "Attempt to fail nonexistant invocation: "
+                    + rpcIndex
+                    + " with error message "
+                    + errorMessage);
             return;
         }
 
@@ -303,10 +320,12 @@ public final class RpcClientImpl implements RpcClient {
         checkArgument(rpcIndex >= 0);
 
         synchronized (invocations) {
-            final RpcClientSideInvocation invocation = invocations.get(rpcIndex);
+            final RpcClientSideInvocation invocation =
+                    invocations.get(rpcIndex);
 
             if (invocation == null) {
-                log.log(Level.FINEST, "Attempt to cancel nonexistant invocation: "
+                log.log(Level.FINEST,
+                        "Attempt to cancel nonexistant invocation: "
                         + rpcIndex);
                 return;
             }
@@ -320,9 +339,11 @@ public final class RpcClientImpl implements RpcClient {
     public RpcClient start() {
         return this;
     }
+
     private RpcClientSideInvocationListener listener;
 
-    public RpcClient addInvocationListener(final RpcClientSideInvocationListener listener) {
+    public RpcClient addInvocationListener(
+            final RpcClientSideInvocationListener listener) {
         checkNotNull(listener);
         this.listener = listener;
         return this;
@@ -335,7 +356,8 @@ public final class RpcClientImpl implements RpcClient {
     public RpcClient addProtobuferRpcInterface(final Object instance) {
 
         if (!(instance instanceof com.google.protobuf.Service)) {
-            throw new IllegalArgumentException("Expected a class extending com.google.protobuf.Service");
+            throw new IllegalArgumentException(
+                    "Expected a class extending com.google.protobuf.Service");
         }
 
         final Service service = (Service) instance;
@@ -359,7 +381,9 @@ public final class RpcClientImpl implements RpcClient {
                 resolver.addTypes(md, inputType, outputType);
             }   catch (MethodTypeException ex) {
                 /// XXXX Something  more severe should happen here
-                Logger.getLogger(RpcClientImpl.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(
+                        RpcClientImpl.class.getName()).log(
+                            Level.SEVERE, null, ex);
             }
         }
 
@@ -418,7 +442,9 @@ public final class RpcClientImpl implements RpcClient {
                 // For some reason this fails, and the catch below doesn't work.
          //       channel.close();
             } catch (Throwable e) {
-                log.log(Level.SEVERE, "Something went wrong when closing channel:  " + channel, e);
+                log.log(Level.SEVERE,
+                        "Something went wrong when closing channel:  "
+                        + channel, e);
             }
         }
     }

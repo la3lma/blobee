@@ -87,7 +87,8 @@ public final class RpcPeerPipelineFactory implements ChannelPipelineFactory {
     //     complex enough already.
     public ChannelPipeline getPipeline() throws Exception {
         final ProtobufDecoder protbufDecoder;
-        protbufDecoder = new ProtobufDecoder(Rpc.RpcControl.getDefaultInstance());
+        protbufDecoder = new ProtobufDecoder(
+                Rpc.RpcControl.getDefaultInstance());
         final ChannelPipeline p = pipeline();
 
         p.addLast("frameDecoder", new ProtobufVarint32FrameDecoder());

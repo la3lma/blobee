@@ -31,8 +31,6 @@ public final class Net {
     private  Net() {
     }
 
-
-
     /**
      * Find a network port that is not in use. <p> The only way to implement
      * this sensibly without obvious race conditions would be if we could return
@@ -65,7 +63,8 @@ public final class Net {
     public static int[] getFreePorts(final int numPorts) throws IOException {
 
         checkArgument(numPorts > 0);
-        final List<ServerSocket> sockets = new ArrayList<ServerSocket>(numPorts);
+        final List<ServerSocket> sockets =
+                new ArrayList<ServerSocket>(numPorts);
         final int[] portNums = new int[numPorts];
 
         try {

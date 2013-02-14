@@ -31,13 +31,15 @@ import org.jboss.netty.channel.Channel;
 //     a class comment.
 public final class OutgoingRpcWireImpl implements OutgoingRpcWire {
 
-    private static  final Logger log = Logger.getLogger(OutgoingRpcWireImpl.class.getName());
+    private static  final Logger log =
+            Logger.getLogger(OutgoingRpcWireImpl.class.getName());
 
     /**
      * A constant used when sending heartbeats.
      */
     private static final Rpc.RpcControl HEARTBEAT =
-            Rpc.RpcControl.newBuilder().setMessageType(Rpc.MessageType.HEARTBEAT).build();
+            Rpc.RpcControl.newBuilder()
+            .setMessageType(Rpc.MessageType.HEARTBEAT).build();
 
     /**
      * Monitor used to ensure that message sends, both
@@ -71,7 +73,8 @@ public final class OutgoingRpcWireImpl implements OutgoingRpcWire {
 
     private ByteString messageToByteString(final Message msg) {
         checkNotNull(msg);
-        final ByteArrayOutputStream baos = new ByteArrayOutputStream(msg.getSerializedSize());
+        final ByteArrayOutputStream baos =
+                new ByteArrayOutputStream(msg.getSerializedSize());
         try {
             msg.writeTo(baos);
             baos.close();
@@ -152,7 +155,9 @@ public final class OutgoingRpcWireImpl implements OutgoingRpcWire {
         sendControlMessage(cancelMessage);
     }
 
-    public void sendInvocationFailedMessage(final long rpcIndex, final String reason) {
+    public void sendInvocationFailedMessage(
+            final long rpcIndex,
+            final String reason) {
         checkNotNull(reason);
         checkArgument(rpcIndex >= 0);
 

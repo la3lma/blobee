@@ -52,7 +52,8 @@ public final class RpcPeerInvocationTest {
     private int port;
 
     private RpcChannel clientChannel;
-    private Testservice.RpcParam request = Testservice.RpcParam.newBuilder().build();
+    private Testservice.RpcParam request =
+            Testservice.RpcParam.newBuilder().build();
     private RpcController clientController;
 
 
@@ -79,6 +80,7 @@ public final class RpcPeerInvocationTest {
     }
 
     @Before
+    @SuppressWarnings("DLS_DEAD_LOCAL_STORE")
     public void setUp()
            throws RpcServerException, IOException {
 
@@ -121,7 +123,8 @@ public final class RpcPeerInvocationTest {
                     }
                 };
 
-        final Testservice.RpcService myService = Testservice.RpcService.newStub(clientChannel);
+        final Testservice.RpcService myService =
+                Testservice.RpcService.newStub(clientChannel);
         myService.invoke(clientController, request, callback);
 
         try {

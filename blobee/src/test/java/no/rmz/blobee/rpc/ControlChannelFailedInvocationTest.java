@@ -49,7 +49,8 @@ public final class ControlChannelFailedInvocationTest {
     private static final Logger log = Logger.getLogger(
             no.rmz.blobee.rpc.ControlChannelFailedInvocationTest.class.getName());
     private RpcChannel clientChannel;
-    private Testservice.RpcParam request = Testservice.RpcParam.newBuilder().build();
+    private Testservice.RpcParam request =
+            Testservice.RpcParam.newBuilder().build();
     private RpcController clientController;
     private static  final String FAILED_TEXT = "The computation failed";
     private ClientServerFixture csf;
@@ -76,7 +77,8 @@ public final class ControlChannelFailedInvocationTest {
 
         public  static  final String RETURN_VALUE = "Going home";
         private final Testservice.RpcResult result =
-                Testservice.RpcResult.newBuilder().setReturnvalue(RETURN_VALUE).build();
+                Testservice.RpcResult
+                .newBuilder().setReturnvalue(RETURN_VALUE).build();
 
         @Override
         public void invoke(
@@ -89,14 +91,14 @@ public final class ControlChannelFailedInvocationTest {
             done.run(result);
         }
     }
-
-    private final RpcMessageListener rpcMessageListener = new RpcMessageListener() {
-        public void receiveMessage(
-                final Object message,
-                final ChannelHandlerContext ctx) {
-            log.log(Level.INFO, "message = {0}", message);
-        }
-    };
+    private final RpcMessageListener rpcMessageListener =
+            new RpcMessageListener() {
+                public void receiveMessage(
+                        final Object message,
+                        final ChannelHandlerContext ctx) {
+                    log.log(Level.INFO, "message = {0}", message);
+                }
+            };
 
 
 
@@ -123,11 +125,15 @@ public final class ControlChannelFailedInvocationTest {
                 new RpcCallback<Testservice.RpcResult>() {
                     public void run(final Testservice.RpcResult response) {
                         callbackResponse.receive(response.getReturnvalue());
-                         Conditions.waitForCondition("resultReceived", lock, resultReceived);
+                         Conditions.waitForCondition(
+                                 "resultReceived",
+                                 lock,
+                                 resultReceived);
                     }
                 };
 
-        final Testservice.RpcService myService = Testservice.RpcService.newStub(clientChannel);
+        final Testservice.RpcService myService =
+                Testservice.RpcService.newStub(clientChannel);
         myService.invoke(clientController, request, callback);
 
         Conditions.waitForCondition("failedSent", lock, failedSent);

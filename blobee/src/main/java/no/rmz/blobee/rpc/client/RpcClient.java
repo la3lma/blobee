@@ -43,5 +43,6 @@ public interface RpcClient {
 
     MethodSignatureResolver getResolver();
 
-    RpcClient addInvocationListener(final RpcClientSideInvocationListener listener);
+    RpcClient addInvocationListener(
+            final RpcClientSideInvocationListener listener);
 }

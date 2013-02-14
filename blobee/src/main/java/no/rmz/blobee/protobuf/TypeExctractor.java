@@ -61,7 +61,9 @@ public final class TypeExctractor {
     }
 
     // XXX Linear search should be our last choice, so why is it our first?
-    public static Method findMethod(final Method[] methods, final String methodName) {
+    public static Method findMethod(
+            final Method[] methods,
+            final String methodName) {
         checkNotNull(methods);
         checkNotNull(methodName);
 
