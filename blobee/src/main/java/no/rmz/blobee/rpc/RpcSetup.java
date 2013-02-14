@@ -26,11 +26,11 @@ import no.rmz.blobee.rpc.client.RpcClientFactory;
 import no.rmz.blobee.rpc.client.SingeltonClientFactory;
 import no.rmz.blobee.rpc.peer.RpcMessageListener;
 import no.rmz.blobee.rpc.peer.RpcPeerPipelineFactory;
-import no.rmz.blobee.threads.ErrorLoggingThreadFactory;
 import no.rmz.blobee.rpc.server.ExecutionServiceListener;
 import no.rmz.blobee.rpc.server.RpcExecutionService;
 import no.rmz.blobee.rpc.server.RpcExecutionServiceImpl;
 import no.rmz.blobee.rpc.server.RpcServerImpl;
+import no.rmz.blobee.threads.ErrorLoggingThreadFactory;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 
