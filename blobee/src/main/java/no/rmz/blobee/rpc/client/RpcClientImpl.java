@@ -416,11 +416,7 @@ public final class RpcClientImpl implements RpcClient {
         final Object instance;
         try {
             instance = newReflectiveService.invoke(null, (Object) null);
-        } catch (IllegalAccessException ex) {
-            throw new RuntimeException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new RuntimeException(ex);
-        } catch (InvocationTargetException ex) {
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             throw new RuntimeException(ex);
         }
 

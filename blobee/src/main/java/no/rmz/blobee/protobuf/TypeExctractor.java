@@ -84,11 +84,7 @@ public final class TypeExctractor {
         checkNotNull(md);
         try {
             return (Message) method.invoke(instance, md);
-        } catch (IllegalAccessException ex) {
-            throw new MethodTypeException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new MethodTypeException(ex);
-        } catch (InvocationTargetException ex) {
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             throw new MethodTypeException(ex);
         }
     }
