@@ -17,7 +17,10 @@ package no.rmz.blobee.controllers;
 
 import com.google.protobuf.RpcController;
 
-
+/**
+ * An implementation of the RpcController interface that is used by
+ * server implementations.
+ */
 public interface RpcServiceController extends RpcController {
 
     void invokeCancelledCallback();

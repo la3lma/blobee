@@ -21,6 +21,10 @@ import com.google.protobuf.Descriptors.MethodDescriptor;
 import com.google.protobuf.MessageLite;
 
 
+/**
+ * Value object used to describe messages associated with
+ * RPC APIs.
+ */
 public final class MethodDesc {
     private MethodDescriptor descriptor;
     private MessageLite inputType;

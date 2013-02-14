@@ -17,6 +17,10 @@ package no.rmz.blobee.rpc.peer;
 
 import org.jboss.netty.channel.ChannelHandlerContext;
 
+/**
+ * For use during debugging.  Is injected into an RpcPeerHandler instance,
+ * and then listens in on all traffic that arrives to that handler.
+ */
 public interface RpcMessageListener {
 
     void receiveMessage(Object message, ChannelHandlerContext ctx);

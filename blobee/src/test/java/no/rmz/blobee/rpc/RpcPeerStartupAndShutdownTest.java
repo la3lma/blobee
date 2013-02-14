@@ -102,7 +102,8 @@ public final class RpcPeerStartupAndShutdownTest {
                     if (msg.getMessageType() == Rpc.MessageType.HEARTBEAT) {
                         heartbeatReceiver.receive(msg);
                         ctx.getChannel().write(SHUTDOWN_MESSAGE);
-                    } else if (msg.getMessageType() == Rpc.MessageType.SHUTDOWN) {
+                    } else if (msg.getMessageType() ==
+                                 Rpc.MessageType.SHUTDOWN) {
                         shutdownReceiver.receive(msg);
                     }
                 }

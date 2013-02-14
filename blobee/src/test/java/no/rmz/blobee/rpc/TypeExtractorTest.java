@@ -58,7 +58,9 @@ public final class TypeExtractorTest {
         org.junit.Assert.assertEquals(
                 "no.rmz.blobeetestproto.api.proto.RpcService.Invoke",
                 fullName);
-        org.junit.Assert.assertTrue(inputType instanceof Testservice.RpcParam);
-        org.junit.Assert.assertTrue(outputType instanceof Testservice.RpcResult);
+        org.junit.Assert.assertTrue(
+                inputType instanceof Testservice.RpcParam);
+        org.junit.Assert.assertTrue(
+                outputType instanceof Testservice.RpcResult);
     }
 }

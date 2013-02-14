@@ -15,6 +15,10 @@
  */
 package no.rmz.blobee.rpc.server;
 
+/**
+ * An RPC server interface.  It is simply used to start and stop
+ * the server.
+ */
 public interface RpcServer {
 
     RpcServer start();

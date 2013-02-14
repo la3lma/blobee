@@ -16,6 +16,10 @@
 
 package no.rmz.blobee.protobuf;
 
+/**
+ * Thrown when an attempt is made to invoke a method through reflection,
+ * and that attempt fails for some reason.
+ */
 public final class MethodTypeException extends Exception {
 
     public MethodTypeException(final Throwable cause) {

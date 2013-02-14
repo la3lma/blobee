@@ -246,7 +246,7 @@ public final class ReallySimplePerformanceTest {
      * @param argv
      * @throws Exception
      */
-    public static void main(final String argv [])  throws Exception {
+    public static void main(final String [] argv)  throws Exception {
         final ReallySimplePerformanceTest tst =
                 new ReallySimplePerformanceTest();
         tst.setUp();
