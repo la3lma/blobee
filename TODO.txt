@@ -8,6 +8,12 @@ o Upload to maven central.
       will have to be managed.
    -> Use the release plugin & let it rip.
 
+o Harmonize the way methods are described on the serving and
+  client ends of a connection.
+
+o When resetting a client controller, it should also be so that
+  the controller is not refered to by anything or anyone.
+
 o Get someone else to use the API and offer feedback.
 
 o Set up a demo server somewhere on the intertubes.
