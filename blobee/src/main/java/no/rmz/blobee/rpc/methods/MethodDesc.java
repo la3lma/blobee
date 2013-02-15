@@ -14,7 +14,7 @@
  * the License.
  */
 
-package no.rmz.blobee.rpc.client;
+package no.rmz.blobee.rpc.methods;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.Descriptors.MethodDescriptor;

@@ -18,7 +18,7 @@ package no.rmz.blobee.controllers;
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.RpcCallback;
 import no.rmz.blobee.rpc.peer.RemoteExecutionContext;
-import no.rmz.blobee.rpc.peer.wireprotocol.OutgoingRpcWire;
+import no.rmz.blobee.rpc.peer.wireprotocol.OutgoingWireAdapter;
 import no.rmz.blobee.rpc.peer.wireprotocol.WireFactory;
 
 public final class RpcServiceControllerImpl implements RpcServiceController {
@@ -29,7 +29,7 @@ public final class RpcServiceControllerImpl implements RpcServiceController {
     private boolean startCancelInvokedAlready = false;
     private boolean cancelled = false;
     private RpcCallback<Object> callbackOnFailure;
-    private OutgoingRpcWire wire;
+    private OutgoingWireAdapter wire;
 
     public RpcServiceControllerImpl(final RemoteExecutionContext dc) {
         this.executionContext = checkNotNull(dc);

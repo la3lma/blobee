@@ -13,8 +13,9 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package no.rmz.blobee.rpc.client;
+package no.rmz.blobee.rpc.methods;
 
+import no.rmz.blobee.rpc.methods.MethodDesc;
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.Descriptors.MethodDescriptor;
 import com.google.protobuf.MessageLite;

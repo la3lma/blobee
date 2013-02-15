@@ -16,7 +16,7 @@
 package no.rmz.blobee.rpc.peer;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import no.rmz.blobee.rpc.peer.wireprotocol.OutgoingRpcWire;
+import no.rmz.blobee.rpc.peer.wireprotocol.OutgoingWireAdapter;
 import no.rmz.blobee.rpc.peer.wireprotocol.WireFactory;
 import org.jboss.netty.channel.Channel;
 
@@ -26,7 +26,7 @@ import org.jboss.netty.channel.Channel;
  */
 public final class HeartbeatMonitor {
 
-    private final OutgoingRpcWire wire;
+    private final OutgoingWireAdapter wire;
 
     public HeartbeatMonitor(final Channel channel) {
         checkNotNull(channel);

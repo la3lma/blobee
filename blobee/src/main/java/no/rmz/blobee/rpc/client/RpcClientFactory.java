@@ -16,6 +16,7 @@
 
 package no.rmz.blobee.rpc.client;
 
+import no.rmz.blobee.rpc.methods.MethodSignatureResolver;
 import org.jboss.netty.channel.Channel;
 
 public interface RpcClientFactory {

@@ -27,12 +27,14 @@ import no.rmz.blobeeproto.api.proto.Rpc;
 import no.rmz.blobeeproto.api.proto.Rpc.RpcControl;
 import org.jboss.netty.channel.Channel;
 
-// XXX The name is now inappropriate, and there should be
-//     a class comment.
-public final class OutgoingRpcWireImpl implements OutgoingRpcWire {
+/**
+ * An adapter that translates an API style programming into
+ * a wire-format style.
+ */
+public final class OutgoingRpcAdapterImpl implements OutgoingWireAdapter {
 
     private static  final Logger log =
-            Logger.getLogger(OutgoingRpcWireImpl.class.getName());
+            Logger.getLogger(OutgoingRpcAdapterImpl.class.getName());
 
     /**
      * A constant used when sending heartbeats.
@@ -41,35 +43,15 @@ public final class OutgoingRpcWireImpl implements OutgoingRpcWire {
             Rpc.RpcControl.newBuilder()
             .setMessageType(Rpc.MessageType.HEARTBEAT).build();
 
-    /**
-     * Monitor used to ensure that message sends, both
-     * single and double, are not interleaved with other
-     * writes.
-     */
-    private final Object monitor = new Object();
 
     /**
      * The channel we are sending messages over.
      */
     private final Channel channel;
 
-    public OutgoingRpcWireImpl(final Channel channel) {
+    public OutgoingRpcAdapterImpl(final Channel channel) {
         this.channel = checkNotNull(channel);
     }
-
-    // XXX This could be inlined, it isn't really necessary any longer.
-    private void write(final Message msg) {
-        checkNotNull(msg);
-        synchronized (monitor) {
-            channel.write(msg);
-        }
-    }
-
-    private void sendControlMessage(final RpcControl msg) {
-        checkNotNull(channel);
-        write(msg);
-    }
-
 
     private ByteString messageToByteString(final Message msg) {
         checkNotNull(msg);
@@ -117,7 +99,7 @@ public final class OutgoingRpcWireImpl implements OutgoingRpcWire {
                 .setPayload(payload)
                 .build();
 
-        write(rpcInvocationMessage);
+        channel.write(rpcInvocationMessage);
     }
 
     @Override
@@ -134,14 +116,14 @@ public final class OutgoingRpcWireImpl implements OutgoingRpcWire {
                 .setPayload(payload)
                 .setMethodSignature(methodSignature)
                 .build();
-        write(returnValueMessage);
+        channel.write(returnValueMessage);
     }
 
 
 
     @Override
     public void sendHeartbeat() {
-        write(HEARTBEAT);
+        channel.write(HEARTBEAT);
     }
 
     @Override
@@ -153,7 +135,7 @@ public final class OutgoingRpcWireImpl implements OutgoingRpcWire {
                 .setRpcIndex(rpcIndex)
                 .build();
 
-        sendControlMessage(cancelMessage);
+        channel.write(cancelMessage);
     }
 
     @Override
@@ -169,6 +151,6 @@ public final class OutgoingRpcWireImpl implements OutgoingRpcWire {
                 .setFailed(reason)
                 .build();
 
-        sendControlMessage(failedMessage);
+        channel.write(failedMessage);
     }
 }

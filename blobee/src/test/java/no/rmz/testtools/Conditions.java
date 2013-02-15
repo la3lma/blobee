@@ -7,6 +7,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import static org.junit.Assert.*;
 
+/**
+ * Utility class for setting up conditions that are used to
+ * ensure the required synchronization when setting up
+ * tests that involves components running bits of pieces of
+ * a test in different threads.
+ */
 public final class Conditions {
 
     private static  final Logger log =

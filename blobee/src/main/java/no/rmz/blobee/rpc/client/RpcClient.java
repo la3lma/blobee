@@ -16,6 +16,7 @@
 
 package no.rmz.blobee.rpc.client;
 
+import no.rmz.blobee.rpc.methods.MethodSignatureResolver;
 import com.google.protobuf.Message;
 import com.google.protobuf.RpcChannel;
 import com.google.protobuf.RpcController;

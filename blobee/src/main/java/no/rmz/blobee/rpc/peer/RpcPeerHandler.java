@@ -25,10 +25,10 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import no.rmz.blobee.rpc.client.MethodSignatureResolver;
+import no.rmz.blobee.rpc.methods.MethodSignatureResolver;
 import no.rmz.blobee.rpc.client.RpcClient;
 import no.rmz.blobee.rpc.client.RpcClientFactory;
-import no.rmz.blobee.rpc.peer.wireprotocol.OutgoingRpcWire;
+import no.rmz.blobee.rpc.peer.wireprotocol.OutgoingWireAdapter;
 import no.rmz.blobee.rpc.peer.wireprotocol.WireFactory;
 import no.rmz.blobee.rpc.server.RpcExecutionService;
 import no.rmz.blobeeproto.api.proto.Rpc;
@@ -249,7 +249,7 @@ public final class RpcPeerHandler
         final long rpcIndex = context.getRpcIndex();
         final MethodSignature methodSignature = context.getMethodSignature();
         final Channel channel = context.getCtx().getChannel();
-        final OutgoingRpcWire wire = WireFactory.getWireForChannel(channel);
+        final OutgoingWireAdapter wire = WireFactory.getWireForChannel(channel);
 
         wire.returnRpcResult(rpcIndex, methodSignature, result);
     }

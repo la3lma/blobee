@@ -14,7 +14,7 @@
  * the License.
  */
 
-package no.rmz.blobee.rpc.client;
+package no.rmz.blobee.rpc.methods;
 
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.MessageLite;

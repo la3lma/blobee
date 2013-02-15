@@ -28,6 +28,11 @@ import no.rmz.blobee.threads.ErrorLoggingThreadFactory;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 
+/**
+ * An implementation of an RpcServer that will listen for incoming
+ * TCP connections on a given InetSocketAddress, and will then handle
+ * incoming RPC connections on that TCP connection.
+ */
 public final class RpcServerImpl implements RpcServer {
 
     private static final  Logger log =

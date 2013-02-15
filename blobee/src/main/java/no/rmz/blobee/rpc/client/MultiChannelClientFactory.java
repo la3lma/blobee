@@ -16,6 +16,8 @@
 
 package no.rmz.blobee.rpc.client;
 
+import no.rmz.blobee.rpc.methods.MethodSignatureResolver;
+import no.rmz.blobee.rpc.methods.ResolverImpl;
 import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.Map;
 import java.util.WeakHashMap;

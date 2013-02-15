@@ -15,6 +15,8 @@
  */
 package no.rmz.blobee.rpc.client;
 
+import no.rmz.blobee.rpc.methods.MethodSignatureResolver;
+import no.rmz.blobee.rpc.methods.ResolverImpl;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.Descriptors.MethodDescriptor;
@@ -43,7 +45,7 @@ import no.rmz.blobee.controllers.RpcClientControllerImpl;
 import no.rmz.blobee.protobuf.MethodTypeException;
 import no.rmz.blobee.protobuf.TypeExctractor;
 import no.rmz.blobee.rpc.peer.RemoteExecutionContext;
-import no.rmz.blobee.rpc.peer.wireprotocol.OutgoingRpcWire;
+import no.rmz.blobee.rpc.peer.wireprotocol.OutgoingWireAdapter;
 import no.rmz.blobee.rpc.peer.wireprotocol.WireFactory;
 import org.jboss.netty.channel.Channel;
 
@@ -68,7 +70,7 @@ public final class RpcClientImpl implements RpcClient {
                 new TreeMap <>();
 
 
-    private OutgoingRpcWire wire;
+    private OutgoingWireAdapter wire;
     private long nextIndex;
     private Channel channel;
     private final Object mutationMonitor = new Object();

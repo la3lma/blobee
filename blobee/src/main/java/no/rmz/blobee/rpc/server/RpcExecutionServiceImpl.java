@@ -15,6 +15,7 @@
  */
 package no.rmz.blobee.rpc.server;
 
+import no.rmz.blobee.rpc.methods.ServerSideMethodDesc;
 import com.google.common.base.Objects;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -34,7 +35,7 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.rmz.blobee.controllers.RpcServiceController;
-import no.rmz.blobee.rpc.client.ResolverImpl;
+import no.rmz.blobee.rpc.methods.ResolverImpl;
 import no.rmz.blobee.rpc.peer.RemoteExecutionContext;
 import no.rmz.blobee.threads.ErrorLoggingThreadFactory;
 import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
@@ -57,9 +58,11 @@ public final class RpcExecutionServiceImpl
             new ErrorLoggingThreadFactory(
                "Executor thread for RpcExecutionServiceImpl", log));
 
-
-    private Map<MethodSignature, MethodDesc> xmap =
+    // XXX Used in a similar way as MethodSignatureResolver,
+    //     some consolidation is in order.
+    private Map<MethodSignature, ServerSideMethodDesc> xmap =
             new ConcurrentHashMap<>();
+
     private Object implementation;
     private Map<Class, Object> implementations = new HashMap<>();
     private final ControllerStorage controllerStorage = new ControllerStorage();
@@ -80,7 +83,7 @@ public final class RpcExecutionServiceImpl
     public Class getParameterType(final MethodSignature sig) {
         checkNotNull(sig);
 
-        final MethodDesc ms = xmap.get(sig);
+        final ServerSideMethodDesc ms = xmap.get(sig);
         if (ms != null) {
             return ms.getPmType();
         } else {
@@ -179,8 +182,8 @@ public final class RpcExecutionServiceImpl
                 final Type typeOfReturnvalue =
                         extractCallbackParamType(interfaceMethod);
                 /// this is the new way
-                final MethodDesc methodDesc =
-                        new MethodDesc(
+                final ServerSideMethodDesc methodDesc =
+                        new ServerSideMethodDesc(
                             implementationMethod,
                             (Class) typeOfReturnvalue,
                             pmtype);
@@ -298,7 +301,7 @@ public final class RpcExecutionServiceImpl
 
     public Method getMethod(final MethodSignature ms) {
         checkNotNull(ms);
-        final MethodDesc item = xmap.get(ms);
+        final ServerSideMethodDesc item = xmap.get(ms);
         if (item != null) {
             return item.getMethod();
         } else {

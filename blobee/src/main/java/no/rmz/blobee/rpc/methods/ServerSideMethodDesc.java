@@ -13,19 +13,19 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package no.rmz.blobee.rpc.server;
+package no.rmz.blobee.rpc.methods;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import java.lang.reflect.Method;
 
 
-public final class MethodDesc {
+public final class ServerSideMethodDesc {
     private final Method method;
     private final Class returnType;
     private final Class pmType;
 
 
-    public MethodDesc(
+    public ServerSideMethodDesc(
            final Method method,
            final Class returnType,
            final Class pmType) {
