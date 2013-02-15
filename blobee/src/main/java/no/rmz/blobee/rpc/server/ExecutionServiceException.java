@@ -16,7 +16,9 @@
 
 package no.rmz.blobee.rpc.server;
 
-
+/**
+ * Exception thrown when bad things happen to an execution service.
+ */
 public final class ExecutionServiceException extends Exception {
 
     public ExecutionServiceException(final String string) {

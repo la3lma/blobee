@@ -27,6 +27,10 @@ import no.rmz.blobee.rpc.peer.RemoteExecutionContext;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.ChannelFuture;
 
+/**
+ * An RpcClient  implementation that will open a connection to a
+ * particular InetSocketAddress.
+ */
 public final class ConnectingRpcClientImpl implements RpcClient {
     private final RpcClientImpl rpcClient;
     private final ClientBootstrap clientBootstrap;

@@ -19,6 +19,9 @@ package no.rmz.blobee.rpc.client;
 import no.rmz.blobee.rpc.methods.MethodSignatureResolver;
 import org.jboss.netty.channel.Channel;
 
+/**
+ * An interface that's used to add and remove clients for channels.
+ */
 public interface RpcClientFactory {
     RpcClient getClientFor(final Channel channel);
     void removeClientFor(final Channel channel);
