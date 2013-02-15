@@ -18,7 +18,10 @@ package no.rmz.blobee.rpc.methods;
 import static com.google.common.base.Preconditions.checkNotNull;
 import java.lang.reflect.Method;
 
-
+/**
+ * A description of remotely invoked methods that is used
+ * on the server side of an RPC connection.
+ */
 public final class ServerSideMethodDesc {
     private final Method method;
     private final Class returnType;
