@@ -24,7 +24,7 @@ import no.rmz.blobeeproto.api.proto.Rpc;
  * is atomic in the sense that is either all sent as one package
  * or not sent at all.
  */
-public interface OutgoingWireAdapter {
+public interface OutgoingRpcAdapter {
 
     /**
      * Send a request to invoke a remote procedure.

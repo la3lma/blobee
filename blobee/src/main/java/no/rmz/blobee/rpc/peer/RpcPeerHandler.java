@@ -28,7 +28,7 @@ import java.util.logging.Logger;
 import no.rmz.blobee.rpc.methods.MethodSignatureResolver;
 import no.rmz.blobee.rpc.client.RpcClient;
 import no.rmz.blobee.rpc.client.RpcClientFactory;
-import no.rmz.blobee.rpc.peer.wireprotocol.OutgoingWireAdapter;
+import no.rmz.blobee.rpc.peer.wireprotocol.OutgoingRpcAdapter;
 import no.rmz.blobee.rpc.peer.wireprotocol.WireFactory;
 import no.rmz.blobee.rpc.server.RpcExecutionService;
 import no.rmz.blobeeproto.api.proto.Rpc;
@@ -243,7 +243,7 @@ public final class RpcPeerHandler
         return clientResolver.getPrototypeForReturnValue(methodSignature);
     }
 
- 
+
     private Object getChannelLock(final Channel channel) {
         synchronized (lockMap) {
             if (lockMap.containsKey(channel)) {

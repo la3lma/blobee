@@ -20,7 +20,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.Message;
 import no.rmz.blobee.controllers.RpcServiceController;
 import no.rmz.blobee.controllers.RpcServiceControllerImpl;
-import no.rmz.blobee.rpc.peer.wireprotocol.OutgoingWireAdapter;
+import no.rmz.blobee.rpc.peer.wireprotocol.OutgoingRpcAdapter;
 import no.rmz.blobee.rpc.peer.wireprotocol.WireFactory;
 import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
 import org.jboss.netty.channel.Channel;
@@ -39,7 +39,7 @@ public final class RemoteExecutionContext {
     private final ChannelHandlerContext ctx;
     private final RpcDirection direction;
     private final RpcServiceController controller;
-    private final OutgoingWireAdapter wire;
+    private final OutgoingRpcAdapter wire;
 
     public RemoteExecutionContext(
             final RpcPeerHandler peerHandler,
@@ -75,7 +75,7 @@ public final class RemoteExecutionContext {
             final Message result) {
         final long rpcIndex = getRpcIndex();
         final MethodSignature methodSignature = getMethodSignature();
-       
+
         wire.returnRpcResult(rpcIndex, methodSignature, result);
     }
 

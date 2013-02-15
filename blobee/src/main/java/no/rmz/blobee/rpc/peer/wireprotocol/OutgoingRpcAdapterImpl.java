@@ -31,7 +31,7 @@ import org.jboss.netty.channel.Channel;
  * An adapter that translates an API style programming into
  * a wire-format style.
  */
-public final class OutgoingRpcAdapterImpl implements OutgoingWireAdapter {
+public final class OutgoingRpcAdapterImpl implements OutgoingRpcAdapter {
 
     private static  final Logger log =
             Logger.getLogger(OutgoingRpcAdapterImpl.class.getName());
@@ -49,10 +49,21 @@ public final class OutgoingRpcAdapterImpl implements OutgoingWireAdapter {
      */
     private final Channel channel;
 
+    /**
+     * Construct a new adapter that will send all its messages
+     * to the parameter channel.
+     * @param channel the channel to send all messages to.
+     */
     public OutgoingRpcAdapterImpl(final Channel channel) {
         this.channel = checkNotNull(channel);
     }
 
+    /**
+     * Conert a mesage to a bytestring that can then be packaged
+     * as a payload field in an RpcControl instance.
+     * @param msg The message to encode.
+     * @return A ByteString representation of msg.
+     */
     private ByteString messageToByteString(final Message msg) {
         checkNotNull(msg);
         final ByteArrayOutputStream baos =

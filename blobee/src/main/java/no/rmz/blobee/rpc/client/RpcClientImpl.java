@@ -45,7 +45,7 @@ import no.rmz.blobee.controllers.RpcClientControllerImpl;
 import no.rmz.blobee.protobuf.MethodTypeException;
 import no.rmz.blobee.protobuf.TypeExctractor;
 import no.rmz.blobee.rpc.peer.RemoteExecutionContext;
-import no.rmz.blobee.rpc.peer.wireprotocol.OutgoingWireAdapter;
+import no.rmz.blobee.rpc.peer.wireprotocol.OutgoingRpcAdapter;
 import no.rmz.blobee.rpc.peer.wireprotocol.WireFactory;
 import org.jboss.netty.channel.Channel;
 
@@ -70,7 +70,7 @@ public final class RpcClientImpl implements RpcClient {
                 new TreeMap <>();
 
 
-    private OutgoingWireAdapter wire;
+    private OutgoingRpcAdapter wire;
     private long nextIndex;
     private Channel channel;
     private final Object mutationMonitor = new Object();

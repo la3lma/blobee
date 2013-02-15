@@ -26,6 +26,7 @@ import com.google.protobuf.MessageLite;
  * RPC APIs.
  */
 public final class MethodDesc {
+
     private MethodDescriptor descriptor;
     private MessageLite inputType;
     private MessageLite outputType;

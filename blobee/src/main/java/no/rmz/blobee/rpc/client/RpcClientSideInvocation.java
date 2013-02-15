@@ -32,7 +32,7 @@ import no.rmz.blobee.controllers.RpcClientControllerImpl;
  * instance.
  */
 public final class RpcClientSideInvocation {
-    
+
     private final MethodDescriptor method;
     private final RpcClientController controller;
     private final Message request;

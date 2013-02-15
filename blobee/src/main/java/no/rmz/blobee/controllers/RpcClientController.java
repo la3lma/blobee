@@ -44,7 +44,7 @@ public interface RpcClientController extends RpcController {
 
     /**
      * Setting the value that is read by isActive.
-     * @param active
+     * @param active New value of active field.
      */
     void setActive(final boolean active);
 
@@ -59,8 +59,8 @@ public interface RpcClientController extends RpcController {
 
     /**
      * Associate the client with a client and an index.
-     * @param rpcClient
-     * @param rpcIndex
+     * @param rpcClient The client associated witht this controller.
+     * @param rpcIndex The index associated with this controller.
      */
     void setClientAndIndex(final RpcClientImpl rpcClient, final long rpcIndex);
 }

@@ -41,9 +41,23 @@ public final class RpcServerImpl implements RpcServer {
     private final RpcExecutionService executionService;
     private final RpcMessageListener listener;
     private final ServerBootstrap bootstrap;
+
+    /**
+     * A thread pool.
+     */
     private final ExecutorService bossExecutor;
+
+    /**
+     * Another thread pool.
+     */
     private final ExecutorService workerExcecutor;
 
+    /**
+     *
+     * @param socket The socket to listen for.
+     * @param listener  An optional listener.  IF non-null, this listener
+     *        will listen in on all the messages flowing into the server.
+     */
     public RpcServerImpl(
             final InetSocketAddress socket,
             final RpcMessageListener listener) {
