@@ -20,6 +20,10 @@ import com.google.protobuf.Descriptors;
 import com.google.protobuf.MessageLite;
 import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
 
+/**
+ * An interface  used to resolve method signatures, and to store them when
+ * they are extracted from the client implementation.
+ */
 public interface MethodSignatureResolver {
 
     MessageLite getPrototypeForParameter(

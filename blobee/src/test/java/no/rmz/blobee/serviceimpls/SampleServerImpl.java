@@ -22,6 +22,9 @@ import no.rmz.blobeetestproto.api.proto.Testservice.RpcResult;
 import no.rmz.blobeetestproto.api.proto.Testservice.RpcService;
 
 
+/**
+ * A really simple service used in several of the tests.
+ */
 public  final class SampleServerImpl extends RpcService {
 
     public static final String RETURN_VALUE = "Going home";

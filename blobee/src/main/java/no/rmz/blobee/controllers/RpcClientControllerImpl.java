@@ -21,6 +21,9 @@ import com.google.protobuf.RpcCallback;
 import no.rmz.blobee.rpc.client.RpcClientImpl;
 import no.rmz.blobee.rpc.client.RpcClientSideInvocation;
 
+/**
+ * An RPC controller  that is used on the client side of an invocation.
+ */
 public final class RpcClientControllerImpl implements RpcClientController {
 
     private boolean failed = false;

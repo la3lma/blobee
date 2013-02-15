@@ -16,10 +16,16 @@
 
 package no.rmz.blobee.rpc.client;
 
-import no.rmz.blobee.rpc.methods.MethodSignatureResolver;
 import static com.google.common.base.Preconditions.checkNotNull;
+import no.rmz.blobee.rpc.methods.MethodSignatureResolver;
 import org.jboss.netty.channel.Channel;
 
+
+/**
+ *  A factory that will create exactly one  instance for a particular
+ * channel. This is exactly what we want when starting a client that
+ * talks to a particular server.
+ */
 public final class SingeltonClientFactory implements RpcClientFactory {
     private final Object monitor = new Object();
     private final RpcClient rpcClient;

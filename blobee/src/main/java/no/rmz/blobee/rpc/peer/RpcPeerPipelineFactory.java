@@ -16,8 +16,8 @@
 package no.rmz.blobee.rpc.peer;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import no.rmz.blobee.rpc.methods.MethodSignatureResolver;
 import no.rmz.blobee.rpc.client.RpcClientFactory;
+import no.rmz.blobee.rpc.methods.MethodSignatureResolver;
 import no.rmz.blobee.rpc.server.RpcExecutionService;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import org.jboss.netty.channel.ChannelPipeline;
@@ -29,6 +29,10 @@ import org.jboss.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import org.jboss.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 
 
+/**
+ * A factory for  ChannelPipelines that willl accept incoming
+ * RPC requests (and replies and control messages).
+ */
 public final class RpcPeerPipelineFactory implements ChannelPipelineFactory {
     /**
      * A name used to keep track of which pipeline factory this

@@ -21,6 +21,10 @@ import no.rmz.blobee.rpc.peer.RemoteExecutionContext;
 import no.rmz.blobee.rpc.peer.wireprotocol.OutgoingWireAdapter;
 import no.rmz.blobee.rpc.peer.wireprotocol.WireFactory;
 
+/**
+ * A controller implementation used on the server side of
+ * an invocation.
+ */
 public final class RpcServiceControllerImpl implements RpcServiceController {
 
     private final RemoteExecutionContext executionContext;

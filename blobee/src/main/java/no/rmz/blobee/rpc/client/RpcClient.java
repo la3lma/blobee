@@ -22,6 +22,11 @@ import com.google.protobuf.RpcChannel;
 import com.google.protobuf.RpcController;
 import no.rmz.blobee.rpc.peer.RemoteExecutionContext;
 
+/**
+ * An implement implementing an RPC client that
+ * can be used as an utility function for clients
+ * implementing protoc generated rpc interfaces.
+ */
 public interface RpcClient {
 
     void cancelInvocation(final long rpcIndex);

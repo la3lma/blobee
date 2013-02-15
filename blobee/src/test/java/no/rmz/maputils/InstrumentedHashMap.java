@@ -7,6 +7,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
+/**
+ * A hash map that logs crea
+ * @author rmz
+ * @param <A>
+ * @param <B>
+ */
 public final class InstrumentedHashMap<A, B> implements Map<A, B> {
     private final String name;
     private final Object creator;

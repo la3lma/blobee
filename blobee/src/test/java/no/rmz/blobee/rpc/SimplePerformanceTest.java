@@ -163,7 +163,7 @@ public final class SimplePerformanceTest {
             new ConcurrentHashMap<>();
 
 
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings("WA_AWAIT_NOT_IN_LOOP")
+    @SuppressWarnings({"WA_AWAIT_NOT_IN_LOOP", "DLS_DEAD_LOCAL_STORE"})
     @Test
     public void testRpcInvocation() throws
             InterruptedException, BrokenBarrierException {

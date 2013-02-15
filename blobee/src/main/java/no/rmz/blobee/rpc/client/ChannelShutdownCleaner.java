@@ -13,10 +13,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package no.rmz.blobee.rpc.client;
 
+/**
+ * Shutdown hook run by client.
+ */
 public interface ChannelShutdownCleaner {
+    // XXX Is this class even necessary?
 
-     void shutdownHook();
+    void shutdownHook();
 }

@@ -15,13 +15,17 @@
  */
 package no.rmz.blobee.rpc.server;
 
+/**
+ * Thrown by RpcServer implementations when things
+ * go wrong.
+ */
 public final class RpcServerException extends Exception {
 
     public RpcServerException(final Throwable ex) {
         super(ex);
     }
 
-    RpcServerException(final String string) {
+    public RpcServerException(final String string) {
         super(string);
     }
 }

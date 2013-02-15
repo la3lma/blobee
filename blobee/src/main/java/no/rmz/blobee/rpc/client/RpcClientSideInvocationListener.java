@@ -15,6 +15,11 @@
  */
 
 package no.rmz.blobee.rpc.client;
+
+/**
+ * Used for debugging only, used to listen in on invocations
+ * that goes through the client side.
+ */
 public interface RpcClientSideInvocationListener {
 
      void listenToInvocation(final RpcClientSideInvocation invocation);
