@@ -243,17 +243,7 @@ public final class RpcPeerHandler
         return clientResolver.getPrototypeForReturnValue(methodSignature);
     }
 
-    public void returnResult(
-            final RemoteExecutionContext context,
-            final Message result) {
-        final long rpcIndex = context.getRpcIndex();
-        final MethodSignature methodSignature = context.getMethodSignature();
-        final Channel channel = context.getCtx().getChannel();
-        final OutgoingWireAdapter wire = WireFactory.getWireForChannel(channel);
-
-        wire.returnRpcResult(rpcIndex, methodSignature, result);
-    }
-
+ 
     private Object getChannelLock(final Channel channel) {
         synchronized (lockMap) {
             if (lockMap.containsKey(channel)) {

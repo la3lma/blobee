@@ -25,7 +25,14 @@ import no.rmz.blobee.controllers.RpcClientController;
 import no.rmz.blobee.controllers.RpcClientControllerImpl;
 
 
+/**
+ * This is a value object that represents the client side of a
+ * invocation.  It contains enough information to return the
+ * results from an invocation to the invoker and its controller
+ * instance.
+ */
 public final class RpcClientSideInvocation {
+    
     private final MethodDescriptor method;
     private final RpcClientController controller;
     private final Message request;

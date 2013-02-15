@@ -27,6 +27,11 @@ import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 
 
+/**
+ * Keeps the state of an invocation on the server side of the
+ * connection.  This is a value object that contains enough
+ * information to be able to return a result from an execution.
+ */
 public final class RemoteExecutionContext {
     private final MethodSignature methodSignature;
     private final long rpcIndex;
@@ -65,8 +70,13 @@ public final class RemoteExecutionContext {
         return rpcIndex;
     }
 
-    public void returnResult(final  Message result) {
-        peerHandler.returnResult(this, result);
+
+    public void returnResult(
+            final Message result) {
+        final long rpcIndex = getRpcIndex();
+        final MethodSignature methodSignature = getMethodSignature();
+       
+        wire.returnRpcResult(rpcIndex, methodSignature, result);
     }
 
     public ChannelHandlerContext getCtx() {
