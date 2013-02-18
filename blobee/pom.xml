@@ -13,8 +13,8 @@
     </description>
 
     <scm>
-        <connection>scm:git:git://github.com/laelma/blobee/tags/blobee-1.0</connection>
-        <url>https://github.com/la3lma/blobee/tags/blobee-1.0</url>
+        <connection>scm:git:git://github.com/la3lma/blobee/tags/blobee-0.1</connection>
+        <url>https://github.com/la3lma/blobee/tags/blobee-0.1</url>
     </scm>
 
     <developers>
@@ -169,6 +169,25 @@
 
     <build>
         <plugins>
+
+	  <plugin>
+	    <groupId>org.apache.maven.plugins</groupId>
+	    <artifactId>maven-release-plugin</artifactId>
+	    <version>2.3.2</version>
+	    <executions>
+	      <execution>
+		<id>default</id>
+		<goals>
+		  <goal>perform</goal>
+		</goals>
+		<configuration>
+		  <pomFileName>pom.xml</pomFileName>
+		  </configuration>
+		</execution>
+	      </executions>
+	    </plugin>
+
+
            <plugin>
             <artifactId>maven-antrun-plugin</artifactId>
             <version>1.7</version>
