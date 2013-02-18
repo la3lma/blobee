@@ -1,0 +1,4 @@
+1. Run the release prepare thingy, but it will fail.
+2. Since the release prepare thingy produces the necessary artifacts before failing they can be put into a bundle using the bin/make-bundle.sh script.
+3. That bundle can be uploaded to https://oss.sonatype.org/ using the description in https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide.
+    (beware that the UI has changed a lot since that documentation was written).
