@@ -1,9 +1,9 @@
 #!/bin/sh
 
-VERSION=blobee-0.1
+VERSION=blobee-1.2
 
 (cd target 
-jar  cvf bundle.jar  \
+jar  cvf ${VERSION}-bundle.jar  \
  ${VERSION}.pom \
  ${VERSION}.pom.asc \
  ${VERSION}.jar \
