@@ -8,7 +8,8 @@ o Fix checkstyle objections (not all of them, but the worst ones).
 o Look, real hard, to figure out if some or all of the bogusness
   involving reflection to figure out the types of the stuff going
   back and forth over the wire can't be replaced by standard methods
-  already produced by the protoc compilation.
+  already produced by the protoc compilation.  A lot of really
+  bothersome code could be reduced to nothing if this worked out.
 
 o Harmonize the way methods are described on the serving and
   client ends of a connection.
