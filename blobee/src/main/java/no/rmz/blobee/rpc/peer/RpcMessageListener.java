@@ -23,5 +23,10 @@ import org.jboss.netty.channel.ChannelHandlerContext;
  */
 public interface RpcMessageListener {
 
+    /**
+     * A method we use to spy on the incoming RCP messages.
+     * @param message The message
+     * @param ctx  The context in which it arrived.
+     */
     void receiveMessage(Object message, ChannelHandlerContext ctx);
 }

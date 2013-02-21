@@ -53,7 +53,12 @@ public final class RpcServerImpl implements RpcServer {
     private final ExecutorService workerExcecutor;
 
     /**
+     * Construct a new server implementation that will listen for
+     * incoming client connections on the specified socket.
      *
+     * The optional listener argument is used while debugging to listen
+     * in on incoming messages.
+     * 
      * @param socket The socket to listen for.
      * @param listener  An optional listener.  IF non-null, this listener
      *        will listen in on all the messages flowing into the server.
