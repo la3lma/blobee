@@ -1,12 +1,14 @@
 MAKE THE BASICS WORK
 =====================
 
-o Upload to maven central.
-   -> Make this into one maven package.  Make test dependencies
-      far sweeter.  How to do that with generated sources from multiple
-      protobuf-generated pieces of code I don't know, but that
-      will have to be managed.
-   -> Use the release plugin & let it rip.
+o Write a better description on how to upload to sonatype/maven central.
+
+o Fix checkstyle objections (not all of them, but the worst ones).
+
+o Look, real hard, to figure out if some or all of the bogusness
+  involving reflection to figure out the types of the stuff going
+  back and forth over the wire can't be replaced by standard methods
+  already produced by the protoc compilation.
 
 o Harmonize the way methods are described on the serving and
   client ends of a connection.
