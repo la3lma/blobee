@@ -21,7 +21,15 @@ package no.rmz.blobee.rpc.server;
  */
 public interface RpcServer {
 
+    /**
+     * Start the RPC server.
+     * @return  Returns the server so that the start invocation can be used
+     *          in a "cascading" coding style.
+     */
     RpcServer start();
 
+    /**
+     * Stop the service.
+     */
     void stop();
 }

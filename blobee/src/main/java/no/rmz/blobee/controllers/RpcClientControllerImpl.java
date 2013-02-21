@@ -35,6 +35,9 @@ public final class RpcClientControllerImpl implements RpcClientController {
     private boolean active = false;
     private RpcClientSideInvocation invocation;
 
+    /**
+     * Construct a new controller instance to be used on the client side.
+     */
     public RpcClientControllerImpl() {
     }
 

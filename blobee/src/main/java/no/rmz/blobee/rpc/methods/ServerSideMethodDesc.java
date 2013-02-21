@@ -19,15 +19,35 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.lang.reflect.Method;
 
 /**
- * A description of remotely invoked methods that is used
+ * A  value class descption of remotely invoked methods that is used
  * on the server side of an RPC connection.
  */
 public final class ServerSideMethodDesc {
+
+    /**
+     * A method being invoked.
+     */
     private final Method method;
+
+    /**
+     * The method's return type.
+     */
     private final Class returnType;
+
+    /**
+     * The method's parameter type.
+     */
     private final Class pmType;
 
 
+    /**
+     * Construct a new value object holding a description of an
+     * RPC invoked method.  This description is only used on the
+     * serving side of a connection.
+     * @param method The method.
+     * @param returnType The method's return type.
+     * @param pmType  The method's parameter type.
+     */
     public ServerSideMethodDesc(
            final Method method,
            final Class returnType,
@@ -37,14 +57,27 @@ public final class ServerSideMethodDesc {
         this.pmType = checkNotNull(pmType);
     }
 
+    /**
+     * The method.
+     * @return  The method.
+     */
     public Method getMethod() {
         return method;
     }
 
+
+    /**
+     * The method's return type.
+     * @return  The return type of the method.
+     */
     public Class getReturnType() {
         return returnType;
     }
 
+    /**
+     * The method's parameter type.
+     * @return  The parameter type of the method.
+     */
     public Class getPmType() {
         return pmType;
     }

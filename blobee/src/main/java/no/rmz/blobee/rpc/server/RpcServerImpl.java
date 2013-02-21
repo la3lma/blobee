@@ -74,6 +74,22 @@ public final class RpcServerImpl implements RpcServer {
     }
 
 
+    /**
+     * Construct a new server implementation that will listen for
+     * incoming client connections on the specified socket.
+     *
+     * The execution service will be used to actually run the incoming
+     * requests.
+     *
+     * The optional listener argument is used while debugging to listen
+     * in on incoming messages.
+     *
+     * @param socket The socket to listen for.
+     * @param executionService An execution service that will run incoming
+     *                         requests.
+     * @param listener  An optional listener.  IF non-null, this listener
+     *        will listen in on all the messages flowing into the server.
+     */
     public RpcServerImpl(
             final InetSocketAddress socket,
             final RpcExecutionService executionService,
@@ -120,16 +136,16 @@ public final class RpcServerImpl implements RpcServer {
     /**
      * Add a service to the server.
      *
-     * @param service
-     * @param iface
+     * @param service  The implementation.
+     * @param implementation  The service being imolemented.
      * @return
      */
     public RpcServer addImplementation(
             final Service service,
-            final Class iface) throws RpcServerException {
+            final Class implementation) throws RpcServerException {
         checkNotNull(service);
-        checkNotNull(iface);
-        executionService.addImplementation(service, iface);
+        checkNotNull(implementation);
+        executionService.addImplementation(service, implementation);
         return this;
     }
 

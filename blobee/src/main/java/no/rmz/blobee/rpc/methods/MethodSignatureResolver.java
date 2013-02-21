@@ -26,12 +26,40 @@ import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
  */
 public interface MethodSignatureResolver {
 
+    /**
+     * Given a method signature (which is a protobuf-serializable
+     * description of an RPC invoked procedure), return the prototype
+     * instance for the parameter type.  This prototype can then
+     * be used to deserialize an incoming protobuf packet for a method
+     * invocation.
+     * @param methodSignature A method signature describing which
+     *     procedure this request is all about.
+     * @return The prototype for the parameter for the procedure.
+     */
     MessageLite getPrototypeForParameter(
             final MethodSignature methodSignature);
 
+
+    /**
+     * Given a method signature (which is a protobuf-serializable
+     * description of an RPC invoked procedure), return the prototype
+     * instance for the return type.  This prototype can then
+     * be used to deserialize an incoming protobuf packet for a
+     * returning method invocation.
+     * @param methodSignature A method signature describing which
+     *     procedure this request is all about.
+     * @return The prototype for the return value for theprocedure.
+     */
     MessageLite getPrototypeForReturnValue(
             final MethodSignature methodSignature);
 
+    /**
+     * Add a description for a method in an RPC callable
+     * procedure.
+     * @param md The method.
+     * @param inputType The prototype for the parameter.
+     * @param outputType  The prototype for the return value.
+     */
     void addTypes(
             final Descriptors.MethodDescriptor md,
             final MessageLite inputType,

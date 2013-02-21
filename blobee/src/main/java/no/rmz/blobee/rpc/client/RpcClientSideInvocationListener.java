@@ -22,5 +22,10 @@ package no.rmz.blobee.rpc.client;
  */
 public interface RpcClientSideInvocationListener {
 
+    /**
+     * When the client side sees an invocation, this method
+     * lets a spy listen in on it.
+     * @param invocation an invocation to spy on.
+     */
      void listenToInvocation(final RpcClientSideInvocation invocation);
 }
