@@ -58,7 +58,7 @@ public final class RpcServerImpl implements RpcServer {
      *
      * The optional listener argument is used while debugging to listen
      * in on incoming messages.
-     * 
+     *
      * @param socket The socket to listen for.
      * @param listener  An optional listener.  IF non-null, this listener
      *        will listen in on all the messages flowing into the server.
@@ -73,17 +73,6 @@ public final class RpcServerImpl implements RpcServer {
                 listener);
     }
 
-    public RpcServerImpl(
-            final InetSocketAddress socket,
-            final RpcMessageListener listener,
-            final ExecutionServiceListener esListener) {
-        this(socket,
-                new RpcExecutionServiceImpl(
-                "Execution service for server listening on "
-                + socket.toString(),
-                esListener),
-                listener);
-    }
 
     public RpcServerImpl(
             final InetSocketAddress socket,

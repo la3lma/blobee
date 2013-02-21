@@ -26,7 +26,6 @@ import no.rmz.blobee.rpc.client.RpcClientFactory;
 import no.rmz.blobee.rpc.client.SingeltonClientFactory;
 import no.rmz.blobee.rpc.peer.RpcMessageListener;
 import no.rmz.blobee.rpc.peer.RpcPeerPipelineFactory;
-import no.rmz.blobee.rpc.server.ExecutionServiceListener;
 import no.rmz.blobee.rpc.server.RpcExecutionService;
 import no.rmz.blobee.rpc.server.RpcExecutionServiceImpl;
 import no.rmz.blobee.rpc.server.RpcServerImpl;
@@ -113,16 +112,6 @@ public final class RpcSetup {
             final RpcMessageListener rpcMessageListener) {
         checkNotNull(inetSocketAddress);
         return new RpcServerImpl(inetSocketAddress, rpcMessageListener);
-    }
-
-
-    public static RpcServerImpl newServer(
-            final InetSocketAddress inetSocketAddress,
-            final RpcMessageListener rpcMessageListener,
-            final ExecutionServiceListener esListener) {
-        checkNotNull(inetSocketAddress);
-        return new RpcServerImpl(
-                inetSocketAddress, rpcMessageListener, esListener);
     }
 
     public static RpcServerImpl newServer(

@@ -93,16 +93,9 @@ public final class RpcExecutionServiceImpl
 
     private final String name;
 
-    public RpcExecutionServiceImpl(final String name) {
-        this(name, null);
-    }
-    private final ExecutionServiceListener listener;
-
     public RpcExecutionServiceImpl(
-            final String name,
-            final ExecutionServiceListener listener) {
+            final String name) {
         this.name = checkNotNull(name);
-        this.listener = listener;
     }
 
     @Override
@@ -284,20 +277,7 @@ public final class RpcExecutionServiceImpl
         controllerStorage.removeController(ctx, rpcIndex);
     }
 
-    // XXX Why is this public?
-    public void listen(
-            final ExecutorService threadPool,
-            final Object object,
-            final Object implementation,
-            final Object object0,
-            final Object parameter,
-            final Object object1) {
-        // For debugging.
-        if (listener != null) {
-            listener.listen(threadPool, null,
-                    implementation, null, parameter, null);
-        }
-    }
+  
 
     public Method getMethod(final MethodSignature ms) {
         checkNotNull(ms);
