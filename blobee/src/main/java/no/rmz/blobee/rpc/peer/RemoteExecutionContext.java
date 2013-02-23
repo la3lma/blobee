@@ -41,6 +41,14 @@ public final class RemoteExecutionContext {
     private final RpcServiceController controller;
     private final OutgoingRpcAdapter wire;
 
+    /**
+     * 
+     * @param peerHandler
+     * @param ctx
+     * @param methodSignature
+     * @param rpcIndex
+     * @param direction
+     */
     public RemoteExecutionContext(
             final RpcPeerHandler peerHandler,
             final ChannelHandlerContext ctx,

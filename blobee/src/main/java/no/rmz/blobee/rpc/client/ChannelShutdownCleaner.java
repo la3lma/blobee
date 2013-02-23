@@ -21,5 +21,8 @@ package no.rmz.blobee.rpc.client;
 public interface ChannelShutdownCleaner {
     // XXX Is this class even necessary?
 
+    /**
+     *  Run this hook when the client is shut doen.
+     */
     void shutdownHook();
 }

@@ -36,6 +36,11 @@ public final class ConnectingRpcClientImpl implements RpcClient {
     private final ClientBootstrap clientBootstrap;
     private final InetSocketAddress socketAddress;
 
+    /**
+     * Create a client that will connect to a remote service.
+     * @param clientBootstrap A ClientBootstrap used by the client to connect.
+     * @param socketAddress  The socket to connect to.
+     */
     public ConnectingRpcClientImpl(
             final ClientBootstrap clientBootstrap,
             final InetSocketAddress socketAddress) {

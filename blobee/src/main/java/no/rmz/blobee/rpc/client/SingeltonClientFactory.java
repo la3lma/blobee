@@ -31,6 +31,10 @@ public final class SingeltonClientFactory implements RpcClientFactory {
     private final RpcClient rpcClient;
     private Channel channel;
 
+    /**
+     * Produce a factory that always returns the same rpc client.
+     * @param rpcClient The rpc client we want this factory to always produce.
+     */
     public SingeltonClientFactory(final RpcClient rpcClient) {
         this.rpcClient = checkNotNull(rpcClient);
     }

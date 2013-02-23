@@ -28,16 +28,22 @@ import com.google.protobuf.MessageLite;
 public final class MethodDesc {
 
     private MethodDescriptor descriptor;
-    private MessageLite inputType;
-    private MessageLite outputType;
+    private MessageLite parameterType;
+    private MessageLite returnValueType;
 
+    /**
+     * Construct a new method descriptor.
+     * @param descriptor The method descriptor, from protoc.
+     * @param parameterType The
+     * @param returnValueTupe
+     */
     public MethodDesc(
             final MethodDescriptor descriptor,
-            final MessageLite inputType,
+            final MessageLite parameterType,
             final MessageLite outputType) {
         this.descriptor = checkNotNull(descriptor);
-        this.inputType = checkNotNull(inputType);
-        this.outputType = checkNotNull(outputType);
+        this.parameterType = checkNotNull(parameterType);
+        this.returnValueType = checkNotNull(outputType);
     }
 
     public MethodDescriptor getDescriptor() {
@@ -45,10 +51,10 @@ public final class MethodDesc {
     }
 
     public MessageLite getInputType() {
-        return inputType;
+        return parameterType;
     }
 
     public MessageLite getOutputType() {
-        return outputType;
+        return returnValueType;
     }
 }

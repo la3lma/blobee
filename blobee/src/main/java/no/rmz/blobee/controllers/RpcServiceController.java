@@ -23,5 +23,9 @@ import com.google.protobuf.RpcController;
  */
 public interface RpcServiceController extends RpcController {
 
+    /**
+     * Invoke the "cancelled callback" callback that is used to
+     * inform the service that it has been cancelled by the client.
+     */
     void invokeCancelledCallback();
 }

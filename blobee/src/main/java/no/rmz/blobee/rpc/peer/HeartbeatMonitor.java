@@ -28,16 +28,26 @@ public final class HeartbeatMonitor {
 
     private final OutgoingRpcAdapter wire;
 
+    /**
+     * @param channel The channel we're monitoring/sending heartbeats for.
+     */
     public HeartbeatMonitor(final Channel channel) {
         checkNotNull(channel);
         this.wire =  WireFactory.getWireForChannel(channel);
         sendHeartbeat();
     }
 
+    /**
+     * Send a heartbeat over the wire.
+     */
     public void sendHeartbeat() {
         wire.sendHeartbeat();
     }
 
+    /**
+     * Receive a heartbeat.  Currently this simply means
+     * ignoring it.
+     */
     public void receiveHeartbeat() {
         // XXX Right now, just ignore it.
     }

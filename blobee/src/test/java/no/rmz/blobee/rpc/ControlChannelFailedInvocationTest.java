@@ -60,6 +60,7 @@ public final class ControlChannelFailedInvocationTest {
     @Mock
     private Receiver<String> callbackResponse;
 
+ 
     private void startClientAndServer(final RpcMessageListener ml) {
         csf = new ClientServerFixture(new ServiceTestItem(), ml);
     }

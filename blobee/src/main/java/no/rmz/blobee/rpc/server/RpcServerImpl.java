@@ -138,7 +138,7 @@ public final class RpcServerImpl implements RpcServer {
      *
      * @param service  The implementation.
      * @param implementation  The service being imolemented.
-     * @return
+     * @return this RpcServerImpl
      */
     public RpcServer addImplementation(
             final Service service,

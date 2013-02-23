@@ -35,8 +35,12 @@ public final class RpcServiceControllerImpl implements RpcServiceController {
     private RpcCallback<Object> callbackOnFailure;
     private OutgoingRpcAdapter wire;
 
-    public RpcServiceControllerImpl(final RemoteExecutionContext dc) {
-        this.executionContext = checkNotNull(dc);
+    /**
+     * Construct a new controller based on a remote execution context.
+     * @param rec the remote execution context for this controller.
+     */
+    public RpcServiceControllerImpl(final RemoteExecutionContext rec) {
+        this.executionContext = checkNotNull(rec);
         this.wire = WireFactory.getWireForChannel(
                 executionContext.getCtx().getChannel());
     }

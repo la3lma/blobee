@@ -35,14 +35,23 @@ public final class RpcClientSideInvocation {
 
     private final MethodDescriptor method;
     private final RpcClientController controller;
-    private final Message request;
+    private final Message param;
     private final Message responsePrototype;
     private final RpcCallback<Message> done;
 
+    /**
+     * Construct a new method invocation.
+     *
+     * @param method The method being invoced.
+     * @param controller The controller being used for the invocation.
+     * @param param The parameter the method will be invoked with.
+     * @param responsePrototype A prototype for the response value.
+     * @param done The method to call when the invocation returns.
+     */
     public RpcClientSideInvocation(
             final MethodDescriptor method,
             final RpcController controller,
-            final Message request,
+            final Message param,
             final Message responsePrototype,
             final RpcCallback<Message> done) {
 
@@ -53,27 +62,42 @@ public final class RpcClientSideInvocation {
         this.controller = checkNotNull(rcci);
         rcci.bindToInvocation(this);
 
-        this.request = checkNotNull(request);
+        this.param = checkNotNull(param);
         this.responsePrototype = checkNotNull(responsePrototype);
         this.done = checkNotNull(done);
     }
 
+    /**
+     * @return The method being invoked.
+     */
     public MethodDescriptor getMethod() {
         return method;
     }
 
+    /**
+     * @return  The controller.
+     */
     public RpcClientController getController() {
         return controller;
     }
 
+    /**
+     * @return  the request
+     */
     public Message getRequest() {
-        return request;
+        return param;
     }
 
+    /**
+     * @return A prototype for the return value.
+     */
     public Message getResponsePrototype() {
         return responsePrototype;
     }
 
+    /**
+     * @return The callback to return the result from the invocation with.
+     */
     public RpcCallback<Message> getDone() {
         return done;
     }
