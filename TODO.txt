@@ -11,6 +11,14 @@ o Look, real hard, to figure out if some or all of the bogusness
   already produced by the protoc compilation.  A lot of really
   bothersome code could be reduced to nothing if this worked out.
 
+
+o Think about how to extend the RPC controller to allow
+   - Streaming returns (many return values).
+   - Zeror returns (invocations that never ever return anything).
+  With these two in place it will be dead simple to implement
+  a pub/sub system.
+
+
 o Harmonize the way methods are described on the serving and
   client ends of a connection.
 
