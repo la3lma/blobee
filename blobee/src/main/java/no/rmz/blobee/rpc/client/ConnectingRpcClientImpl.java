@@ -16,13 +16,13 @@
 
 package no.rmz.blobee.rpc.client;
 
-import no.rmz.blobee.rpc.methods.MethodSignatureResolver;
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.Message;
 import com.google.protobuf.RpcChannel;
 import com.google.protobuf.RpcController;
 import java.net.InetSocketAddress;
 import no.rmz.blobee.rpc.RpcSetup;
+import no.rmz.blobee.rpc.methods.MethodSignatureResolver;
 import no.rmz.blobee.rpc.peer.RemoteExecutionContext;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.ChannelFuture;
@@ -85,7 +85,7 @@ public final class ConnectingRpcClientImpl implements RpcClient {
     }
 
     @Override
-    public RpcController newController() {
+    public BlobeeRpcController newController() {
         return rpcClient.newController();
     }
 

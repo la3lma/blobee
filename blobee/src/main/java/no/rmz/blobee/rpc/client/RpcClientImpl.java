@@ -294,7 +294,7 @@ public final class RpcClientImpl implements RpcClient {
     }
 
     @Override
-    public RpcController newController() {
+    public BlobeeRpcController newController() {
         return new RpcClientControllerImpl();
     }
 
@@ -469,8 +469,13 @@ public final class RpcClientImpl implements RpcClient {
         final String inputType = md.getInputType().getFullName();
         final String outputType = md.getOutputType().getFullName();
         final Message request = invocation.getRequest();
+        final RpcClientController controller = invocation.getController();
+        final boolean multiReturn = controller.isMultiReturn();
+        final boolean noReturn = controller.isNoReturn();
+        
         wire.sendInvocation(
                 methodName,
-                inputType, outputType, rpcIndex, request);
+                inputType, outputType, rpcIndex, request,
+                multiReturn, noReturn);
     }
 }

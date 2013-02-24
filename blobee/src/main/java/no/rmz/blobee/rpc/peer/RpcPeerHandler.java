@@ -25,11 +25,9 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import no.rmz.blobee.rpc.methods.MethodSignatureResolver;
 import no.rmz.blobee.rpc.client.RpcClient;
 import no.rmz.blobee.rpc.client.RpcClientFactory;
-import no.rmz.blobee.rpc.peer.wireprotocol.OutgoingRpcAdapter;
-import no.rmz.blobee.rpc.peer.wireprotocol.WireFactory;
+import no.rmz.blobee.rpc.methods.MethodSignatureResolver;
 import no.rmz.blobee.rpc.server.RpcExecutionService;
 import no.rmz.blobeeproto.api.proto.Rpc;
 import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
@@ -289,9 +287,12 @@ public final class RpcPeerHandler
                 getPrototypeForReturnValue(methodSignature);
         checkNotNull(prototypeForReturnValue);
 
+        final boolean multiReturn = msg.hasMultiReturn() && msg.getMultiReturn();
+        final boolean noReturn = false;
+
         final RemoteExecutionContext dc =
                 new RemoteExecutionContext(this, ctx, methodSignature, rpcIndex,
-                RpcDirection.RETURNING);
+                RpcDirection.RETURNING, multiReturn, noReturn);
 
         final MessageLite payload;
         try {
@@ -315,29 +316,38 @@ public final class RpcPeerHandler
             final ChannelHandlerContext ctx)
             throws RpcPeerHandlerException {
         try {
+            checkNotNull(msg);
+            checkNotNull(ctx);
             final MethodSignature methodSignature = msg.getMethodSignature();
             final long rpcIndex = msg.getRpcIndex();
             final MessageLite prototypeForParameter =
                     getPrototypeForParameter(methodSignature);
 
+            final boolean multiReturn = msg.hasMultiReturn() && msg.getMultiReturn();
+            final boolean noReturn = msg.hasNoReturn() && msg.getNoReturn();
+
+            if (multiReturn && noReturn) {
+                throw new RpcPeerHandlerException(
+                        "Not permitted both to have multiple and no return");
+            }
 
             final RemoteExecutionContext rec =
                     new RemoteExecutionContext(this, ctx,
-                    methodSignature, rpcIndex, RpcDirection.INVOKING);
-            checkNotNull(rec);
-
-
+                    methodSignature, rpcIndex, RpcDirection.INVOKING,
+                    multiReturn, noReturn);
+ 
             final MessageLite payload =
                     prototypeForParameter
                     .newBuilderForType()
                     .mergeFrom(msg.getPayload())
                     .build();
             checkNotNull(payload);
-            // XXX Bug here
+
+            // XXX Bug here?
             final Message pld = (Message) payload;
 
-            checkNotNull(ctx);
-            executionService.execute(rec, ctx, pld);
+
+            executionService.execute(rec, ctx, pld, multiReturn, noReturn);
         } catch (InvalidProtocolBufferException ex) {
             throw new RpcPeerHandlerException(ex);
         }

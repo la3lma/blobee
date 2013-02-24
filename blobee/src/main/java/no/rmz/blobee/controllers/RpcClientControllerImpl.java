@@ -22,7 +22,7 @@ import no.rmz.blobee.rpc.client.RpcClientImpl;
 import no.rmz.blobee.rpc.client.RpcClientSideInvocation;
 
 /**
- * An RPC controller  that is used on the client side of an invocation.
+ * An RPC controller that is used on the client side of an invocation.
  */
 public final class RpcClientControllerImpl implements RpcClientController {
 
@@ -34,6 +34,8 @@ public final class RpcClientControllerImpl implements RpcClientController {
     private long rpcIndex = -1;
     private boolean active = false;
     private RpcClientSideInvocation invocation;
+    private boolean multiReturn;
+    private boolean noReturn;
 
     /**
      * Construct a new controller instance to be used on the client side.
@@ -53,6 +55,8 @@ public final class RpcClientControllerImpl implements RpcClientController {
             } else {
                 rpcClient = null;
                 rpcIndex = -1;
+                multiReturn = false;
+                noReturn = false;
             }
         }
     }
@@ -149,5 +153,33 @@ public final class RpcClientControllerImpl implements RpcClientController {
     @Override
     public long getIndex() {
         return rpcIndex;
+    }
+
+    @Override
+    public void setMultiReturn() {
+        synchronized (monitor) {
+           multiReturn = true;
+        }
+    }
+
+    @Override
+    public boolean isMultiReturn() {
+        synchronized (monitor) {
+            return multiReturn;
+        }
+    }
+
+    @Override
+    public void setNoReturn() {
+        synchronized (monitor) {
+            noReturn = true;
+        }
+    }
+
+    @Override
+    public boolean isNoReturn() {
+        synchronized (monitor) {
+            return noReturn;
+        }
     }
 }

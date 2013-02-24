@@ -37,13 +37,17 @@ public interface OutgoingRpcAdapter {
      * @param rpcIndex   For this outgoing connection, this is an index
      *                   uniquely identifying the invocation.
      * @param request    The parameter to the remote procedure.
+     * @param multiReturn True iff the invocation can return multiple values.
+     * @param noReturn    true iff the invocation is expected to return no value.
      */
     void sendInvocation(
             final String methodName,  // XXXX Rpc.MethodSignature
             final String inputType,
             final String outputType,
             final Long rpcIndex,
-            final Message request);
+            final Message request,
+            final boolean multiReturn,
+            final boolean noReturn);
 
 
     /**

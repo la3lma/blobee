@@ -87,7 +87,9 @@ public final class OutgoingRpcAdapterImpl implements OutgoingRpcAdapter {
             final String inputType,
             final String outputType,
             final Long rpcIndex,
-            final Message rpParameter) {
+            final Message rpParameter,
+            final boolean multiReturn,
+            final boolean noReturn) {
 
         checkNotNull(methodName);
         checkNotNull(inputType);
@@ -107,6 +109,8 @@ public final class OutgoingRpcAdapterImpl implements OutgoingRpcAdapter {
                 .setMessageType(Rpc.MessageType.RPC_INV)
                 .setRpcIndex(rpcIndex)
                 .setMethodSignature(ms)
+                .setMultiReturn(multiReturn)
+                .setNoReturn(noReturn)
                 .setPayload(payload)
                 .build();
 

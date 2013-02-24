@@ -22,8 +22,7 @@ import no.rmz.blobee.rpc.peer.wireprotocol.OutgoingRpcAdapter;
 import no.rmz.blobee.rpc.peer.wireprotocol.WireFactory;
 
 /**
- * A controller implementation used on the server side of
- * an invocation.
+ * A controller implementation used on the server side of an invocation.
  */
 public final class RpcServiceControllerImpl implements RpcServiceController {
 
@@ -34,12 +33,21 @@ public final class RpcServiceControllerImpl implements RpcServiceController {
     private boolean cancelled = false;
     private RpcCallback<Object> callbackOnFailure;
     private OutgoingRpcAdapter wire;
+    private boolean multiReturn;
+    private boolean noReturn;
+
 
     /**
      * Construct a new controller based on a remote execution context.
+     *
      * @param rec the remote execution context for this controller.
      */
-    public RpcServiceControllerImpl(final RemoteExecutionContext rec) {
+    public RpcServiceControllerImpl(
+            final RemoteExecutionContext rec,
+            final boolean multiReturn,
+            final boolean noReturn) {
+        this.multiReturn = multiReturn;
+        this.noReturn = noReturn;
         this.executionContext = checkNotNull(rec);
         this.wire = WireFactory.getWireForChannel(
                 executionContext.getCtx().getChannel());
@@ -62,7 +70,6 @@ public final class RpcServiceControllerImpl implements RpcServiceController {
                 "Not supported in server side RpcController");
     }
 
-
     @Override
     public void notifyOnCancel(final RpcCallback<Object> callback) {
         checkNotNull(callback);
@@ -74,7 +81,6 @@ public final class RpcServiceControllerImpl implements RpcServiceController {
             callbackOnFailure = callback;
         }
     }
-
 
     @Override
     public void invokeCancelledCallback() {
@@ -108,6 +114,32 @@ public final class RpcServiceControllerImpl implements RpcServiceController {
     public boolean isCanceled() {
         synchronized (monitor) {
             return cancelled;
+        }
+    }
+
+    @Override
+    public void setMultiReturn() {
+         throw new UnsupportedOperationException(
+                "Reset not supported on server side controller");
+    }
+
+    @Override
+    public boolean isMultiReturn() {
+        synchronized (monitor) {
+            return multiReturn;
+        }
+    }
+
+    @Override
+    public void setNoReturn() {
+        throw new UnsupportedOperationException(
+                "Reset not supported on server side controller");
+    }
+
+    @Override
+    public boolean isNoReturn() {
+        synchronized (monitor) {
+            return noReturn;
         }
     }
 }

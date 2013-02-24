@@ -50,11 +50,15 @@ public interface RpcExecutionService {
      * @param dc XXXX
      * @param ctx
      * @param message The parameter object.
+     * @param noReturn iff no return value is expected.
+     * @param multiReturn iff multiple return values are expected.
      */
     void execute(
             final RemoteExecutionContext dc,
             final ChannelHandlerContext ctx,
-            final Message message);
+            final Message message,
+            final boolean multiReturn,
+            final boolean noReturn);
 
     /**
      * Cancel an invocation.

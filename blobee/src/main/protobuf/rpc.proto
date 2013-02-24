@@ -31,6 +31,14 @@ message RpcControl {
   // input paramaters and return values from
   // RPC invocations.
   optional bytes payload = 5;
+
+  // True iff a single invocation can return
+  // multiple times.
+  optional bool multiReturn = 6;
+
+  // True iff the invocation can never return.
+  optional bool noReturn = 7;
+
 }
 
 message MethodSignature {

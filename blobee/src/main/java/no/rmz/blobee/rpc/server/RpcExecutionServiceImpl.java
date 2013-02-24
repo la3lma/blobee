@@ -15,7 +15,6 @@
  */
 package no.rmz.blobee.rpc.server;
 
-import no.rmz.blobee.rpc.methods.ServerSideMethodDesc;
 import com.google.common.base.Objects;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -36,6 +35,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.rmz.blobee.controllers.RpcServiceController;
 import no.rmz.blobee.rpc.methods.ResolverImpl;
+import no.rmz.blobee.rpc.methods.ServerSideMethodDesc;
 import no.rmz.blobee.rpc.peer.RemoteExecutionContext;
 import no.rmz.blobee.threads.ErrorLoggingThreadFactory;
 import no.rmz.blobeeproto.api.proto.Rpc.MethodSignature;
@@ -250,14 +250,17 @@ public final class RpcExecutionServiceImpl
     public void execute(
             final RemoteExecutionContext dc,
             final ChannelHandlerContext ctx, // XXX Redundant? dc.getCtx?
-            final Message parameter) {
+            final Message parameter,
+            final boolean multiReturn,
+            final boolean noReturn) {
         checkNotNull(dc);
         checkNotNull(ctx);
         checkNotNull(parameter);
 
         final Runnable runnable =
                 new MethodInvokingRunnable(
-                  implementation, dc, ctx, parameter, controllerStorage, this);
+                  implementation, dc, ctx, parameter, controllerStorage, this,
+                  multiReturn, noReturn);
         try {
             threadPool.submit(runnable);
         }  catch (Exception e) {
@@ -277,7 +280,7 @@ public final class RpcExecutionServiceImpl
         controllerStorage.removeController(ctx, rpcIndex);
     }
 
-  
+
 
     public Method getMethod(final MethodSignature ms) {
         checkNotNull(ms);

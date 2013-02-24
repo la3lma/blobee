@@ -16,7 +16,8 @@ final class MethodInvokingRunnable implements Runnable {
     private final ChannelHandlerContext ctx;
     private final Object parameter;
     private final RpcExecutionServiceImpl executor;
-
+    private final boolean noReturn;
+    private final boolean multiReturn;
 
     public MethodInvokingRunnable(
             final Object implementation,
@@ -24,19 +25,23 @@ final class MethodInvokingRunnable implements Runnable {
             final ChannelHandlerContext ctx,
             final Object parameter,
             final ControllerStorage ctStor,
-            final RpcExecutionServiceImpl executor) {
+            final RpcExecutionServiceImpl executor,
+            final boolean multiReturn,
+            final boolean noReturn) {
         this.implementation = checkNotNull(implementation);
         this.dc = checkNotNull(dc);
         this.ctx = checkNotNull(ctx);
         this.parameter = checkNotNull(parameter);
         this.executor = checkNotNull(executor);
+        this.multiReturn = multiReturn;
+        this.noReturn = noReturn;
     }
 
     @Override
     public void run() {
         final Method method = executor.getMethod(dc.getMethodSignature());
         final RpcServiceController controller =
-                new RpcServiceControllerImpl(dc);
+                new RpcServiceControllerImpl(dc, multiReturn, noReturn);
         executor.storeController(ctx, dc.getRpcIndex(), controller);
         final RpcCallback<Message> callbackAdapter =
                 new RpcCallback<Message>() {

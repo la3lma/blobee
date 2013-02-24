@@ -53,7 +53,7 @@ public interface RpcClient {
      * Get a new controller associated with this client.
      * @return a new controller
      */
-    RpcController newController();
+    BlobeeRpcController newController();
 
     /**
      * Return the value of an invocation.

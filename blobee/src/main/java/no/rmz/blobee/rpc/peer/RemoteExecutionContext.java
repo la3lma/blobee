@@ -47,13 +47,15 @@ public final class RemoteExecutionContext {
             final ChannelHandlerContext ctx,
             final MethodSignature methodSignature,
             final long rpcIndex,
-            final RpcDirection direction) {
+            final RpcDirection direction,
+            final boolean multiReturn,
+            final boolean noReturn) {
         this.ctx = checkNotNull(ctx);
         this.peerHandler = checkNotNull(peerHandler);
         this.methodSignature = checkNotNull(methodSignature);
         this.rpcIndex = checkNotNull(rpcIndex);
         this.direction = checkNotNull(direction);
-        this.controller = new RpcServiceControllerImpl(this);
+        this.controller = new RpcServiceControllerImpl(this, multiReturn, noReturn);
 
         final Channel channel = this.getCtx().getChannel();
         this.wire = WireFactory.getWireForChannel(channel);
