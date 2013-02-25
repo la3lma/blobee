@@ -100,8 +100,17 @@ public final class RpcClientImpl implements RpcClient {
             // Deliver the result then disable the controller
             // so it can be reused.
             final RpcCallback<Message> done = invocation.getDone();
+
+            // XXX If we add a flag to the return value saying
+            //     "noReturnValue", then "done.run(message)" will
+            //     only be invoked if there is actually a return
+            //     value.  This can be used to close down a sequence
+            //     of multiple return values.
             done.run(message);
-            deactivateInvocation(dc.getRpcIndex());
+
+            if (!dc.isMultiReturn()) {
+                deactivateInvocation(dc.getRpcIndex());
+            }
         }
     }
 
@@ -472,7 +481,7 @@ public final class RpcClientImpl implements RpcClient {
         final RpcClientController controller = invocation.getController();
         final boolean multiReturn = controller.isMultiReturn();
         final boolean noReturn = controller.isNoReturn();
-        
+
         wire.sendInvocation(
                 methodName,
                 inputType, outputType, rpcIndex, request,

@@ -121,7 +121,8 @@ public final class OutgoingRpcAdapterImpl implements OutgoingRpcAdapter {
     public void returnRpcResult(
             final long rpcIndex,
             final Rpc.MethodSignature methodSignature,
-            final Message result) {
+            final Message result,
+            final boolean multiReturn) {
 
         final ByteString payload =  messageToByteString(result);
         final Rpc.RpcControl returnValueMessage =
@@ -130,6 +131,7 @@ public final class OutgoingRpcAdapterImpl implements OutgoingRpcAdapter {
                 .setRpcIndex(rpcIndex)
                 .setPayload(payload)
                 .setMethodSignature(methodSignature)
+                .setMultiReturn(multiReturn)
                 .build();
         channel.write(returnValueMessage);
     }

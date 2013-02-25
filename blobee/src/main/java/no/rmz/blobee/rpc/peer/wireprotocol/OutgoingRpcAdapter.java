@@ -55,11 +55,14 @@ public interface OutgoingRpcAdapter {
      * @param rpcIndex The index of this invocation.
      * @param methodSignature The signature of the method being invoked.
      * @param result The actual result being returned.
+     * @param multiReturn True iff the invocation can return multiple values, meaning
+     *        this return value may not be the last one.
      */
      void returnRpcResult(
             final long rpcIndex,
             final Rpc.MethodSignature methodSignature,  // XXX Redundant!
-            final Message result);
+            final Message result,
+            final boolean multiReturn);
 
      /**
       * Send a heartbeat message so that the peer at the other

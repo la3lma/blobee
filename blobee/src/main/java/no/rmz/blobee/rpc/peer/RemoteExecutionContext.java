@@ -61,6 +61,11 @@ public final class RemoteExecutionContext {
         this.wire = WireFactory.getWireForChannel(channel);
     }
 
+
+    public boolean isMultiReturn() {
+        return controller.isMultiReturn();
+    }
+    
     public RpcDirection getDirection() {
         return direction;
     }
@@ -79,7 +84,8 @@ public final class RemoteExecutionContext {
         final long rpcIndex = getRpcIndex();
         final MethodSignature methodSignature = getMethodSignature();
 
-        wire.returnRpcResult(rpcIndex, methodSignature, result);
+        wire.returnRpcResult(rpcIndex, methodSignature,
+                result, controller.isMultiReturn());
     }
 
     public ChannelHandlerContext getCtx() {
