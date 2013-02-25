@@ -1,5 +1,6 @@
 package no.rmz.testtools;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -28,6 +29,10 @@ public final class Conditions {
             final String description,
             final Lock lock,
             final Condition condition) {
+        checkNotNull(description);
+        checkNotNull(lock);
+        checkNotNull(condition);
+
         try {
             lock.lock();
             log.log(Level.INFO, "Awaiting condition {0}", description);

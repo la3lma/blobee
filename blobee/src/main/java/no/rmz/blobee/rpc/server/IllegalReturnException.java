@@ -23,11 +23,16 @@ import com.google.protobuf.RpcCallback;
  * is not permitted.  Needs to be unchecked since it has to pass through
  * a Google/protoc defined API that don't throw any checked exception.
  */
-public class IllegalMultiReturnException extends RuntimeException {
+public class IllegalReturnException extends RuntimeException {
 
-    public IllegalMultiReturnException(
+    public IllegalReturnException(
+            final String msg,
             final MethodInvokingRunnable runnable,
             final RpcCallback<Message> callback) {
-       super("runnable  = " + runnable + ", callback = " + callback);
+       super("msg = " + msg
+               + ", runnable  = " + runnable
+               + ", callback = " + callback);
     }
+
+
 }

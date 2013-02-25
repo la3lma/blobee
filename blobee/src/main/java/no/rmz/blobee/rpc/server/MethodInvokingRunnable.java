@@ -51,8 +51,14 @@ final class MethodInvokingRunnable implements Runnable {
                 new RpcCallback<Message>() {
                     @Override
                     public void run(final Message response) {
-                        if (hasReturnedOnce && !multiReturn) {
-                            throw new IllegalMultiReturnException(MethodInvokingRunnable.this, this);
+                        if (noReturn) {
+                                throw new IllegalReturnException(
+                                    "Returning  from a noReturn invocation",
+                                    MethodInvokingRunnable.this, this);
+                        } else if (hasReturnedOnce && !multiReturn) {
+                            throw new IllegalReturnException(
+                                    "Returning multi from a non-multi invocation",
+                                    MethodInvokingRunnable.this, this);
                         } else {
                             hasReturnedOnce = true;
                         }

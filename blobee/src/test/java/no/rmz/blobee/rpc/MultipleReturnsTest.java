@@ -27,7 +27,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
 import no.rmz.blobee.rpc.client.BlobeeRpcController;
 import no.rmz.blobee.rpc.peer.RpcMessageListener;
-import no.rmz.blobee.rpc.server.IllegalMultiReturnException;
+import no.rmz.blobee.rpc.server.IllegalReturnException;
 import no.rmz.blobeetestproto.api.proto.Testservice;
 import no.rmz.testtools.Conditions;
 import no.rmz.testtools.Receiver;
@@ -109,7 +109,7 @@ public final class MultipleReturnsTest {
                 for (int i = 0; i < NO_OF_REPETITIONS; i++) {
                     done.run(result);
                 }
-            } catch (IllegalMultiReturnException e) {
+            } catch (IllegalReturnException e) {
                 Conditions.signalCondition("done.run Failed.",
                         lock,
                         doneRunFailed);
@@ -184,7 +184,7 @@ public final class MultipleReturnsTest {
         myService.invoke(clientController, request, callback);
 
         Conditions.waitForCondition("done.run Failed", lock, doneRunFailed);
-        
+
         verify(callbackResponse, times(1))
                 .receive(ServiceTestItem.RETURN_VALUE);
 
