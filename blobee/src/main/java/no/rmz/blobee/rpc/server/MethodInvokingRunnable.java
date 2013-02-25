@@ -7,7 +7,6 @@ import java.lang.reflect.Method;
 import no.rmz.blobee.controllers.RpcServiceController;
 import no.rmz.blobee.controllers.RpcServiceControllerImpl;
 import no.rmz.blobee.rpc.peer.RemoteExecutionContext;
-import no.rmz.blobee.rpc.peer.wireprotocol.OutgoingRpcAdapter;
 import org.jboss.netty.channel.ChannelHandlerContext;
 
 
@@ -38,6 +37,10 @@ final class MethodInvokingRunnable implements Runnable {
         this.noReturn = noReturn;
     }
 
+    private final Object monitor = new Object();
+
+    private boolean hasReturnedOnce = false;
+
     @Override
     public void run() {
         final Method method = executor.getMethod(dc.getMethodSignature());
@@ -48,6 +51,11 @@ final class MethodInvokingRunnable implements Runnable {
                 new RpcCallback<Message>() {
                     @Override
                     public void run(final Message response) {
+                        if (hasReturnedOnce && !multiReturn) {
+                            throw new IllegalMultiReturnException(MethodInvokingRunnable.this, this);
+                        } else {
+                            hasReturnedOnce = true;
+                        }
 
                         controller.invokeCancelledCallback();
                         dc.returnResult(response);
