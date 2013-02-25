@@ -86,4 +86,11 @@ public interface OutgoingRpcAdapter {
      * @param reason  A human readable string explaing what went wrong.
      */
     void sendInvocationFailedMessage(final long rpcIndex, final String reason);
+
+    /**
+     * Terminate a sequence of return values.  After this invocation
+     * the receiving client can delete all references to the invocation.
+     * @param rpcIndex The invocation that is now terminating.
+     */
+    public void terminateMultiReturnSequence(long rpcIndex);
 }

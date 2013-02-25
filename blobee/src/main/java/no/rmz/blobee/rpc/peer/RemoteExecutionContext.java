@@ -65,7 +65,7 @@ public final class RemoteExecutionContext {
     public boolean isMultiReturn() {
         return controller.isMultiReturn();
     }
-    
+
     public RpcDirection getDirection() {
         return direction;
     }
@@ -94,5 +94,9 @@ public final class RemoteExecutionContext {
 
     public void startCancel() {
         controller.startCancel();
+    }
+
+    public void terminateMultiReturnSequence() {
+        wire.terminateMultiReturnSequence(rpcIndex);
     }
 }

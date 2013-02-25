@@ -127,4 +127,9 @@ public final class ConnectingRpcClientImpl implements RpcClient {
     public void stop() {
         rpcClient.stop();
     }
+
+    @Override
+    public void terminateMultiSequence(long rpcIdx) {
+      rpcClient.terminateMultiSequence(rpcIdx);
+    }
 }

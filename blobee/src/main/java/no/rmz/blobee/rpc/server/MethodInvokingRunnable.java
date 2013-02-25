@@ -7,6 +7,7 @@ import java.lang.reflect.Method;
 import no.rmz.blobee.controllers.RpcServiceController;
 import no.rmz.blobee.controllers.RpcServiceControllerImpl;
 import no.rmz.blobee.rpc.peer.RemoteExecutionContext;
+import no.rmz.blobee.rpc.peer.wireprotocol.OutgoingRpcAdapter;
 import org.jboss.netty.channel.ChannelHandlerContext;
 
 
@@ -46,10 +47,11 @@ final class MethodInvokingRunnable implements Runnable {
         final RpcCallback<Message> callbackAdapter =
                 new RpcCallback<Message>() {
                     @Override
-            public void run(final Message response) {
-                controller.invokeCancelledCallback();
-                dc.returnResult(response);
-            }
+                    public void run(final Message response) {
+
+                        controller.invokeCancelledCallback();
+                        dc.returnResult(response);
+                    }
         };
         try {
             method.invoke(implementation, controller,
@@ -57,6 +59,9 @@ final class MethodInvokingRunnable implements Runnable {
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             throw new RuntimeException(ex);
         } finally {
+            if (multiReturn) {
+                dc.terminateMultiReturnSequence();
+            }
             executor.removeController(ctx, dc.getRpcIndex());
         }
     }

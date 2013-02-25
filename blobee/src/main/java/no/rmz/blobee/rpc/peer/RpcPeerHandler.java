@@ -16,6 +16,7 @@
 package no.rmz.blobee.rpc.peer;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkArgument;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.google.protobuf.MessageLite;
@@ -162,6 +163,9 @@ public final class RpcPeerHandler
                         break;
                     case INVOCATION_FAILED:
                         processInvocationFailedMessage(ctx.getChannel(), msg);
+                        break;
+                    case TERMINATE_MULTI_SEQUENCE:
+                        processTerminateMultiSequence(ctx, msg.getRpcIndex());
                         break;
                     case RPC_CANCEL:
                         processCancelMessage(msg, ctx);
@@ -311,6 +315,12 @@ public final class RpcPeerHandler
         getRpcChannel(ctx.getChannel()).returnCall(dc, pld);
     }
 
+     private void processTerminateMultiSequence(final ChannelHandlerContext ctx, final long rpcIdx) {
+        checkNotNull(ctx);
+        checkArgument(rpcIdx >= 0);
+        getRpcChannel(ctx.getChannel()).terminateMultiSequence(rpcIdx);
+    }
+
     private void processInvocationMessage(
             final RpcControl msg,
             final ChannelHandlerContext ctx)
@@ -335,7 +345,7 @@ public final class RpcPeerHandler
                     new RemoteExecutionContext(this, ctx,
                     methodSignature, rpcIndex, RpcDirection.INVOKING,
                     multiReturn, noReturn);
- 
+
             final MessageLite payload =
                     prototypeForParameter
                     .newBuilderForType()
@@ -357,4 +367,6 @@ public final class RpcPeerHandler
     private void processHeartbeatMessage() {
         heartbeatMonitor.receiveHeartbeat();
     }
+
+
 }

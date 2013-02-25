@@ -53,31 +53,25 @@ public final class RpcClientImpl implements RpcClient {
 
     private static final Logger log =
             Logger.getLogger(RpcClientImpl.class.getName());
-
-    private  static final int MILLIS_TO_SLEEP_BETWEEN_ATTEMPTS = 20;
+    private static final int MILLIS_TO_SLEEP_BETWEEN_ATTEMPTS = 20;
     private static final int NUM_OF_TIMES_BEFORE_FAILING = 200;
-    private static final  int MAX_CAPACITY_FOR_INPUT_BUFFER = 10000;
-    private static  final int TIME_TO_WAIT_WHEN_QUEUE_IS_EMPTY_IN_MILLIS = 50;
+    private static final int MAX_CAPACITY_FOR_INPUT_BUFFER = 10000;
+    private static final int TIME_TO_WAIT_WHEN_QUEUE_IS_EMPTY_IN_MILLIS = 50;
     public static final int MAXIMUM_TCP_PORT_NUMBER = 65535;
     private final int capacity;
     private final BlockingQueue<RpcClientSideInvocation> incoming;
     private volatile boolean running = false;
-
     // XXX Should this also be a concurrent hash?  Yes.  Also, a lot
     //     (perhaps all) of the synchronization over invocations
     //     should be removed.
     private final Map<Long, RpcClientSideInvocation> invocations =
-                new TreeMap <>();
-
-
+            new TreeMap<>();
     private OutgoingRpcAdapter wire;
     private long nextIndex;
     private Channel channel;
     private final Object mutationMonitor = new Object();
     private final Object runLock = new Object();
-
     private final MethodSignatureResolver resolver;
-
 
     @Override
     public void returnCall(
@@ -114,6 +108,25 @@ public final class RpcClientImpl implements RpcClient {
         }
     }
 
+    @Override
+    public void terminateMultiSequence(long rpcIndex) {
+        checkArgument(rpcIndex >= 0);
+        synchronized (invocations) {
+
+            final RpcClientSideInvocation invocation =
+                    invocations.get(rpcIndex);
+
+            if (invocation == null) {
+                log.log(Level.FINEST,
+                        "Attempt to terminate  nonexistant  multiinvocation sequence: "
+                        + rpcIndex);
+                return;
+            }
+            deactivateInvocation(rpcIndex);
+
+        }
+    }
+
     private void deactivateInvocation(final Long index) {
         synchronized (invocations) {
             final RpcClientSideInvocation invocation =
@@ -132,9 +145,6 @@ public final class RpcClientImpl implements RpcClient {
 
         }
     }
-
-
-
     private final Runnable incomingDispatcher = new Runnable() {
         @Override
         public void run() {
@@ -145,7 +155,8 @@ public final class RpcClientImpl implements RpcClient {
             try {
                 runningLock.lock();
                 noLongerRunning.signal();
-            } finally {
+            }
+            finally {
                 runningLock.unlock();
             }
         }
@@ -154,8 +165,8 @@ public final class RpcClientImpl implements RpcClient {
     private void sendFirstAvailableOutgoingInvocation() {
         try {
             final RpcClientSideInvocation invocation =
-                incoming.poll(TIME_TO_WAIT_WHEN_QUEUE_IS_EMPTY_IN_MILLIS,
-                        TimeUnit.MILLISECONDS);
+                    incoming.poll(TIME_TO_WAIT_WHEN_QUEUE_IS_EMPTY_IN_MILLIS,
+                    TimeUnit.MILLISECONDS);
             // If nothing there, then just return to the busy-waiting loop.
             if (invocation == null) {
                 return;
@@ -180,7 +191,8 @@ public final class RpcClientImpl implements RpcClient {
 
             rcci.setClientAndIndex(this, currentIndex);
             sendInvocation(invocation, currentIndex);
-        } catch (InterruptedException ex) {
+        }
+        catch (InterruptedException ex) {
             log.warning("Something went south");
         }
     }
@@ -189,7 +201,6 @@ public final class RpcClientImpl implements RpcClient {
             final int capacity) {
         this(capacity, new ResolverImpl());
     }
-
     private final Lock runningLock;
     private final Condition noLongerRunning;
 
@@ -213,7 +224,7 @@ public final class RpcClientImpl implements RpcClient {
                         "Can't set channel since channel is already set");
             }
             this.channel = checkNotNull(channel);
-            this.wire  = WireFactory.getWireForChannel(channel);
+            this.wire = WireFactory.getWireForChannel(channel);
         }
     }
 
@@ -253,7 +264,6 @@ public final class RpcClientImpl implements RpcClient {
     @Override
     public RpcChannel newClientRpcChannel() {
         return new RpcChannel() {
-
             @Override
             public void callMethod(
                     final MethodDescriptor method,
@@ -274,7 +284,7 @@ public final class RpcClientImpl implements RpcClient {
                             (RpcClientController) controller;
                     if (ctrl.isActive()) {
                         throw new IllegalStateException(
-                              "Attempt to activate already active controller");
+                                "Attempt to activate already active controller");
                     } else {
                         ctrl.setActive(running);
                     }
@@ -282,18 +292,20 @@ public final class RpcClientImpl implements RpcClient {
 
                 final RpcClientSideInvocation invocation =
                         new RpcClientSideInvocation(
-                           method, controller,
-                           request, responsePrototype, done);
+                        method, controller,
+                        request, responsePrototype, done);
 
                 // XXX
                 // Busy-wait to add to in-queue
-                for (int i = 0;  i < NUM_OF_TIMES_BEFORE_FAILING; i++) {
+                for (int i = 0; i < NUM_OF_TIMES_BEFORE_FAILING; i++) {
 
                     if (incoming.offer(invocation)) {
                         return;
-                    } try {
+                    }
+                    try {
                         Thread.sleep(MILLIS_TO_SLEEP_BETWEEN_ATTEMPTS);
-                    } catch (InterruptedException ex) {
+                    }
+                    catch (InterruptedException ex) {
                         log.info("Ignoring interruption " + ex);
                     }
                 }
@@ -354,7 +366,6 @@ public final class RpcClientImpl implements RpcClient {
     public RpcClient start() {
         return this;
     }
-
     private RpcClientSideInvocationListener listener;
 
     @Override
@@ -373,7 +384,7 @@ public final class RpcClientImpl implements RpcClient {
     @Override
     public RpcClient addProtobuferRpcInterface(final Object instance) {
 
-        if (!(instance instanceof com.google.protobuf.Service)) {
+        if (!( instance instanceof com.google.protobuf.Service )) {
             throw new IllegalArgumentException(
                     "Expected a class extending com.google.protobuf.Service");
         }
@@ -397,11 +408,12 @@ public final class RpcClientImpl implements RpcClient {
                 // final MessageLite inputType = md.getInputType().toProto().getDefaultInstance();
 
                 resolver.addTypes(md, inputType, outputType);
-            }   catch (MethodTypeException ex) {
+            }
+            catch (MethodTypeException ex) {
                 /// XXXX Something  more severe should happen here
                 Logger.getLogger(
                         RpcClientImpl.class.getName()).log(
-                            Level.SEVERE, null, ex);
+                        Level.SEVERE, null, ex);
             }
         }
 
@@ -427,7 +439,8 @@ public final class RpcClientImpl implements RpcClient {
         final Object instance;
         try {
             instance = newReflectiveService.invoke(null, (Object) null);
-        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+        }
+        catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             throw new RuntimeException(ex);
         }
 
@@ -444,9 +457,11 @@ public final class RpcClientImpl implements RpcClient {
         try {
             runningLock.lock();
             noLongerRunning.await();
-        } catch (InterruptedException ex) {
+        }
+        catch (InterruptedException ex) {
             throw new RuntimeException(ex); // XXXX
-        } finally {
+        }
+        finally {
             runningLock.unlock();
         }
 
@@ -455,8 +470,9 @@ public final class RpcClientImpl implements RpcClient {
                 log.info("about to close stuff");
                 /// XXXX
                 // For some reason this fails, and the catch below doesn't work.
-         //       channel.close();
-            } catch (Throwable e) {
+                //       channel.close();
+            }
+            catch (Throwable e) {
                 log.log(Level.SEVERE,
                         "Something went wrong when closing channel:  "
                         + channel, e);

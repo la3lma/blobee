@@ -100,4 +100,11 @@ public interface RpcClient {
      */
     RpcClient addInvocationListener(
             final RpcClientSideInvocationListener listener);
+
+    /**
+     * Terminate the sequence of return values associated with
+     * the index.
+     * @param rpcIdx The index we're ending the return sequence for.
+     */
+    public void terminateMultiSequence(long rpcIdx);
 }

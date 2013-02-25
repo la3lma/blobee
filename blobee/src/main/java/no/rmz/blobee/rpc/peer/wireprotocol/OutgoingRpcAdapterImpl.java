@@ -170,4 +170,12 @@ public final class OutgoingRpcAdapterImpl implements OutgoingRpcAdapter {
 
         channel.write(failedMessage);
     }
+
+    @Override
+    public void terminateMultiReturnSequence(long rpcIndex) {
+        final RpcControl failedMessage = RpcControl.newBuilder()
+                .setMessageType(Rpc.MessageType.TERMINATE_MULTI_SEQUENCE)
+                .setRpcIndex(rpcIndex)
+                .build();
+    }
 }

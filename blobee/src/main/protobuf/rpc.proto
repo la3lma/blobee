@@ -54,6 +54,7 @@ enum MessageType {
         RPC_CANCEL        = 4;
         RPC_INV           = 5;
         RPC_RET           = 6;
+        TERMINATE_MULTI_SEQUENCE = 7;
 }
 
 
