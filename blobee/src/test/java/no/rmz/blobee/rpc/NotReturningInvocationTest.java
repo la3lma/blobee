@@ -176,7 +176,7 @@ public final class NotReturningInvocationTest {
         verifyZeroInteractions(callbackResponse);
     }
 
-    @Ignore @Test// (timeout = 3000)
+    @Test(timeout = 3000)
     @SuppressWarnings("WA_AWAIT_NOT_IN_LOOP")
     public void testSuccesseByReturningNoResult() throws InterruptedException {
         setUp(new PassingServiceTestItem());
@@ -186,7 +186,4 @@ public final class NotReturningInvocationTest {
         Conditions.waitForCondition("invocationReceived", lock, invocationReceived);
         verifyZeroInteractions(callbackResponse);
     }
-    // XXX Adding return catching methods to something that will never
-    //     return is wasteful, and should be an error.  That feature is
-    //     not implemented yet, consider doing it tomorrow.
 }
