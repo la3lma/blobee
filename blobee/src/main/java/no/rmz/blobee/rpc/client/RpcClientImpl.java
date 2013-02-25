@@ -183,11 +183,16 @@ public final class RpcClientImpl implements RpcClient {
             }
 
             final Long currentIndex = nextIndex++;
-            synchronized (invocations) {
-                invocations.put(currentIndex, invocation);
-            }
+
             final RpcClientController rcci =
                     (RpcClientController) invocation.getController();
+
+            // Avoid leaking memory for no-return invocations.
+            if (!rcci.isNoReturn()) {
+                synchronized (invocations) {
+                    invocations.put(currentIndex, invocation);
+                }
+            }
 
             rcci.setClientAndIndex(this, currentIndex);
             sendInvocation(invocation, currentIndex);
