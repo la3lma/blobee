@@ -104,3 +104,20 @@ o Make some performance tests.  Nothing fancy, but they should be there
 
    -> Benchmark against java RMI. If we're in the same ballpark
       or faster we're pretty well set.
+
+INTERESTING NICE TO HAVES (may in fact be must haves):
+======================================================
+
+o Don't try to guarantee single delivery of messages. Implementors must handle duplicated calls.
+o Clearly defined threading model.
+o Support client-side load balancing
+o Late binding of RPC calls to tcp connections.
+o Automatic retries if desired.
+o Deal with clients starting before server.
+o Clearly defined wire-format.
+o Multiple compression formats
+o Sharing tcp connections between different RPC client-server objects.
+o Pluggable tracing and logging.
+o Pluggable security layer (for handshakes and encryption)
+
+
