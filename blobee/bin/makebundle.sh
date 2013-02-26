@@ -1,6 +1,6 @@
 #!/bin/sh
 
-VERSION=blobee-1.2
+VERSION=blobee-1.3
 
 (cd target 
 jar  cvf ${VERSION}-bundle.jar  \
