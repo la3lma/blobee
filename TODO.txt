@@ -5,6 +5,11 @@ o Write a better description on how to upload to sonatype/maven central.
 
 o Fix checkstyle objections (not all of them, but the worst ones).
 
+o When a connection is dropped, all connections on both client and server
+  sides should be set to "cancelled" (or at least on the server side,
+  the client side may chose to treat connection loss as an error
+  situation instead).
+
 o Look, real hard, to figure out if some or all of the bogusness
   involving reflection to figure out the types of the stuff going
   back and forth over the wire can't be replaced by standard methods
