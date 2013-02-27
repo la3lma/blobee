@@ -29,4 +29,5 @@ public interface RpcServiceController extends BlobeeRpcController {
      * inform the service that it has been cancelled by the client.
      */
     void invokeCancelledCallback();
+    
 }
