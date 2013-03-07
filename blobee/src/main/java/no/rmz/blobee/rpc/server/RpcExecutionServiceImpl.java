@@ -148,6 +148,9 @@ public final class RpcExecutionServiceImpl
                     throw new RpcServerException(ex);
                 }
 
+                if (descriptor == null) {
+                    throw new RpcServerException("method descriptor was null");
+                }
                 final MethodSignature methodSignature =
                         ResolverImpl.getMethodSignatureFromMethodDescriptor(
                         descriptor);
@@ -253,7 +256,7 @@ public final class RpcExecutionServiceImpl
             final Message parameter,
             final boolean multiReturn,
             final boolean noReturn) {
-        
+
         checkNotNull(dc);
         checkNotNull(ctx);
         checkNotNull(parameter);

@@ -64,7 +64,9 @@ public final class OutgoingRpcAdapterImpl implements OutgoingRpcAdapter {
      * @param msg The message to encode.
      * @return A ByteString representation of msg.
      */
-    private ByteString messageToByteString(final Message msg) {
+    public final static ByteString messageToByteString(final Message msg) {
+
+        // XXX Can this be replaced with msg.toByteString();
         checkNotNull(msg);
         final ByteArrayOutputStream baos =
                 new ByteArrayOutputStream(msg.getSerializedSize());
