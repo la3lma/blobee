@@ -44,9 +44,18 @@ public final class ServiceAnnotationMapper {
             final Method getDescriptor = serviceInterface.getMethod("getDescriptor");
             final ServiceDescriptor serviceDescriptor =
                     (ServiceDescriptor) getDescriptor.invoke(null);
+
+
             final MethodDescriptor methodDesc =
                     serviceDescriptor.findMethodByName(rectifiedMethodName);
-            return methodDesc;
+             final MethodDescriptor unrectifiedMethodDesc =
+                    serviceDescriptor.findMethodByName(methodName);
+
+             // XXX This is a stupid heuristic.  It works, but it
+             //     should _NOT_ be necessary, and it actually is indicative
+             //     of a very stupid bug somewhere.
+
+            return (methodDesc != null)? methodDesc: unrectifiedMethodDesc;
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException ex) {
              throw new RpcServerException(ex);
         }
