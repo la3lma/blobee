@@ -15,8 +15,8 @@
  */
 package no.rmz.blobee.rpc.peer;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.google.protobuf.MessageLite;
@@ -94,14 +94,10 @@ public final class RpcPeerHandler
             final ChannelHandlerContext ctx,
             final ChannelStateEvent e) {
         this.heartbeatMonitor = new HeartbeatMonitor(e.getChannel());
-        registerChannel(ctx.getChannel());
+        executionService.registerChannel(ctx);
     }
 
-    // For clients there will only be only client, but for servers
-    // there will (paradoxically :-) be many clients.
-    private void registerChannel(final Channel channel) {
-        checkNotNull(channel);
-    }
+
 
     // Stopgap solution to ensure that the client we use is
     // actually the one that is associated with the channel in
@@ -207,6 +203,7 @@ public final class RpcPeerHandler
         log.log(Level.INFO, "Channel closed");
         super.channelClosed(ctx, e);
         rcf.removeClientFor(ctx.getChannel());
+        executionService.channelClosed(ctx);
     }
 
     private MessageLite getPrototypeForMessageClass(final Class theClass)

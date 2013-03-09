@@ -77,4 +77,18 @@ public interface RpcExecutionService {
     void addImplementation(
             final Object implementation,
             final Class interfaceClass) throws RpcServerException;
+
+    /**
+     * A new channel was registred as a peer and is prepared to
+     * communicate with the execution service.
+     * @param ctx  The context for the channel
+     */
+    public void registerChannel(ChannelHandlerContext ctx);
+
+     /**
+     * A new channel was closed as a peer and is  no longer prepared to
+     * communicate with the execution service.
+     * @param ctx  The context for the channel
+     */
+    public void channelClosed(ChannelHandlerContext ctx);
 }

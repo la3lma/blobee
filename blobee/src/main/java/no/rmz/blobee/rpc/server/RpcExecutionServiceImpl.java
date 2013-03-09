@@ -64,7 +64,13 @@ public final class RpcExecutionServiceImpl
             new ConcurrentHashMap<>();
 
     private Object implementation;
-    private Map<Class, Object> implementations = new HashMap<>();
+
+    /**
+     * A map mapping an interface to the actual implementation of that
+     * interface.
+     */
+    private Map<Class, Object> implementations = new HashMap<>(); // XXX Make concurrent?
+
     private final ControllerStorage controllerStorage = new ControllerStorage();
 
     @Override
@@ -217,6 +223,28 @@ public final class RpcExecutionServiceImpl
             final ChannelHandlerContext ctx,
             final long rpcIndex) {
         controllerStorage.removeController(ctx, rpcIndex);
+    }
+
+    @Override
+    public void registerChannel(final ChannelHandlerContext ctx) {
+        for (final Object implementation: implementations.values()) {
+            if (implementation instanceof RpcClientConnectionListener) {
+                final RpcClientConnectionListener l = (RpcClientConnectionListener) implementation;
+                // XXX Use a worker and a threadpool instead?
+                l.registerChannel(ctx);
+            }
+        }
+    }
+
+    @Override
+    public void channelClosed(ChannelHandlerContext ctx) {
+       for (final Object implementation: implementations.values()) {
+            if (implementation instanceof RpcClientConnectionListener) {
+                final RpcClientConnectionListener l = (RpcClientConnectionListener) implementation;
+                // XXX Use a worker and a threadpool instead?
+                l.unregisterChannel(ctx);
+            }
+        }
     }
 
     public static  final class ControllerCoordinate {
